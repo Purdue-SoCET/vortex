@@ -1,7 +1,7 @@
 `ifndef VX_DCACHE_REQ_IF
 `define VX_DCACHE_REQ_IF
 
-`include "../cache/VX_cache_define.vh"
+`include "../include/VX_cache_define.vh"
 
 interface VX_dcache_req_if #(
     parameter NUM_REQS  = 1,
