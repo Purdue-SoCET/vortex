@@ -2,59 +2,42 @@
 //Author: Raghul Prakash, SoCET Vortex GPU Team
 module tb_VX_tex_unit();
 	
+
+  //clock and reset
+  reg clk, reset;
+
   // Clock generator
   always begin
      #5  clk = ~clk; // Toggle clock every 5 ticks
   end
   
-  //clock and reset
-  reg clk, reset;
 
   //Interfaces
   // Texture unit <-> Memory Unit
-  VX_dcache_req_if.master #(
-     NUM_REQS  = 1,
-     WORD_SIZE = 1,
-     TAG_WIDTH = 1) dcache_req_if;
+  VX_dcache_req_if dcache_req_if ();
     
-  VX_dcache_rsp_if.slave #(
-     NUM_REQS  = 1,
-     WORD_SIZE = 1,
-     TAG_WIDTH = 1) dcache_rsp_if;
+  VX_dcache_rsp_if  dcache_rsp_if ();
     
   // Inputs
-  VX_tex_req_if.slave #(
-     NUM_REQS  = 1,
-     WORD_SIZE = 1,
-     TAG_WIDTH = 1) tex_req_if;
+  VX_tex_req_if  tex_req_if ();
     
-  VX_tex_csr_if.slave #(
-     NUM_REQS  = 1,
-     WORD_SIZE = 1,
-     TAG_WIDTH = 1) tex_csr_if;
+  VX_tex_csr_if  tex_csr_if ();
     
   // Outputs
-  VX_tex_rsp_if.master #(
-     NUM_REQS  = 1,
-     WORD_SIZE = 1,
-     TAG_WIDTH = 1) tex_rsp_if;
+  VX_tex_rsp_if  tex_rsp_if ();
   
   // Connect DUT to test bench
   VX_tex_unit tex_unit (
     clk,
     reset,
     dcache_req_if, dcache_rsp_if,
-    tex_csr_if, tex_req_if,
+    tex_req_if, tex_csr_if,
     tex_rsp_if
   );
 
 
-`ifdef EXT_TEX_ENABLE
-
-    `UNUSED_VAR (gpu_req_if.op_mod)
-    
-    VX_tex_req_if   tex_req_if;
-    VX_tex_rsp_if   tex_rsp_if;    
+    //VX_tex_req_if   tex_req_if;
+    //VX_tex_rsp_if   tex_rsp_if;    
 
     //wire is_tex = (gpu_req_if.op_type == `INST_GPU_TEX);
 
@@ -78,16 +61,16 @@ module tb_VX_tex_unit();
 
   // Initialize all variables
   initial begin
-    $display ("time\t clk reset enable counter");
-    $monitor ("%03g\t   %b \t %b \t %b \t %d", $time, clk, reset, enable, counter_out);
+
     clk = 1;       // initial value of clock
     reset = 0;       // initial value of reset
     #5  
     //write using valid ready protocol to write to registers in tex unit
-    tex_csr_if.write_enable = 1'b1;
-    tex_csr_if.write_addr = `CSR_TEX_ADDR;
+    //tex_csr_if.write_enable = 1'b1;
+    //tex_csr_if.write_addr = `CSR_TEX_ADDR;
     #10 
       // request from texture unit
+/*
      tex_req_if.valid = gpu_req_if.valid && is_tex;
      tex_req_if.uuid  = gpu_req_if.uuid;
      tex_req_if.wid   = gpu_req_if.wid;
@@ -100,7 +83,7 @@ module tb_VX_tex_unit();
      tex_req_if.coords[0] = gpu_req_if.rs1_data;
      tex_req_if.coords[1] = gpu_req_if.rs2_data;
      tex_req_if.lod       = gpu_req_if.rs3_data;        
-
+*/
     reset = 1;    // Assert the reset 
     reset = 0;   // De-assert the reset
     #5  

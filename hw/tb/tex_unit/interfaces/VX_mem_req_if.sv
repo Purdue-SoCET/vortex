@@ -1,7 +1,7 @@
 `ifndef VX_MEM_REQ_IF
 `define VX_MEM_REQ_IF
 
-`include "../cache/VX_cache_define.vh"
+`include "../include/VX_cache_define.vh"
 
 interface VX_mem_req_if #(
     parameter DATA_WIDTH = 1,
