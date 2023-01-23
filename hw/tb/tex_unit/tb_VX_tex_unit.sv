@@ -16,7 +16,7 @@ module tb_VX_tex_unit();
   // Texture unit <-> Memory Unit
   VX_dcache_req_if dcache_req_if ();
     
-  VX_dcache_rsp_if  dcache_rsp_if ();
+  VX_dcache_rsp_if dcache_rsp_if ();
     
   // Inputs
   VX_tex_req_if  tex_req_if ();
@@ -28,11 +28,11 @@ module tb_VX_tex_unit();
   
   // Connect DUT to test bench
   VX_tex_unit tex_unit (
-    clk,
-    reset,
-    dcache_req_if, dcache_rsp_if,
-    tex_req_if, tex_csr_if,
-    tex_rsp_if
+    .clk(clk),
+    .reset(reset),
+    .dcache_req_if(dcache_req_if), .dcache_rsp_if(dcache_rsp_if),
+    .tex_req_if(tex_req_if), .tex_csr_if(tex_csr_if),
+    .tex_rsp_if(tex_rsp_if)
   );
 
 
@@ -65,11 +65,14 @@ module tb_VX_tex_unit();
     clk = 1;       // initial value of clock
     reset = 0;       // initial value of reset
     #5  
+    reset = 1'b1;
+    #5
+    reset = 0;
     //write using valid ready protocol to write to registers in tex unit
     //tex_csr_if.write_enable = 1'b1;
     //tex_csr_if.write_addr = `CSR_TEX_ADDR;
     #10 
-      // request from texture unit
+     // request from texture unit
 /*
      tex_req_if.valid = gpu_req_if.valid && is_tex;
      tex_req_if.uuid  = gpu_req_if.uuid;
@@ -84,6 +87,18 @@ module tb_VX_tex_unit();
      tex_req_if.coords[1] = gpu_req_if.rs2_data;
      tex_req_if.lod       = gpu_req_if.rs3_data;        
 */
+     force tex_csr_if.write_enable = 1'b1;
+     force tex_csr_if.write_addr = `CSR_TEX_ADDR;
+     //tex_csr_if.write_data[0] = 1;
+     #20
+     force tex_csr_if.write_enable = 1'b0;
+     //release tex_csr_if.write_addr;
+     
+    //gpu request is an instruction which contains the rs1 rs2 rs3 data opcode
+    force tex_req_if.valid = 1;
+    force tex_req.if.wid = 0;
+    force tex_req_if.PC = 0;
+
     reset = 1;    // Assert the reset 
     reset = 0;   // De-assert the reset
     #5  
