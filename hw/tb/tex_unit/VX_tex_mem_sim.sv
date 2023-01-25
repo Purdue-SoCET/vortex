@@ -1,3 +1,4 @@
+//Author: Raghul Prakash, SoCET Vortex GPU Team
 module VX_tex_mem_sim #(
     parameter CORE_ID   = 0,
     parameter REQ_INFOW = 1,
@@ -28,9 +29,42 @@ module VX_tex_mem_sim #(
     input wire                          rsp_ready
 );
 
+    //texture ram block
+    reg [31:0] tex_ram [SIZE:0];
+    always_ff @ (posedge clk, negedge reset) begin
+	if (reset) begin
+		tex_ram <= 0;
+	end
+	else begin
+		tex_ram <= 0xdeadbeef;
+	end
+    end
+  
+   reg [31:0] treq_tmask;
+   reg [31:0] treq_filter;
+   reg [31:0] treq_lgstride;
+   reg [31:0] treq_baseaddr;
+   reg [31:0] treq_addr;
+   reg [31:0] treq_info;
+   //combinational logic to get reqeuest about address and stride
+   always_comb begin
+    	if (req_valid) begin
+		treq_tmask = req_tmask
+		treq_req_filter = req_filter;
+		treq_lgstride = req_lgstride;
+		treq_baseaddr = req_baseaddr;
+		treq_addr = req_addr;
+		treq_info = req_info;
+    	end 
+	req_valid = 1;
 
-
-
+   end
+   
+   wire data;
+   
+   assign data = tex_ram[treq_addr]
+  // response based on ready of data
+   rsp_data = rsp_ready ? data : 0xffff;
 
 
 endmodule
