@@ -36,12 +36,6 @@ module tb_VX_tex_unit();
   );
 
 
-    //VX_tex_req_if   tex_req_if;
-    //VX_tex_rsp_if   tex_rsp_if;    
-
-    //wire is_tex = (gpu_req_if.op_type == `INST_GPU_TEX);
-
-
 
     //assign tex_rsp_if.ready = !stall_out;
 
@@ -69,36 +63,39 @@ module tb_VX_tex_unit();
     #5
     reset = 0;
     //write using valid ready protocol to write to registers in tex unit
-    //tex_csr_if.write_enable = 1'b1;
-    //tex_csr_if.write_addr = `CSR_TEX_ADDR;
+    force tex_csr_if.write_enable = 1'b1;
+    force tex_csr_if.write_addr = `CSR_TEX_ADDR;
+    force tex_csr_if.write_data = 0x100;
     #10 
+    force tex_csr_if.write_enable = 1'b0;
      // request from texture unit
-/*
-     tex_req_if.valid = gpu_req_if.valid && is_tex;
-     tex_req_if.uuid  = gpu_req_if.uuid;
-     tex_req_if.wid   = gpu_req_if.wid;
-     tex_req_if.tmask = gpu_req_if.tmask;
-     tex_req_if.PC    = gpu_req_if.PC;
-     tex_req_if.rd    = gpu_req_if.rd;
-     tex_req_if.wb    = gpu_req_if.wb;
+	/*
+     	tex_req_if.valid = gpu_req_if.valid && is_tex;
+     	tex_req_if.uuid  = gpu_req_if.uuid;
+     	tex_req_if.wid   = gpu_req_if.wid;
+     	tex_req_if.tmask = gpu_req_if.tmask;
+     	tex_req_if.PC    = gpu_req_if.PC;
+     	tex_req_if.rd    = gpu_req_if.rd;
+     	tex_req_if.wb    = gpu_req_if.wb;
     
-     tex_req_if.unit      = gpu_req_if.op_mod[`NTEX_BITS-1:0];
-     tex_req_if.coords[0] = gpu_req_if.rs1_data;
-     tex_req_if.coords[1] = gpu_req_if.rs2_data;
-     tex_req_if.lod       = gpu_req_if.rs3_data;        
-*/
-     force tex_csr_if.write_enable = 1'b1;
-     force tex_csr_if.write_addr = `CSR_TEX_ADDR;
-     //tex_csr_if.write_data[0] = 1;
-     #20
-     force tex_csr_if.write_enable = 1'b0;
-     //release tex_csr_if.write_addr;
+     	tex_req_if.unit      = gpu_req_if.op_mod[`NTEX_BITS-1:0];
+     	tex_req_if.coords[0] = gpu_req_if.rs1_data;
+     	tex_req_if.coords[1] = gpu_req_if.rs2_data;
+     	tex_req_if.lod       = gpu_req_if.rs3_data;        
+	*/
+
+     force tex_req_if.valid = 1;
+ `   force tex_req_if.coords[0] = 0xdeadbeef;
+     force tex_req_if.coords[1] = 0xdeadbeef;
+     force tex_req_if.lod = 1;
+     //wait(tex_req_if.ready == 1);
+     @posedge tex_req_if.ready; 
+
+     
      
     //gpu request is an instruction which contains the rs1 rs2 rs3 data opcode
-    force tex_req_if.valid = 1;
-    force tex_req.if.wid = 0;
-    force tex_req_if.PC = 0;
-
+    #10
+    
     reset = 1;    // Assert the reset 
     reset = 0;   // De-assert the reset
     #5  
