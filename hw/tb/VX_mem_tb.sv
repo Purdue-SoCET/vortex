@@ -8,11 +8,15 @@
 
 `timescale 1 ns / 1 ps
 
-module vortex_tb ();
+module VX_mem_tb ();
 
     // testbench signals
     parameter PERIOD = 1;
     logic clk = 0, reset;
+
+    // parameters
+    parameter WORD_W = 32;
+    parameter DRAM_SIZE = 64;
 
     // clock gen
     always #(PERIOD/2) CLK++;
@@ -44,6 +48,32 @@ module vortex_tb ();
     logic                               busy;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
+	// ram fake reg file signals:
+
+    // seq
+    // input clk, reset,
+
+    // write handshaking
+    logic                   w_req;
+    logic [WORD_W-1:0]      w_addr;
+    logic [WORD_W-1:0]      w_data_in;
+    logic                   w_resp;
+
+    // read handshaking
+    logic                   r_req;
+    logic [WORD_W-1:0]      r_addr;
+    logic [WORD_W-1:0]      r_data_out;
+    logic                   r_resp;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Vortex vs tb control of ram
+    logic tb_control_ram;
+
+    // < mux logic for selecting between Vortex or tb to interact with ram >
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // test program
 	test #(.PERIOD(PERIOD)) PROG (
@@ -64,9 +94,23 @@ module vortex_tb ();
         .mem_rsp_ready  (mem_rsp_ready),
 
         .busy           (busy)
+
+        .w_req          (w_req),
+        .w_addr         (w_addr),
+        .w_data_in      (w_data_in),
+        .w_resp         (w_resp),
+
+        .r_req          (r_req),
+        .r_addr         (r_addr),
+        .r_data_in      (r_data_in),
+        .r_resp         (r_resp),
+
+        .tb_control_ram (tb_control_ram)
 	);
 	
+    /////////////////////////
 	// DUT
+    /////////////////////////
 	Vortex DUT (
         .clk            (clk),
         .reset          (reset),
@@ -86,30 +130,77 @@ module vortex_tb ();
 
         .busy           (busy)
     );
+
+    ///////////////////////////////////////////////////////////////////////////
+    // fake ram connection logic
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Vortex <-> mem signals <-> [ AHB interface? ] <-> fake ram 
+    
+    ///////////////////////////////////////////////////////////////////////////
+
+
+    /////////////////////////
+    // ram fake
+    /////////////////////////
+    ram_fake_reg_file #(
+        .WORD_W         (WORD_W),
+        .DRAM_SIZE      (DRAM_SIZE)
+    )
+    ram_fake (
+        .clk            (clk),
+        .reset          (reset),
+        
+        .w_req          (w_req),
+        .w_addr         (w_addr),
+        .w_data_in      (w_data_in),
+        .w_resp         (w_resp),
+
+        .r_req          (r_req),
+        .r_addr         (r_addr),
+        .r_data_in      (r_data_in),
+        .r_resp         (r_resp)
+    );
     
 endmodule
 
 program test
 (
+    // seq
     input clk,
     output logic reset,
 
-    input   mem_req_valid,
-            mem_req_rw,
-            mem_req_byteen,
-            mem_req_addr,
-            mem_req_data,
-            mem_req_tag,
-    
-    output  mem_req_ready,
+    // Vortex
+    // Memory request
+    input logic                             mem_req_valid,
+    input logic                             mem_req_rw,    
+    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
+    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
+    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
+    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
+    output logic                            mem_req_ready,
+    // Memory response   
+    output logic                            mem_rsp_valid,        
+    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,
+    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,
+    input logic                             mem_rsp_ready,
+    // Status
+    input logic                             busy,
 
-    output  mem_rsp_valid,
-            mem_rsp_data,
-            mem_rsp_tag,
+    // ram_fake_reg_file
+    // write handshaking
+    output logic                            w_req,
+    output logic [WORD_W-1:0]               w_addr,
+    output logic [WORD_W-1:0]               w_data_in,
+    input logic                             w_resp,
+    // read handshaking
+    output logic                            r_req,
+    output logic [WORD_W-1:0]               r_addr,
+    input logic [WORD_W-1:0]                r_data_out,
+    input logic                             r_resp,
 
-    input   mem_rsp_ready,
-
-    input   busy
+    // Vortex vs tb ram control
+    output logic                            tb_control_ram
 );
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// test signals:
@@ -246,6 +337,20 @@ program test
     end
     endtask
 
+    task load_memory ();
+        string mem_load_file;
+    begin
+        // read in file with instructions and data into fake mem
+    end
+    endtask
+
+    task dump_memory ();
+        strin mem_dump_file;
+    begin
+        // write out fake mem contents to file
+    end
+    endtask
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// tb:
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -260,6 +365,11 @@ program test
         task_string = "";
 		$display("init");
         $display("");
+
+        ///////////////////////
+		// load fake memory: //
+		///////////////////////
+        load_memory("input_data.hex");
 
         ////////////////////
 		// reset testing: //
@@ -282,14 +392,14 @@ program test
             reset = 1'b1;
 
             // expected outputs:
-            expected_mem_req_valid;
-            expected_mem_req_rw;
-            expected_mem_req_byteen;  
-            expected_mem_req_addr;
-            expected_mem_req_data;
-            expected_mem_req_tag;
-            expected_mem_rsp_ready;
-            expected_busy;
+            expected_mem_req_valid      = '0;
+            expected_mem_req_rw         = '0;
+            expected_mem_req_byteen     = '0;  
+            expected_mem_req_addr       = '0;
+            expected_mem_req_data       = '0;
+            expected_mem_req_tag        = '0;
+            expected_mem_rsp_ready      = '0;
+            expected_busy               = '0;
             
             check_outputs();
 
@@ -308,20 +418,23 @@ program test
             reset = 1'b0;
 
             // expected outputs:
-            expected_mem_req_valid;
-            expected_mem_req_rw;
-            expected_mem_req_byteen;  
-            expected_mem_req_addr;
-            expected_mem_req_data;
-            expected_mem_req_tag;
-            expected_mem_rsp_ready;
-            expected_busy;
+            expected_mem_req_valid      = '0;
+            expected_mem_req_rw         = '0;
+            expected_mem_req_byteen     = '0;  
+            expected_mem_req_addr       = '0;
+            expected_mem_req_data       = '0;
+            expected_mem_req_tag        = '0;
+            expected_mem_rsp_ready      = '0;
+            expected_busy               = '0;
             
             check_outputs();
 		end
         $display("");
 
-        
+        ///////////////////////
+		// dump fake memory: //
+		///////////////////////
+        load_memory("output_data.hex");
 
         //////////////////////
 		// testing results: //
