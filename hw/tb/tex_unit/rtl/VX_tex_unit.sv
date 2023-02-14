@@ -144,7 +144,7 @@ module VX_tex_unit #(
     wire [(BLEND_FRAC_W + `TEX_FORMAT_BITS + REQ_INFO_W)-1:0] mem_rsp_info;
     wire mem_rsp_ready;        
 
-    VX_tex_mem #(
+    VX_tex_mem_sim  #(
         .CORE_ID   (CORE_ID),
         .REQ_INFOW (BLEND_FRAC_W + `TEX_FORMAT_BITS + REQ_INFO_W),
         .NUM_REQS  (`NUM_THREADS)
