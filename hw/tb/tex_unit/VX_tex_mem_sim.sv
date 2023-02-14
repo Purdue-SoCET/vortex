@@ -30,41 +30,41 @@ module VX_tex_mem_sim #(
 );
 
     //texture ram block
-    reg [31:0] tex_ram [SIZE:0];
-    always_ff @ (posedge clk, negedge reset) begin
-	if (reset) begin
-		tex_ram <= 0;
+	
+	reg [7:0] tex_ram [SIZE:0]; //bytes
+	reg [7:0] data; //data read
+	integer i;
+	initial begin
+		$readmemh("texture.hex", tex_ram);
 	end
-	else begin
-		tex_ram <= 0xdeadbeef;
+	
+	assign req_ready = req_valid;
+	
+	//get texel from ram and assert ready when received
+	reg [7:0] data;
+	reg texel_ready;
+	always @ (*) begin
+		data = '0;
+		texel_ready = 0;
+		if (req_valid && req_ready) begin
+			//32 bit texel value
+			data = {tex_ram[req_baseaddr[0] + req_addr[0][0]], tex_ram[req_baseaddr[0] + req_addr[0][1]], tex_ram[req_baseaddr[0] + req_addr[0][2]], tex_ram[req_baseaddr[0] + req_addr[0][3]]};
+			texel_ready = 1;
+		end
 	end
-    end
-  
-   reg [31:0] treq_tmask;
-   reg [31:0] treq_filter;
-   reg [31:0] treq_lgstride;
-   reg [31:0] treq_baseaddr;
-   reg [31:0] treq_addr;
-   reg [31:0] treq_info;
-   //combinational logic to get reqeuest about address and stride
-   always_comb begin
-    	if (req_valid) begin
-		treq_tmask = req_tmask
-		treq_req_filter = req_filter;
-		treq_lgstride = req_lgstride;
-		treq_baseaddr = req_baseaddr;
-		treq_addr = req_addr;
-		treq_info = req_info;
-    	end 
-	req_valid = 1;
+	//rsp_valid tells that the memory unit can give the texel
+	assign rsp_valid = 1'b1 && texel_ready;
+	assign rsp_data = data;
+	
+	// full address calculation
+	    wire [NUM_REQS-1:0][3:0][31:0] full_addr;    
+	    for (genvar i = 0; i < NUM_REQS; ++i) begin
+		for (genvar j = 0; j < 4; ++j) begin
+		    assign full_addr[i][j] = req_baseaddr[i] + req_addr[i][j];
+		end
+	    end
 
-   end
-   
-   wire data;
-   
-   assign data = tex_ram[treq_addr]
-  // response based on ready of data
-   rsp_data = rsp_ready ? data : 0xffff;
+  
 
 
 endmodule
