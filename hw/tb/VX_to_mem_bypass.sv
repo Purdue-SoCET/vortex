@@ -71,18 +71,19 @@ module VX_to_mem_bypass (
   begin : zero
     integer i;
     for (i = 0; i < MAX_SIZE; i = i+1)
-      ram[i] = 1'b0;
+      ram[i] = 32'b0;
   end
   //FSM for RAM (state_busy or do r/w)
-  always @(posedge clk)
+  always @(posedge clk, negedge reset)
   begin
     if (reset)
       state_busy <= 1'b0;
     else if ((do_read || do_write) && cnt == DATA_CYCLES-1)
-      state_busy <= 1'b0;
+      state_busy <= 1'b0; //read or write and cycles have completed for variable latency
     else if (mem_req_valid && mem_req_ready)
-      state_busy <= 1'b1; //if mem_req is valid and ready then fire the ram
+      state_busy <= 1'b1; //if mem_req is valid and ready then fire the ram with busy signal, this means handshake has been done and ram can fetch data
 
+    //if not busy and req is valid from memory
     if (!state_busy && mem_req_valid)
     begin
       state_rw <= mem_req_rw;
