@@ -34,8 +34,7 @@
 (x) > 2**1 ? 2 : \
 (x) > 2**0 ? 1 : 0)
 
-`ifdef MEM_BACKUP_EN
-module VX_to_mem (
+module VX_to_mem_bypass (
   input         clk,
   input         reset,
 
