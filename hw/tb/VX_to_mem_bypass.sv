@@ -44,36 +44,36 @@ module VX_to_mem_bypass (
   input [`VX_MEM_ADDR_WIDTH-1:0]  mem_req_addr,
   input [`VX_MEM_TAG_WIDTH-1:0]   mem_req_tag,
 
-  input                       mem_req_data_valid,
-  output                      mem_req_data_ready,
   input [`VX_MEM_DATA_WIDTH-1:0]  mem_req_data,
 
   output reg                  mem_rsp_valid,
   output reg [`VX_MEM_DATA_WIDTH-1:0] mem_rsp_data,
-  output reg [`VX_MEM_TAG_WIDTH-1:0] mem_rsp_tag
+  output reg [`VX_MEM_TAG_WIDTH-1:0] mem_rsp_tag,
+  input                       mem_rsp_ready
 );
 
   localparam DATA_CYCLES = 8;
   localparam MAX_SIZE = 2*1024*1024;
 
-  reg [`ceilLog2(DATA_CYCLES)-1:0] cnt;
+  reg [`ceilLog2(DATA_CYCLES)-1:0] cnt; //count number of cycles for variable latency ram
   reg [`VX_MEM_TAG_WIDTH-1:0] tag;
-  reg state_busy, state_rw;
-  reg [`VX_MEM_ADDR_WIDTH-1:0] addr;
+  reg state_busy, state_rw;  //state of ram (read/write or busy)
+  reg [`VX_MEM_ADDR_WIDTH-1:0] addr; //address
 
-  reg [127:0] ram [MAX_SIZE-1:0];
+  reg [31:0] ram [MAX_SIZE-1:0]; //ram instance
   wire [`ceilLog2(MAX_SIZE)-1:0] ram_addr = state_busy  ?         {addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt}
-                                                     : {mem_req_addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt};
-  wire do_read = mem_req_valid && mem_req_ready && !mem_req_rw || state_busy && !state_rw;
-  wire do_write = mem_req_data_valid && mem_req_data_ready;
+                                                     : {mem_req_addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt}; //if state busy addr is 
+  wire do_read = mem_req_valid && mem_req_ready && !mem_req_rw || state_busy && !state_rw; //do read of ram if mem_req is valid and 
+  wire do_write = mem_req_valid;
 
+  //initialize ram to zero
   initial
   begin : zero
     integer i;
     for (i = 0; i < MAX_SIZE; i = i+1)
       ram[i] = 1'b0;
   end
-
+  //FSM for RAM (state_busy or do r/w)
   always @(posedge clk)
   begin
     if (reset)
@@ -81,7 +81,7 @@ module VX_to_mem_bypass (
     else if ((do_read || do_write) && cnt == DATA_CYCLES-1)
       state_busy <= 1'b0;
     else if (mem_req_valid && mem_req_ready)
-      state_busy <= 1'b1;
+      state_busy <= 1'b1; //if mem_req is valid and ready then fire the ram
 
     if (!state_busy && mem_req_valid)
     begin
@@ -90,22 +90,22 @@ module VX_to_mem_bypass (
       addr <= mem_req_addr;
     end
 
-    if (reset)
+    //reset clock count to zero
+    if (reset) begin
       cnt <= 1'b0;
-    else if(do_read || do_write)
+    end
+    else if(do_read || do_write) begin
       cnt <= cnt + 1'b1;
-
-    if (do_write)
-      if (ram_addr[0] == 1'b0)
-        ram[ram_addr/2][63:0] <= mem_req_data;
-      else
-        ram[ram_addr/2][127:64] <= mem_req_data;
-    else
-      if (ram_addr[0] == 1'b0)
-        mem_rsp_data <= ram[ram_addr/2][63:0];
-      else
-        mem_rsp_data <= ram[ram_addr/2][127:64];
-
+    end
+    
+    //if write, ram_addr[] is mem_req_data else read 
+    if (do_write) begin
+        ram[ram_addr][31:0] <= mem_req_data;
+    end
+    else begin
+        mem_rsp_data <= ram[ram_addr][31:0];
+    end
+    //mem_rsp
     if (reset)
       mem_rsp_valid <= 1'b0;
     else
@@ -113,8 +113,9 @@ module VX_to_mem_bypass (
 
     mem_rsp_tag <= state_busy ? tag : mem_req_tag;
   end
-
-  assign mem_req_ready = !state_busy;
-  assign mem_req_data_ready = state_busy && state_rw;
+  
+  //if state not busy
+  assign mem_req_ready = !state_busy; //
+  assign mem_rsp_ready = state_busy && state_rw; //response from ram is ready if state_busy and r/w
 
 endmodule
