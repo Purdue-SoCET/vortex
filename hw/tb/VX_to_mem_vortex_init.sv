@@ -1,4 +1,4 @@
-module VX_to_mem_vortex_init();
+module VX_to_mem_vortex_init(input wire clk, input wire reset);
 
   Vortex vortex(.clk            (clk),
                 .reset          (reset),
