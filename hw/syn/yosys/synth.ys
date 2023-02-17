@@ -1,0 +1,6 @@
+read_verilog   -sv output.v
+synth -top Vortex_ahb
+dfflibmap -liberty mycells.lib
+abc -liberty mycells.lib
+clean
+write_verilog synth.v
