@@ -46,8 +46,8 @@ module VX_ahb
     );
 
     // VX to AHB signals 
-    assign VX_bus_protocol_if.wen = mem_req_rw; 
-    assign VX_bus_protocol_if.ren = ~mem_req_rw; 
+    assign VX_bus_protocol_if.wen = mem_req_rw & mem_req_valid; 
+    assign VX_bus_protocol_if.ren = ~mem_req_rw & mem_req_valid; 
     assign VX_bus_protocol_if.addr = mem_req_addr; 
     assign VX_bus_protocol_if.wdata = mem_req_data; 
     assign VX_bus_protocol_if.strobe = mem_req_byteen; 
@@ -55,6 +55,6 @@ module VX_ahb
     assign mem_rsp_valid = ~VX_bus_protocol_if.error;
     assign mem_rsp_tag = dummy_tag;
     assign mem_rsp_data = VX_bus_protocol_if.rdata; 
-    assign mem_req_ready = mem_req_rw ? ~VX_bus_protocol_if.request_stall : ahbif.hready; // Write: can be stalled, Read: HREADY signal
+    assign mem_req_ready = mem_req_valid ? ~VX_bus_protocol_if.request_stall : 1'b0; // Write: can be stalled, Read: HREADY signal
 
 endmodule 
