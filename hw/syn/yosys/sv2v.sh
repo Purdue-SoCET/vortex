@@ -54,4 +54,4 @@ do
 done
 
 # system-verilog to verilog conversion
-sv2v $macro_args $inc_args $file_args -v -w $output_file
+/home/kalidows/sv2v/bin/sv2v $macro_args $inc_args $file_args -v -w $output_file
