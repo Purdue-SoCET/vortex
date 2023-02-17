@@ -1,4 +1,4 @@
-First, make sure you have all submodules necessary. If not, run git submodule update --init --recursive 
+First, make sure you have all submodules necessary. If not, run from vortex main directory: git submodule update --init --recursive 
 
 Make constants: 
   VX_TB: Testbench to simulate
