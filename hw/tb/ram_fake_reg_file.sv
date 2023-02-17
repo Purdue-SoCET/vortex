@@ -5,39 +5,39 @@
     module for faking memory with basic register file which can interface with Vortex memory interface
 */
 
-`include "VX_define.vh"
+`include "ram_fake_reg_file.vh"
 
 module ram_fake_reg_file #(
-    parameter WORD_W = 32;
+    parameter WORD_W = 32
 )(
     // seq
     input clk, reset,
 
     // Memory Request:
     // vortex outputs
-    input logic                             mem_req_valid;
-    input logic                             mem_req_rw;
-    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen;    
-    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr;
-    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data;
-    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag;
+    input logic                             mem_req_valid,
+    input logic                             mem_req_rw,
+    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
+    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
+    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
+    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
     // vortex inputs
-    output logic                            mem_req_ready;
+    output logic                            mem_req_ready,
 
     // Memory response:
     // vortex inputs
-    output logic                            mem_rsp_valid;        
-    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data;
-    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag;
+    output logic                            mem_rsp_valid,        
+    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,
+    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,
     // vortex outputs
-    input logic                             mem_rsp_ready;
+    input logic                             mem_rsp_ready,
 
     // Status:
     // vortex outputs
-    input logic                             busy;
+    input logic                             busy,
 
     // tb:
-    output logic                            tb_addr_out_of_bounds;  
+    output logic                            tb_addr_out_of_bounds
 );
     // register file instances
     
@@ -115,26 +115,39 @@ module ram_fake_reg_file #(
 
     // addr hashing logic
     always_comb begin : ADDR_HASHING_LOGIC
+        
+        // bad address assertion:
+        assert (
+            (32'h80000000 <= mem_req_addr && mem_req_addr <= 32'h8000011f) ||
+            (32'h80001000 <= mem_req_addr && mem_req_addr <= 32'h80001012) ||
+            (32'h80002000 <= mem_req_addr && mem_req_addr <= 32'h80002050)
+        ) else begin
+            $display("mem request at address not available in chunk");
+        end
+        
         // bit = 1 branch
         if (mem_req_addr[18] == 1'b1)
         begin
-            chunk_sel = 2
+            // select chunk @ 0x80002000
+            chunk_sel = 2;
         end
         // bit = 0 branch
         else if (mem_req_addr[18] == 1'b0)
         begin
             if (mem_req_addr[19] == 1'b0)
             begin
-                chunk_sel = 0
+                // select chunk @ 0x80000000
+                chunk_sel = 0;
             end
             else if (mem_req_addr[19] == 1'b1)
             begin
-                chunk_sel = 1
+                // select chunk @ 0x80001000
+                chunk_sel = 1;
             end
         end
         else
         begin
-            $display("error: got to else in high-level branch")
+            $display("error: got to else in high-level branch");
         end
         
         // hardwired outputs:
@@ -153,7 +166,8 @@ module ram_fake_reg_file #(
         
         // default outputs:
         mem_rsp_data = '0;
-        tb_addr_out_of_bounds = 1'b0;        // chunk wen's:
+        tb_addr_out_of_bounds = 1'b0;
+        // chunk wen's:
         wen_0_80000000 = 1'b0;
         wen_1_80001000 = 1'b0;
         wen_2_80002000 = 1'b0;
@@ -161,32 +175,29 @@ module ram_fake_reg_file #(
         // case for routing to diff reg file chunks
         casez (chunk_sel)
         
-            // select chunk 0
+            // select chunk 0 @ 0x80000000
             0:
             begin
                 // write routing
                 wen_0_80000000 = mem_req_rw;
-        
                 // read routing
                 mem_rsp_data = rdata_0_80000000;
             end
         
-            // select chunk 1
+            // select chunk 1 @ 0x80001000
             1:
             begin
                 // write routing
                 wen_1_80001000 = mem_req_rw;
-        
                 // read routing
                 mem_rsp_data = rdata_1_80001000;
             end
         
-            // select chunk 2
+            // select chunk 2 @ 0x80002000
             2:
             begin
                 // write routing
                 wen_2_80002000 = mem_req_rw;
-        
                 // read routing
                 mem_rsp_data = rdata_2_80002000;
             end
@@ -203,9 +214,9 @@ module ram_fake_reg_file #(
     // other combinational logic for memory interface
     always_comb begin : OTHER_MEM_COMB_LOGIC
 
-        mem_req_ready = 1'b1; // when read or write ready (always)
-        mem_rsp_valid = 1'b1; // when read ready (always)
-        mem_rsp_tag = mem_req_tag; // match req immediately
+        mem_req_ready = 1'b1;           // always ready for request
+        mem_rsp_valid = mem_req_valid;  // read ready immediately
+        mem_rsp_tag = mem_req_tag;      // match req immediately
     end
 
     // NOTES:
