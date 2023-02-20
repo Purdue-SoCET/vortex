@@ -1,5 +1,5 @@
-`ifndef RAM_FAKE_REG_FILE_DEFINE
-`define RAM_FAKE_REG_FILE_DEFINE
+`ifndef LOCAL_MEM_DEFINE
+`define LOCAL_MEM_DEFINE
 
 // temporary hardcoded values 
 `define VX_MEM_BYTEEN_WIDTH     1
