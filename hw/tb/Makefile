@@ -1,7 +1,7 @@
-# RAM_FAKE
-RAM_FAKE_DEF := ram_fake_reg_file.vh
-RAM_FAKE_RTL_FILES := reg_file.sv ram_fake_reg_file.sv 
-RAM_FAKE_TB := ram_fake_reg_file_tb.sv
+# LOCAL_MEM
+LOCAL_MEM_DEF := local_mem.vh
+LOCAL_MEM_RTL_FILES := local_mem.sv 
+LOCAL_MEM_TB := local_mem_tb.sv
 
 INCL := 
 INCL := include
@@ -11,7 +11,7 @@ WORKDIR := work
 SCRDIR			= scripts
 
 # view waveform in graphical mode and load do file if there is one
-DOFILE 				= ram_fake_reg_file
+DOFILE 				= local_mem
 WAVDO				= do $(SCRDIR)/$(DOFILE).do
 SIMDO				= "view objects; $(WAVDO); run $(SIMTIME);" -onfinish stop
 
@@ -28,13 +28,13 @@ VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt +define+SYNTHESIS #+define+SYNTHESI
 all: $(WORKDIR) compile run 
 
 compile: $(WORKDIR)
-		@vlog $(VLOGOPTS) +incdir+$(INCL) $(RAM_FAKE_DEF)
-		@vlog $(VLOGOPTS) +incdir+$(INCL) $(RAM_FAKE_RTL_FILES)
-		@vlog $(VLOGOPTS) +incdir+$(INCL) $(RAM_FAKE_TB)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_DEF)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_TB)
 
 run:
 		vsim $(VSIMOPTS) \
-		ram_fake_reg_file_tb \
+		local_mem_tb \
 		-coverage -voptargs=+acc \
 		-do "view objects; $(WAVDO); run $(SIMTIME);" -onfinish stop
 
