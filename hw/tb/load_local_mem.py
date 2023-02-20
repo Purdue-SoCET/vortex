@@ -7,7 +7,7 @@
 
     usage:
         commandline:
-            python3 load_reg_file.py <.hex file name> <flags>
+            python3 load_local_mem.py <.hex file name> <flags>
 
         flags:
             -p = print debugging info
@@ -371,7 +371,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         ]
 
 # parse list of chunks to construct .sv source file
-def construct_reg_file_sv(local_mem_shell_lines, chunk_list):
+def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     """
     function to parse out chunk_list to construct reg file instantiation of .sv and complete 
     local_mem.sv with local_mem_shell.txt
@@ -629,14 +629,14 @@ def construct_reg_file_sv(local_mem_shell_lines, chunk_list):
 
 
 # overall function to take in hex file and output corresponding register file 
-def intelhex_to_local_mem_sv(hex_file_name, reg_file_sv_name):
+def intelhex_to_local_mem_sv(hex_file_name, local_mem_sv_name):
     """
     function to take in intelhex file and make ram faking register file top module, utilizing
-    local_mem_shell.txt and reg_file.sv
+    local_mem_shell.txt
 
     parameters:
         hex_file_name: name of intelhex .hex file to be used as memory space for ram fake 
-        reg_file_sv_name: name of SystemVerilog .sv source file to be output defining top ram fake module
+        local_mem_sv_name: name of SystemVerilog .sv source file to be output defining top ram fake module
 
     outputs:
         none
@@ -674,14 +674,14 @@ def intelhex_to_local_mem_sv(hex_file_name, reg_file_sv_name):
             print(chunk)
 
     # generating source .sv lines for reg file
-    reg_file_sv_lines = construct_reg_file_sv(local_mem_shell_lines, chunk_list)
+    local_mem_sv_lines = construct_local_mem_sv(local_mem_shell_lines, chunk_list)
 
     # try to write source .sv file
     try:
         # get .hex lines
-        reg_file_sv_fp = open(reg_file_sv_name, "w")
-        reg_file_sv_fp.writelines(reg_file_sv_lines)
-        reg_file_sv_fp.close()
+        local_mem_sv_fp = open(local_mem_sv_name, "w")
+        local_mem_sv_fp.writelines(local_mem_sv_lines)
+        local_mem_sv_fp.close()
 
     except:
         print("couldn't write .sv file")
@@ -691,10 +691,10 @@ def intelhex_to_local_mem_sv(hex_file_name, reg_file_sv_name):
 # main
 if __name__ == "__main__":
 
-    # check for 1 commandline argument with python load_reg_file.py
+    # check for 1 commandline argument with python load_local_mem.py
     if (len(sys.argv) < 2):
         print("required format:")
-        print("python load_reg_file.py <.hex file name>  <flags>")
+        print("python load_local_mem.py <.hex file name>  <flags>")
         quit()
 
     if (not sys.argv[1].endswith(".hex")):
@@ -705,4 +705,4 @@ if __name__ == "__main__":
         DO_PRINTS = True
 
     # run .sv source builder
-    intelhex_to_local_mem_sv(sys.argv[1], "local_mem_reg_file.sv")
+    intelhex_to_local_mem_sv(sys.argv[1], "local_mem.sv")
