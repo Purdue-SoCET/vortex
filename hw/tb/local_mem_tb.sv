@@ -363,7 +363,7 @@ program test
             mem_req_byteen = '0;
             mem_req_addr = 32'h80000004;
             mem_req_data = '0;
-            mem_req_tag = 16'd1;
+            mem_req_tag = 16'd2;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -373,14 +373,14 @@ program test
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
             expected_mem_rsp_data = 32'h732F2034;
-            expected_mem_rsp_tag = 16'd1;
+            expected_mem_rsp_tag = 16'd2;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
 		end
         begin
             @(negedge clk);
-            task_string = "read from second reg file";
+            task_string = "read from second reg file 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -389,7 +389,7 @@ program test
             mem_req_byteen = '0;
             mem_req_addr = 32'h80001000;
             mem_req_data = '0;
-            mem_req_tag = 16'd1;
+            mem_req_tag = 16'd3;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -399,14 +399,40 @@ program test
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
             expected_mem_rsp_data = 32'h00000000;
-            expected_mem_rsp_tag = 16'd1;
+            expected_mem_rsp_tag = 16'd3;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
 		end
         begin
             @(negedge clk);
-            task_string = "read from third reg file";
+            task_string = "read from second reg file 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80001004;
+            mem_req_data = '0;
+            mem_req_tag = 16'd4;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h00000000;
+            expected_mem_rsp_tag = 16'd4;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read from third reg file 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -415,7 +441,7 @@ program test
             mem_req_byteen = '0;
             mem_req_addr = 32'h80002000;
             mem_req_data = '0;
-            mem_req_tag = 16'd1;
+            mem_req_tag = 16'd5;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -425,12 +451,150 @@ program test
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
             expected_mem_rsp_data = 32'h00000000;
-            expected_mem_rsp_tag = 16'd1;
+            expected_mem_rsp_tag = 16'd5;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read from third reg file 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80002004;
+            mem_req_data = '0;
+            mem_req_tag = 16'd6;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h00000440;
+            expected_mem_rsp_tag = 16'd6;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
 		end
         $display("");
+
+        ////////////////////
+		// write testing: //
+		////////////////////
+		@(negedge clk);
+        test_num++;
+        test_string = "write testing";
+		$display("write testing");
+		begin
+            @(negedge clk);
+            task_string = "write to second reg file 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b1;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80001000;
+            mem_req_data = 32'h01234567;
+            mem_req_tag = 16'd7;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h00000000;
+            expected_mem_rsp_tag = 16'd7;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read after write to second reg file 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80001000;
+            mem_req_data = 32'h00000000;
+            mem_req_tag = 16'd8;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h01234567;
+            expected_mem_rsp_tag = 16'd8;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "write to second reg file 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b1;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80001004;
+            mem_req_data = 32'h89abcdef;
+            mem_req_tag = 16'd9;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h00000000;
+            expected_mem_rsp_tag = 16'd9;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read after write to second reg file 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80001004;
+            mem_req_data = 32'h00000000;
+            mem_req_tag = 16'd10;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h89abcdef;
+            expected_mem_rsp_tag = 16'd10;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
 
         ///////////////////////
 		// dump fake memory: //
