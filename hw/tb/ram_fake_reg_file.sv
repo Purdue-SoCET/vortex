@@ -849,20 +849,20 @@ module ram_fake_reg_file #(
         end
         
         // bit = 1 branch
-        if (mem_req_addr[18] == 1'b1)
+        if (mem_req_addr[WORD_W - 19] == 1'b1)
         begin
             // select chunk @ 0x80002000
             chunk_sel = 2;
         end
         // bit = 0 branch
-        else if (mem_req_addr[18] == 1'b0)
+        else if (mem_req_addr[WORD_W - 19] == 1'b0)
         begin
-            if (mem_req_addr[19] == 1'b0)
+            if (mem_req_addr[WORD_W - 20] == 1'b0)
             begin
                 // select chunk @ 0x80000000
                 chunk_sel = 0;
             end
-            else if (mem_req_addr[19] == 1'b1)
+            else if (mem_req_addr[WORD_W - 20] == 1'b1)
             begin
                 // select chunk @ 0x80001000
                 chunk_sel = 1;

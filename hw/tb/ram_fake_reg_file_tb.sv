@@ -306,11 +306,13 @@ program test
 
             reset = 1'b0;
 
+            #(PERIOD / 4);
+
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b0;
-            expected_mem_rsp_data = '0;
-            expected_mem_rsp_tag = '0;
+            expected_mem_rsp_data = 32'h6F008004;
+            expected_mem_rsp_tag = 16'd0;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -422,7 +424,7 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h6F008004;
+            expected_mem_rsp_data = 32'h00000000;
             expected_mem_rsp_tag = 16'd1;
             expected_tb_addr_out_of_bounds = 1'b0;
             

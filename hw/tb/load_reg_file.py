@@ -297,7 +297,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # first chunk
         bin_addr = remaining_chunk_list[0].bin_start_addr
         reg_file_hashing_lines += [
-            "\t\t" + depth*"\t" + f"if (mem_req_addr[{bin_len-1}] == 1'b{bin_addr[bin_len-1]})",
+            "\t\t" + depth*"\t" + f"if (mem_req_addr[WORD_W - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
             "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[0].start_addr}",
             "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[0].id};",
@@ -307,7 +307,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # second chunk
         bin_addr = remaining_chunk_list[1].bin_start_addr
         reg_file_hashing_lines += [
-            "\t\t" + depth*"\t" + f"else if (mem_req_addr[{bin_len-1}] == 1'b{bin_addr[bin_len-1]})",
+            "\t\t" + depth*"\t" + f"else if (mem_req_addr[WORD_W - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
             "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[1].start_addr}",
             "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[1].id};",
@@ -339,7 +339,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # pre print
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"// bit = 1 branch",
-            "\t\t" + depth*"\t" + f"if (mem_req_addr[{bin_len-1}] == 1'b1)",
+            "\t\t" + depth*"\t" + f"if (mem_req_addr[WORD_W - {bin_len}] == 1'b1)",
             "\t\t" + depth*"\t" + f"begin",
         ]
         # recursive call for one
@@ -352,7 +352,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # zero branch:
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"// bit = 0 branch",
-            "\t\t" + depth*"\t" + f"else if (mem_req_addr[{bin_len-1}] == 1'b0)",
+            "\t\t" + depth*"\t" + f"else if (mem_req_addr[WORD_W - {bin_len}] == 1'b0)",
             "\t\t" + depth*"\t" + f"begin",
         ]
         # recursive call for zero
