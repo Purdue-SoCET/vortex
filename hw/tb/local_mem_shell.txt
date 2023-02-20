@@ -5,9 +5,9 @@
     module for faking memory with basic register file which can interface with Vortex memory interface
 */
 
-`include "ram_fake_reg_file.vh"
+`include "local_mem.vh"
 
-module ram_fake_reg_file #(
+module local_mem #(
     parameter WORD_W = 32
 )(
     // seq
