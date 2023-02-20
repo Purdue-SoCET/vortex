@@ -5,11 +5,11 @@
     testbench for vortex, simulating memory interface
 */
 
-`include "ram_fake_reg_file.vh"
+`include "local_mem.vh"
 
 `timescale 1 ns / 1 ns
 
-module ram_fake_reg_file_tb ();
+module local_mem_tb ();
 
     // testbench signals
     parameter PERIOD = 10;
@@ -78,7 +78,7 @@ module ram_fake_reg_file_tb ();
     /////////////////////////
 	// DUT
     /////////////////////////
-	ram_fake_reg_file DUT (
+	local_mem DUT (
         .clk            (clk),
         .reset          (reset),
 
