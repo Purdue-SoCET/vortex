@@ -2,7 +2,7 @@
     socet115 / zlagpaca@purdue.edu
     Zach Lagpacan
 
-    script to create ram_fake_reg_file.sv source for given .hex file which interfaces directly with 
+    script to create local_mem.sv source for given .hex file which interfaces directly with 
     Vortex memory interfacing signals to simulate a proper ram
 
     usage:
@@ -371,17 +371,17 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         ]
 
 # parse list of chunks to construct .sv source file
-def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
+def construct_reg_file_sv(local_mem_shell_lines, chunk_list):
     """
     function to parse out chunk_list to construct reg file instantiation of .sv and complete 
-    ram_fake_reg_file.sv with ram_fake_shell.txt
+    local_mem.sv with local_mem_shell.txt
 
     parameters:
-        ram_fake_shell_lines: lines in ram_fake_shell.txt file wrapping around logic to be constructd
+        local_mem_shell_lines: lines in local_mem_shell.txt file wrapping around logic to be constructd
         chunk_list: list of chunk objects with info on chunks and words in chunk
     
     outputs:
-        reg_file_sv_lines: lines which make up source file for ram_fake_reg_file.sv
+        local_mem_sv_lines: lines which make up source file for local_mem.sv
     """
 
     ############################
@@ -614,25 +614,25 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
     ##########################
 
     # get indices in shell file
-    reg_file_instance_index = ram_fake_shell_lines.index("< instances here >\n")
-    reg_file_hashing_index = ram_fake_shell_lines.index("< hashing here >\n")
+    reg_file_instance_index = local_mem_shell_lines.index("< instances here >\n")
+    reg_file_hashing_index = local_mem_shell_lines.index("< hashing here >\n")
 
     # add up shell pieces and instance and hashing pieces
-    reg_file_sv_lines = ram_fake_shell_lines[:reg_file_instance_index]
+    reg_file_sv_lines = local_mem_shell_lines[:reg_file_instance_index]
     reg_file_sv_lines += reg_file_instance_lines
-    reg_file_sv_lines += ram_fake_shell_lines[reg_file_instance_index +1:reg_file_hashing_index]
+    reg_file_sv_lines += local_mem_shell_lines[reg_file_instance_index +1:reg_file_hashing_index]
     reg_file_sv_lines += reg_file_hashing_lines
-    reg_file_sv_lines += ram_fake_shell_lines[reg_file_hashing_index +1:]
+    reg_file_sv_lines += local_mem_shell_lines[reg_file_hashing_index +1:]
 
     # return completed lines of file
     return reg_file_sv_lines
 
 
 # overall function to take in hex file and output corresponding register file 
-def intelhex_to_ram_fake_sv(hex_file_name, reg_file_sv_name):
+def intelhex_to_local_mem_sv(hex_file_name, reg_file_sv_name):
     """
     function to take in intelhex file and make ram faking register file top module, utilizing
-    ram_fake_shell.txt and reg_file.sv
+    local_mem_shell.txt and reg_file.sv
 
     parameters:
         hex_file_name: name of intelhex .hex file to be used as memory space for ram fake 
@@ -644,12 +644,12 @@ def intelhex_to_ram_fake_sv(hex_file_name, reg_file_sv_name):
 
     # try to get ram fake source shell
     try:
-        ram_fake_shell_fp = open("ram_fake_shell.txt", "r")
-        ram_fake_shell_lines = ram_fake_shell_fp.readlines()
-        ram_fake_shell_fp.close()
+        local_mem_shell_fp = open("local_mem_shell.txt", "r")
+        local_mem_shell_lines = local_mem_shell_fp.readlines()
+        local_mem_shell_fp.close()
 
     except:
-        print("need ram_fake_shell.txt")
+        print("need local_mem_shell.txt")
         quit()
 
     # try to get .hex file and 
@@ -674,7 +674,7 @@ def intelhex_to_ram_fake_sv(hex_file_name, reg_file_sv_name):
             print(chunk)
 
     # generating source .sv lines for reg file
-    reg_file_sv_lines = construct_reg_file_sv(ram_fake_shell_lines, chunk_list)
+    reg_file_sv_lines = construct_reg_file_sv(local_mem_shell_lines, chunk_list)
 
     # try to write source .sv file
     try:
@@ -705,4 +705,4 @@ if __name__ == "__main__":
         DO_PRINTS = True
 
     # run .sv source builder
-    intelhex_to_ram_fake_sv(sys.argv[1], "ram_fake_reg_file.sv")
+    intelhex_to_local_mem_sv(sys.argv[1], "local_mem_reg_file.sv")
