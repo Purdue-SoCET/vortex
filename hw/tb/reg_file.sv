@@ -9,7 +9,7 @@ module reg_file #(
     parameter WORD_W = 32,
     parameter NUM_WORDS = 32,
     parameter SEL_W = 5,
-    parameter RESET_WORDS = 32{32'h0}
+    parameter [(WORD_W * NUM_WORDS)-1:0] RESET_WORDS
 )(
     // seq
     input clk, reset,
@@ -38,14 +38,20 @@ module reg_file #(
         end
         else
         begin
-            reg_val <= next_reg_val;
+            for (int i = 0; i < NUM_WORDS; i++)
+            begin
+                reg_val[i] <= next_reg_val[i];
+            end
         end
     end
 
     // write logic
     always_comb begin : WRITE_LOGIC
         // hold reg val by default
-        next_reg_val = reg_val;
+        for (int i = 0; i < NUM_WORDS; i++)
+        begin
+            next_reg_val[i] = reg_val[i];
+        end
 
         // update reg val at wsel if wen
         if (wen)

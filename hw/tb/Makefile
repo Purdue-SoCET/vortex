@@ -8,8 +8,18 @@ INCL := include
 
 WORKDIR := work
 
+SCRDIR			= scripts
+
+# view waveform in graphical mode and load do file if there is one
+DOFILE 				= ram_fake_reg_file
+WAVDO				= do $(SCRDIR)/$(DOFILE).do
+SIMDO				= "view objects; $(WAVDO); run $(SIMTIME);" -onfinish stop
+
+SIM_UI_OPT := -gui
+# SIM_UI_OPT := -c
+
 # Compiler/simulator options
-VSIMOPTS := -lib $(WORKDIR) 
+VSIMOPTS := -lib $(WORKDIR) $(SIM_UI_OPT)
 VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt +define+SYNTHESIS #+define+SYNTHESIS
 # VLOGOPTS_DPI := -sv -work $(WORKDIR) -dpiheader dpi_header_file.h -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors" +define+UTIL_DPI +define+FLOAT_DPI
 # VLOGOPTS_DPI_CPP := -work $(WORKDIR) -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors"
@@ -23,10 +33,10 @@ compile: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(RAM_FAKE_TB)
 
 run:
-		vsim $(VSIMOPTS) -c \
+		vsim $(VSIMOPTS) \
 		ram_fake_reg_file_tb \
-		-coverage \
-		-do "run -all" 
+		-coverage -voptargs=+acc \
+		-do "view objects; $(WAVDO); run $(SIMTIME);" -onfinish stop
 
 $(WORKDIR):
 	@vlib $(WORKDIR)

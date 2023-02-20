@@ -2,20 +2,20 @@
     socet115 / zlagpaca@purdue.edu
     Zach Lagpacan
 
-    script to create faking ram_fake_reg_file.sv source for given .hex file which interfaces directly with ]
-    Vortex memory interfacing signals
+    script to create ram_fake_reg_file.sv source for given .hex file which interfaces directly with 
+    Vortex memory interfacing signals to simulate a proper ram
 
     usage:
-    
-    commandline:
-    python3 load_reg_file.py <.hex file name> <flags>
+        commandline:
+            python3 load_reg_file.py <.hex file name> <flags>
 
-    flags:
-        -p = print debugging info
+        flags:
+            -p = print debugging info
 
-    general process:
+    general script flow:
         - parse intelhex file, putting contiguous chunks of data into different register files
             -> TODO: limit max register file size? -> more groupings but less in group
+            -> TODO: give option to make one big register file for entire piece of address space 
         - create binary hash and other simple combinational logic to route top level Vortex memory 
             interface I/O to given register files
 """
@@ -38,7 +38,7 @@ class Chunk():
     # word_list -> list of data words starting from addr
     # word_size -> number of contiguous words in chunk
     # byte_size -> number of contiguous bytes in chunk
-    # NUM_BYTES -> 2 ** ceil(log2(number of words)) = total number of words for reg size  
+    # NUM_WORDS -> 2 ** ceil(log2(number of words)) = total number of words for reg size  
     # SEL_W -> ceil(log2(number of words)) = number of bits needed to select word for reg size
 
     # methods:
@@ -51,7 +51,7 @@ class Chunk():
         self.word_list = []
         self.word_size = 0
         self.byte_size = 0
-        self.NUM_BYTES = 0
+        self.NUM_WORDS = 0
         self.SEL_W = 0
         
     # add word to chunk
@@ -278,7 +278,8 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
 
         # guaranteed take in this branch
         reg_file_hashing_lines += [
-            "\t\t" + depth*"\t" + f"chunk_sel = {remaining_chunk_list[0].id}",
+            "\t\t" + depth*"\t" + f"// select chunk @ 0x{remaining_chunk_list[0].start_addr}",
+            "\t\t" + depth*"\t" + f"chunk_sel = {remaining_chunk_list[0].id};",
         ]
 
     # base case 2: 2 remaining chunks
@@ -298,7 +299,8 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"if (mem_req_addr[{bin_len-1}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
-            "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[0].id}",
+            "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[0].start_addr}",
+            "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[0].id};",
             "\t\t" + depth*"\t" + f"end",
         ]
 
@@ -307,7 +309,8 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"else if (mem_req_addr[{bin_len-1}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
-            "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[1].id}",
+            "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[1].start_addr}",
+            "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[1].id};",
             "\t\t" + depth*"\t" + f"end",
         ]
 
@@ -363,7 +366,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"else",
             "\t\t" + depth*"\t" + f"begin",
-            "\t\t" + depth*"\t" + f'    $display("error: got to else in high-level branch")',
+            "\t\t" + depth*"\t" + f'    $display("error: got to else in high-level branch");',
             "\t\t" + depth*"\t" + f"end",
         ]
 
@@ -399,9 +402,74 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
             f"\tlogic [{WORD_W}-1:0] wdata_{chunk.id}_{chunk.start_addr};",
             f"\tlogic [{chunk.SEL_W}-1:0] rsel_{chunk.id}_{chunk.start_addr};",
             f"\tlogic [{WORD_W}-1:0] rdata_{chunk.id}_{chunk.start_addr};",
-            f"\t",
         ]
 
+        # make reg file signals
+        reg_file_instance_lines += [
+            f"\t",
+            f"\tlogic [{WORD_W}-1:0] reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
+            f"\tlogic [{WORD_W}-1:0] next_reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
+        ]
+
+        # make reg file register logic:
+        # begin reg logic block
+        reg_file_instance_lines += [
+            f"\t",
+            f"\talways_ff @ (posedge clk) begin : REGISTER_LOGIC_{chunk.id}_{chunk.start_addr}",
+            f"\t    if (reset)",
+            f"\t    begin",
+            f"\t        // enumerated reset values:",
+        ]
+        # make individual assignments for reset
+        for i in range(len(chunk.word_list)):
+            reg_file_instance_lines += [
+                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{i}] <= 32'h{chunk.word_list[i]};",
+            ]
+        # make remaining assignments for reset
+        reg_file_instance_lines += [
+            f"\t        // fill-in reset values:",
+        ]
+        for i in range(chunk.NUM_WORDS - chunk.word_size):
+            reg_file_instance_lines += [
+                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{i + chunk.word_size}] <= 32'h00000000;",
+            ]
+        # finish reg logic block
+        reg_file_instance_lines += [
+            f"\t    end",
+            f"\t    else",
+            f"\t    begin",
+            f"\t        reg_val_{chunk.id}_{chunk.start_addr} = next_reg_val_{chunk.id}_{chunk.start_addr};",
+            f"\t    end",
+            f"\tend",
+        ]
+
+        # make reg file write logic:
+        reg_file_instance_lines += [
+            f"\t",
+            f"\talways_comb begin : WRITE_LOGIC_{chunk.id}_{chunk.start_addr}",
+            f"\t    // hold reg val by default",
+            f"\t    for (int i = 0; i < {chunk.NUM_WORDS}; i++)",
+            f"\t    begin",
+            f"\t        next_reg_val_{chunk.id}_{chunk.start_addr}[i] = reg_val_{chunk.id}_{chunk.start_addr}[i];",
+            f"\t    end",
+            f"\t    // update reg val if wen",
+            f"\t    if (wen_{chunk.id}_{chunk.start_addr})",
+            f"\t    begin",
+            f"\t        next_reg_val_{chunk.id}_{chunk.start_addr}[wsel_{chunk.id}_{chunk.start_addr}] = wdata_{chunk.id}_{chunk.start_addr};",
+            f"\t    end",
+            f"\tend",
+        ]
+
+        # make reg file read logic:
+        reg_file_instance_lines += [
+            f"\t",
+            f"\talways_comb begin : READ_LOGIC_{chunk.id}_{chunk.start_addr}",
+            f"\t    // read val at rsel",
+            f"\t    rdata_{chunk.id}_{chunk.start_addr} = reg_val_{chunk.id}_{chunk.start_addr}[rsel_{chunk.id}_{chunk.start_addr}];",
+            f"\tend",
+        ]
+
+        """
         # make reg chunk instance:
 
         # parameters
@@ -434,13 +502,21 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
             f"\t\t.rdata (rdata_{chunk.id}_{chunk.start_addr})",
             f"\t);",
         ]
+        """
 
     # need selection signal wide enough for all instances
-    reg_file_instance_lines += [
-        f"\t",
-        f"\t// need reg file/chunk selection signal",
-        f"\tlogic [{bits_needed(len(chunk_list))}-1:0] chunk_sel;",
-    ]
+    if (bits_needed(len(chunk_list)) > 0):
+        reg_file_instance_lines += [
+            f"\t",
+            f"\t// need reg file/chunk selection signal",
+            f"\tlogic [{bits_needed(len(chunk_list))}-1:0] chunk_sel;",
+        ]
+    else:
+        reg_file_instance_lines += [
+            f"\t",
+            f"\t// need reg file/chunk selection signal",
+            f"\tlogic chunk_sel;",
+        ]
 
     # add newlines to end of each line and replace \t tabs with 4 spaces
     reg_file_instance_lines = [line.replace("\t", "    ") + "\n" for line in reg_file_instance_lines]
@@ -451,8 +527,24 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
 
     reg_file_hashing_lines = []
 
-    # delete later
-    # word_match_start([chunk.start_addr for chunk in chunk_list])
+    # create assertion to check for bad mem reads
+    reg_file_hashing_lines += [
+        f"\t\t",
+        f"\t\t// bad address assertion:",
+        f"\t\tassert (",
+    ]
+    # make union of intersects of valid addresses within each reg file chunk
+    for chunk in chunk_list:
+        reg_file_hashing_lines += [
+            f"\t\t    (32'h{chunk.start_addr} <= mem_req_addr && mem_req_addr <= 32'h{hex(int(chunk.start_addr, 16) + chunk.word_size)[2:]}) ||",
+        ]
+    reg_file_hashing_lines[-1] = reg_file_hashing_lines[-1][:-3]
+    reg_file_hashing_lines += [
+        f"\t\t) else begin",
+        f'\t\t    $display("mem request at address not available in chunk");',
+        f"\t\tend",
+        f"\t\t",
+    ]
 
     # iterate until have unique encodings for each chunk
     recursive_bin_select(reg_file_hashing_lines, chunk_list.copy(), 0)
@@ -465,9 +557,9 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
     for chunk in chunk_list:
         reg_file_hashing_lines += [
             f"\t\t// hardwiring for chunk {chunk.id}",
-            f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1:0];",
-            f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data[{chunk.SEL_W}-1:0];",
-            f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1:0];",
+            f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 +2 : 0 +2];",
+            f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data[{chunk.SEL_W}-1 +2 : 0 +2];",
+            f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 +2 : 0 +2];",
         ]
 
     # default outputs
@@ -475,7 +567,7 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
         f"\t\t",
         f"\t\t// default outputs:",
         f"\t\tmem_rsp_data = '0;",
-        f"\t\ttb_addr_out_of_bounds = 1'b0;"
+        f"\t\ttb_addr_out_of_bounds = 1'b0;",
         f"\t\t// chunk wen's:",
     ]
     for chunk in chunk_list:
@@ -493,13 +585,11 @@ def construct_reg_file_sv(ram_fake_shell_lines, chunk_list):
     # iterate through cases to determine behavior
     for chunk in chunk_list:
         reg_file_hashing_lines += [
-            f"\t\t    // select chunk {chunk.id}",
+            f"\t\t    // select chunk {chunk.id} @ 0x{chunk.start_addr}",
             f"\t\t    {chunk.id}:",
             f"\t\t    begin",
             f"\t\t        // write routing",
             f"\t\t        wen_{chunk.id}_{chunk.start_addr} = mem_req_rw;",
-
-            f"\t\t",
             f"\t\t        // read routing",
             f"\t\t        mem_rsp_data = rdata_{chunk.id}_{chunk.start_addr};",
             f"\t\t    end",

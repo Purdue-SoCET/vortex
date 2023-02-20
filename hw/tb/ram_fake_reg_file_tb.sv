@@ -326,7 +326,7 @@ program test
 		$display("read testing");
 		begin
             @(negedge clk);
-            task_string = "read from first reg file";
+            task_string = "read from first reg file 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -352,6 +352,32 @@ program test
 		end
         begin
             @(negedge clk);
+            task_string = "read from first reg file 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b1;
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 32'h80000004;
+            mem_req_data = '0;
+            mem_req_tag = 16'd1;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_data = 32'h732F2034;
+            expected_mem_rsp_tag = 16'd1;
+            expected_tb_addr_out_of_bounds = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
             task_string = "read from second reg file";
             $display("\n-> testing %s", task_string);
 
@@ -370,7 +396,7 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h6F008004;
+            expected_mem_rsp_data = 32'h00000000;
             expected_mem_rsp_tag = 16'd1;
             expected_tb_addr_out_of_bounds = 1'b0;
             

@@ -5,39 +5,39 @@
     module for faking memory with basic register file which can interface with Vortex memory interface
 */
 
-`include "VX_define.vh"
+`include "ram_fake_reg_file.vh"
 
 module ram_fake_reg_file #(
-    parameter WORD_W = 32;
+    parameter WORD_W = 32
 )(
     // seq
     input clk, reset,
 
     // Memory Request:
     // vortex outputs
-    input logic                             mem_req_valid;
-    input logic                             mem_req_rw;
-    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen;    
-    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr;
-    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data;
-    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag;
+    input logic                             mem_req_valid,
+    input logic                             mem_req_rw,
+    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
+    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
+    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
+    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
     // vortex inputs
-    output logic                            mem_req_ready;
+    output logic                            mem_req_ready,
 
     // Memory response:
     // vortex inputs
-    output logic                            mem_rsp_valid;        
-    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data;
-    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag;
+    output logic                            mem_rsp_valid,        
+    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,
+    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,
     // vortex outputs
-    input logic                             mem_rsp_ready;
+    input logic                             mem_rsp_ready,
 
     // Status:
     // vortex outputs
-    input logic                             busy;
+    input logic                             busy,
 
     // tb:
-    output logic                            tb_addr_out_of_bounds;  
+    output logic                            tb_addr_out_of_bounds
 );
     // register file instances
 < instances here >
@@ -50,9 +50,9 @@ module ram_fake_reg_file #(
     // other combinational logic for memory interface
     always_comb begin : OTHER_MEM_COMB_LOGIC
 
-        mem_req_ready = 1'b1; // when read or write ready (always)
-        mem_rsp_valid = 1'b1; // when read ready (always)
-        mem_rsp_tag = mem_req_tag; // match req immediately
+        mem_req_ready = 1'b1;           // always ready for request
+        mem_rsp_valid = mem_req_valid;  // read ready immediately
+        mem_rsp_tag = mem_req_tag;      // match req immediately
     end
 
     // NOTES:
