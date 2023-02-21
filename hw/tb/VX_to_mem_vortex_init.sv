@@ -1,6 +1,6 @@
 //socet 33: Raghul Prakash (prakasr)
-`MEM_ADDR_START 0xfffe /w only
-`MEM_ADDR_STATUS 0xffff /r only
+`define MEM_ADDR_START 0xfffe //w only
+`define MEM_ADDR_STATUS 0xffff //r only
 module VX_to_mem_vortex_init(input wire clk, input wire reset, input wire [31:0] ext_addr, input wire [31:0] data, input wire rw);
   //ext_addr and data are slave interfaces of AHB
   wire vx_mem_req_valid, 
