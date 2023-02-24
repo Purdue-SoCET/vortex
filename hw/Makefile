@@ -1,13 +1,32 @@
-# Target TB
+#
+# Guillaume Hu / socet97 - hu724@purdue.edu
+# 
+# Makefile to simulate Vortex in Questa Sim 
+# Use : Change 	
+#			- TB_DIR: for VX testbench directory
+#			- VX_TB: Testbench name
+#			- SIM_UI_OPT: -gui or -c 
+#           - WAVE: .do file for the tb
+#
+# Add new modules: 
+#			- ADD_RTL: Additional design files 
+#			- ADD_INC: The file's include directory if one 
+#
+# Run: make all
 
 TB_DIR := tb
-
-# For different tb for testing -- Change VX_TB
-VX_TB := VX_ahb_tb
+VX_TB := VX_local_mem_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
 
 # Simulation option (Command line (-c) or GUI (-gui))
 SIM_UI_OPT := -gui
+
+WAVE_DIR := $(TB_DIR)/scripts
+WAVE:= $(WAVE_DIR)/VX_local_mem.do
+
+# Additional files 
+ADD_RTL += tb/local_mem.vh
+ADD_RTL += tb/local_mem.sv
 
 ### Directories 
 # Vortex
@@ -96,12 +115,15 @@ compile: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) +incdir+$(COMMON_CELL_INC) +incdir+$(COMMON_CELL_DIR) $(FPNEW_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(FPU_DIV_DIR) $(FPU_DIV_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) +incdir+$(FPNEW_DIR) +incdir+$(FPU_DIV_DIR) +incdir+$(DPI_DIR) $(RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(ADD_INC) $(ADD_RTL)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(TARGET_TB)
 
 run:
 		vsim $(VSIMOPTS) \
 		$(VX_TB) \
+		-voptargs=+acc \
 		-coverage \
+		-do "$(WAVE)" \
 		-do "run -all" 
 
 $(WORKDIR):
