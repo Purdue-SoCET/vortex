@@ -20,12 +20,12 @@ module VX_to_mem_vortex_init(input wire clk, input wire reset, input wire [31:0]
   //ff for register
   always_ff @ (posedge clk, negedge reset) begin
     if (reset) begin
-        vx_start = 32'b0;
-        status = 32'b0;
+        vx_start <= 32'b0;
+        status <= 32'b0;
     end
     else begin
-        status = busy; //always wired to busy signal
-        vx_start = n_vx_start; 
+        status <= busy; //always wired to busy signal
+        vx_start <= n_vx_start; 
     end
   end
   
