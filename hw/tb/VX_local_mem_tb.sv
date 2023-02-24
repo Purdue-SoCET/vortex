@@ -1,4 +1,4 @@
-`include "local_mem.vh"
+// `include "local_mem.vh"
 
 `timescale 1 ns / 1 ns
 

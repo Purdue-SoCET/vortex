@@ -5,7 +5,10 @@
     testbench for vortex, simulating memory interface
 */
 
-`include "local_mem.vh"
+// temporary include to have defined vals
+// `include "local_mem.vh"
+`include "../include/VX_define.vh"
+// `include "VX_define.vh"
 
 `timescale 1 ns / 1 ns
 
@@ -16,8 +19,10 @@ module local_mem_tb ();
     logic clk = 0, reset;
 
     // parameters
-    parameter WORD_W = 32;
-    parameter DRAM_SIZE = 64;
+    // `VX_MEM_BYTEEN_WIDTH    // 64 (512 / 8)
+    // `VX_MEM_ADDR_WIDTH      // 26
+    // `VX_MEM_DATA_WIDTH      // 512
+    // `VX_MEM_TAG_WIDTH       // 56 (55 for SM disabled)
 
     // clock gen
     always #(PERIOD/2) clk++;
@@ -311,8 +316,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b0;
-            expected_mem_rsp_data = 32'h6F008004;
-            expected_mem_rsp_tag = 16'd0;
+            expected_mem_rsp_data[31:0] = 32'h6F008004;
+            expected_mem_rsp_data[63:32] = 32'h732F2034;
+            expected_mem_rsp_data[95:64] = 32'h930F8000;
+            expected_mem_rsp_data[127:96] = 32'h6308FF03;
+            expected_mem_rsp_data[159:128] = 32'h930F9000;
+            expected_mem_rsp_data[191:160] = 32'h6304FF03;
+            expected_mem_rsp_data[223:192] = 32'h930FB000;
+            expected_mem_rsp_data[255:224] = 32'h6300FF03;
+            expected_mem_rsp_data[287:256] = 32'h130F0000;
+            expected_mem_rsp_data[319:288] = 32'h63040F00;
+            expected_mem_rsp_data[351:320] = 32'h67000F00;
+            expected_mem_rsp_data[383:352] = 32'h732F2034;
+            expected_mem_rsp_data[415:384] = 32'h63540F00;
+            expected_mem_rsp_data[447:416] = 32'h6F004000;
+            expected_mem_rsp_data[479:448] = 32'h93E19153;
+            expected_mem_rsp_data[511:480] = 32'h171F0000;
+            expected_mem_rsp_tag = 56'd0;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -335,9 +355,9 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80000000;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
             mem_req_data = '0;
-            mem_req_tag = 16'd1;
+            mem_req_tag = 56'd1;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -346,8 +366,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h6F008004;
-            expected_mem_rsp_tag = 16'd1;
+            expected_mem_rsp_data[31:0] = 32'h6F008004;
+            expected_mem_rsp_data[63:32] = 32'h732F2034;
+            expected_mem_rsp_data[95:64] = 32'h930F8000;
+            expected_mem_rsp_data[127:96] = 32'h6308FF03;
+            expected_mem_rsp_data[159:128] = 32'h930F9000;
+            expected_mem_rsp_data[191:160] = 32'h6304FF03;
+            expected_mem_rsp_data[223:192] = 32'h930FB000;
+            expected_mem_rsp_data[255:224] = 32'h6300FF03;
+            expected_mem_rsp_data[287:256] = 32'h130F0000;
+            expected_mem_rsp_data[319:288] = 32'h63040F00;
+            expected_mem_rsp_data[351:320] = 32'h67000F00;
+            expected_mem_rsp_data[383:352] = 32'h732F2034;
+            expected_mem_rsp_data[415:384] = 32'h63540F00;
+            expected_mem_rsp_data[447:416] = 32'h6F004000;
+            expected_mem_rsp_data[479:448] = 32'h93E19153;
+            expected_mem_rsp_data[511:480] = 32'h171F0000;
+            expected_mem_rsp_tag = 56'd1;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -361,9 +396,9 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80000004;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_1101;
             mem_req_data = '0;
-            mem_req_tag = 16'd2;
+            mem_req_tag = 56'd2;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -372,8 +407,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h732F2034;
-            expected_mem_rsp_tag = 16'd2;
+            expected_mem_rsp_data[31:0] = 32'h83234500;
+            expected_mem_rsp_data[63:32] = 32'h03250500;
+            expected_mem_rsp_data[95:64] = 32'hF3151000;
+            expected_mem_rsp_data[127:96] = 32'h13060000;
+            expected_mem_rsp_data[159:128] = 32'h631ED50C;
+            expected_mem_rsp_data[191:160] = 32'h631C730C;
+            expected_mem_rsp_data[223:192] = 32'h639AC50C;
+            expected_mem_rsp_data[255:224] = 32'h93019000;
+            expected_mem_rsp_data[287:256] = 32'h17250000;
+            expected_mem_rsp_data[319:288] = 32'h130505D8;
+            expected_mem_rsp_data[351:320] = 32'h07300500;
+            expected_mem_rsp_data[383:352] = 32'h87308500;
+            expected_mem_rsp_data[415:384] = 32'h07310501;
+            expected_mem_rsp_data[447:416] = 32'h83268501;
+            expected_mem_rsp_data[479:448] = 32'h0323C501;
+            expected_mem_rsp_data[511:480] = 32'hD3711012;
+            expected_mem_rsp_tag = 56'd2;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -387,9 +437,9 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001000;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
             mem_req_data = '0;
-            mem_req_tag = 16'd3;
+            mem_req_tag = 56'd3;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
             
@@ -398,8 +448,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000000;
-            expected_mem_rsp_tag = 16'd3;
+            expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000000;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h00000000;
+            expected_mem_rsp_data[159:128] = 32'h00000000;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
+            expected_mem_rsp_data[223:192] = 32'h00000000;
+            expected_mem_rsp_data[255:224] = 32'h00000000;
+            expected_mem_rsp_data[287:256] = 32'h00000000;
+            expected_mem_rsp_data[319:288] = 32'h00000000;
+            expected_mem_rsp_data[351:320] = 32'h00000000;
+            expected_mem_rsp_data[383:352] = 32'h00000000;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
+            expected_mem_rsp_data[447:416] = 32'h00000000;
+            expected_mem_rsp_data[479:448] = 32'h00000000;
+            expected_mem_rsp_data[511:480] = 32'h00000000;
+            expected_mem_rsp_tag = 56'd3;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -413,7 +478,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001004;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0001;
             mem_req_data = '0;
             mem_req_tag = 16'd4;
             mem_rsp_ready = 1'b0;
@@ -424,8 +489,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000000;
-            expected_mem_rsp_tag = 16'd4;
+            expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000000;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h00000000;
+            expected_mem_rsp_data[159:128] = 32'h00000000;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
+            expected_mem_rsp_data[223:192] = 32'h00000000;
+            expected_mem_rsp_data[255:224] = 32'h00000000;
+            expected_mem_rsp_data[287:256] = 32'h00000000;
+            expected_mem_rsp_data[319:288] = 32'h00000000;
+            expected_mem_rsp_data[351:320] = 32'h00000000;
+            expected_mem_rsp_data[383:352] = 32'h00000000;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
+            expected_mem_rsp_data[447:416] = 32'h00000000;
+            expected_mem_rsp_data[479:448] = 32'h00000000;
+            expected_mem_rsp_data[511:480] = 32'h00000000;
+            expected_mem_rsp_tag = 56'd4;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -439,7 +519,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80002000;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0000;
             mem_req_data = '0;
             mem_req_tag = 16'd5;
             mem_rsp_ready = 1'b0;
@@ -450,8 +530,23 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000000;
-            expected_mem_rsp_tag = 16'd5;
+            expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000440;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h0000F03F;
+            expected_mem_rsp_data[159:128] = 32'h00000000;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
+            expected_mem_rsp_data[223:192] = 32'h00000000;
+            expected_mem_rsp_data[255:224] = 32'h00000C40;
+            expected_mem_rsp_data[287:256] = 32'h66666666;
+            expected_mem_rsp_data[319:288] = 32'h664C93C0;
+            expected_mem_rsp_data[351:320] = 32'h9A999999;
+            expected_mem_rsp_data[383:352] = 32'h9999F13F;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
+            expected_mem_rsp_data[447:416] = 32'h00000000;
+            expected_mem_rsp_data[479:448] = 32'h00000000;
+            expected_mem_rsp_data[511:480] = 32'h004893C0;
+            expected_mem_rsp_tag = 56'd5;
             expected_tb_addr_out_of_bounds = 1'b0;
             
             check_outputs();
@@ -465,7 +560,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80002004;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
             mem_req_data = '0;
             mem_req_tag = 16'd6;
             mem_rsp_ready = 1'b0;
@@ -476,7 +571,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000440;
+            expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000440;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h0000F03F;
+            expected_mem_rsp_data[159:128] = 32'h00000000;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
+            expected_mem_rsp_data[223:192] = 32'h00000000;
+            expected_mem_rsp_data[255:224] = 32'h00000440;
+            expected_mem_rsp_data[287:256] = 32'h66666666;
+            expected_mem_rsp_data[319:288] = 32'h664C93C0;
+            expected_mem_rsp_data[351:320] = 32'h9A999999;
+            expected_mem_rsp_data[383:352] = 32'h9999F1BF;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
+            expected_mem_rsp_data[447:416] = 32'h00000000;
+            expected_mem_rsp_data[479:448] = 32'h3D0AD7A3;
+            expected_mem_rsp_data[511:480] = 32'h703A9540;
             expected_mem_rsp_tag = 16'd6;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -493,15 +603,30 @@ program test
 		$display("write testing");
 		begin
             @(negedge clk);
-            task_string = "write to second reg file 1";
+            task_string = "write to second reg file";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001000;
-            mem_req_data = 32'h01234567;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
+            mem_req_data[31:0] = 32'h89abcdef;
+            mem_req_data[63:32] = 32'h01234567;
+            mem_req_data[95:64] = 32'h89abcdef;
+            mem_req_data[127:96] = 32'h01234567;
+            mem_req_data[159:128] = 32'h89abcdef;
+            mem_req_data[191:160] = 32'h01234567;
+            mem_req_data[223:192] = 32'h89abcdef;
+            mem_req_data[255:224] = 32'h01234567;
+            mem_req_data[287:256] = 32'h89abcdef;
+            mem_req_data[319:288] = 32'h01234567;
+            mem_req_data[351:320] = 32'h89abcdef;
+            mem_req_data[383:352] = 32'h01234567;
+            mem_req_data[415:384] = 32'h89abcdef;
+            mem_req_data[447:416] = 32'h01234567;
+            mem_req_data[479:448] = 32'h89abcdef;
+            mem_req_data[511:480] = 32'h01234567;
             mem_req_tag = 16'd7;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
@@ -511,7 +636,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000000;
+            expected_mem_rsp_data[31:0] = 32'h0;
+            expected_mem_rsp_data[63:32] = 32'h0;
+            expected_mem_rsp_data[95:64] = 32'h0;
+            expected_mem_rsp_data[127:96] = 32'h0;
+            expected_mem_rsp_data[159:128] = 32'h0;
+            expected_mem_rsp_data[191:160] = 32'h0;
+            expected_mem_rsp_data[223:192] = 32'h0;
+            expected_mem_rsp_data[255:224] = 32'h0;
+            expected_mem_rsp_data[287:256] = 32'h0;
+            expected_mem_rsp_data[319:288] = 32'h0;
+            expected_mem_rsp_data[351:320] = 32'h0;
+            expected_mem_rsp_data[383:352] = 32'h0;
+            expected_mem_rsp_data[415:384] = 32'h0;
+            expected_mem_rsp_data[447:416] = 32'h0;
+            expected_mem_rsp_data[479:448] = 32'h0;
+            expected_mem_rsp_data[511:480] = 32'h0;
             expected_mem_rsp_tag = 16'd7;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -519,15 +659,15 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read after write to second reg file 1";
+            task_string = "read after write to second reg file";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001000;
-            mem_req_data = 32'h00000000;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
+            mem_req_data = '0;
             mem_req_tag = 16'd8;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
@@ -537,7 +677,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h01234567;
+            expected_mem_rsp_data[31:0] = 32'h89abcdef;
+            expected_mem_rsp_data[63:32] = 32'h01234567;
+            expected_mem_rsp_data[95:64] = 32'h89abcdef;
+            expected_mem_rsp_data[127:96] = 32'h01234567;
+            expected_mem_rsp_data[159:128] = 32'h89abcdef;
+            expected_mem_rsp_data[191:160] = 32'h01234567;
+            expected_mem_rsp_data[223:192] = 32'h89abcdef;
+            expected_mem_rsp_data[255:224] = 32'h01234567;
+            expected_mem_rsp_data[287:256] = 32'h89abcdef;
+            expected_mem_rsp_data[319:288] = 32'h01234567;
+            expected_mem_rsp_data[351:320] = 32'h89abcdef;
+            expected_mem_rsp_data[383:352] = 32'h01234567;
+            expected_mem_rsp_data[415:384] = 32'h89abcdef;
+            expected_mem_rsp_data[447:416] = 32'h01234567;
+            expected_mem_rsp_data[479:448] = 32'h89abcdef;
+            expected_mem_rsp_data[511:480] = 32'h01234567;
             expected_mem_rsp_tag = 16'd8;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -545,15 +700,30 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "write to second reg file 2";
+            task_string = "write to third reg file";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001004;
-            mem_req_data = 32'h89abcdef;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
+            mem_req_data[31:0] = 32'h89abcdef;
+            mem_req_data[63:32] = 32'h01234567;
+            mem_req_data[95:64] = 32'h89abcdef;
+            mem_req_data[127:96] = 32'h01234567;
+            mem_req_data[159:128] = 32'h89abcdef;
+            mem_req_data[191:160] = 32'h01234567;
+            mem_req_data[223:192] = 32'h89abcdef;
+            mem_req_data[255:224] = 32'h01234567;
+            mem_req_data[287:256] = 32'h89abcdef;
+            mem_req_data[319:288] = 32'h01234567;
+            mem_req_data[351:320] = 32'h89abcdef;
+            mem_req_data[383:352] = 32'h01234567;
+            mem_req_data[415:384] = 32'h89abcdef;
+            mem_req_data[447:416] = 32'h01234567;
+            mem_req_data[479:448] = 32'h89abcdef;
+            mem_req_data[511:480] = 32'h01234567;
             mem_req_tag = 16'd9;
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
@@ -563,7 +733,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h00000000;
+            expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000440;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h0000F03F;
+            expected_mem_rsp_data[159:128] = 32'h00000000;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
+            expected_mem_rsp_data[223:192] = 32'h00000000;
+            expected_mem_rsp_data[255:224] = 32'h00000440;
+            expected_mem_rsp_data[287:256] = 32'h66666666;
+            expected_mem_rsp_data[319:288] = 32'h664C93C0;
+            expected_mem_rsp_data[351:320] = 32'h9A999999;
+            expected_mem_rsp_data[383:352] = 32'h9999F1BF;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
+            expected_mem_rsp_data[447:416] = 32'h00000000;
+            expected_mem_rsp_data[479:448] = 32'h3D0AD7A3;
+            expected_mem_rsp_data[511:480] = 32'h703A9540;
             expected_mem_rsp_tag = 16'd9;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -571,14 +756,14 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read after write to second reg file 2";
+            task_string = "read after write to third reg file";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 32'h80001004;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
             mem_req_data = 32'h00000000;
             mem_req_tag = 16'd10;
             mem_rsp_ready = 1'b0;
@@ -589,7 +774,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data = 32'h89abcdef;
+            expected_mem_rsp_data[31:0] = 32'h89abcdef;
+            expected_mem_rsp_data[63:32] = 32'h01234567;
+            expected_mem_rsp_data[95:64] = 32'h89abcdef;
+            expected_mem_rsp_data[127:96] = 32'h01234567;
+            expected_mem_rsp_data[159:128] = 32'h89abcdef;
+            expected_mem_rsp_data[191:160] = 32'h01234567;
+            expected_mem_rsp_data[223:192] = 32'h89abcdef;
+            expected_mem_rsp_data[255:224] = 32'h01234567;
+            expected_mem_rsp_data[287:256] = 32'h89abcdef;
+            expected_mem_rsp_data[319:288] = 32'h01234567;
+            expected_mem_rsp_data[351:320] = 32'h89abcdef;
+            expected_mem_rsp_data[383:352] = 32'h01234567;
+            expected_mem_rsp_data[415:384] = 32'h89abcdef;
+            expected_mem_rsp_data[447:416] = 32'h01234567;
+            expected_mem_rsp_data[479:448] = 32'h89abcdef;
+            expected_mem_rsp_data[511:480] = 32'h01234567;
             expected_mem_rsp_tag = 16'd10;
             expected_tb_addr_out_of_bounds = 1'b0;
             

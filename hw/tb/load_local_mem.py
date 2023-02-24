@@ -24,7 +24,12 @@
 import sys
 
 # consts:
-WORD_W = 32
+
+VX_MEM_BYTEEN_WIDTH = 64
+VX_MEM_ADDR_WIDTH = 26
+VX_MEM_DATA_WIDTH = 512
+VX_MEM_TAG_WIDTH = 56       # 55 for ENABLE_SM = 0
+
 DO_PRINTS = False
 
 # classes:
@@ -50,6 +55,7 @@ class Chunk():
         self.id = id
         self.word_list = []
         self.word_size = 0
+        self.word512_size = 0
         self.byte_size = 0
         self.NUM_WORDS = 0
         self.SEL_W = 0
@@ -62,7 +68,8 @@ class Chunk():
     # update class variables
     def update_vars(self):
         self.byte_size = self.word_size * 4
-        self.SEL_W = bits_needed(self.word_size)
+        self.word512_size = 2**bits_needed((self.byte_size // 64) + 1)
+        self.SEL_W = bits_needed(self.word512_size)
         self.NUM_WORDS = 1 << self.SEL_W
 
     # print output
@@ -133,7 +140,7 @@ def word_match_start(word_list):
         print(bin_word_list)
 
     # iterate through increasing bit sequence
-    for i in range(WORD_W):
+    for i in range(VX_MEM_ADDR_WIDTH):
 
         # check all words for no match
         for bin_word in bin_word_list:
@@ -297,7 +304,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # first chunk
         bin_addr = remaining_chunk_list[0].bin_start_addr
         reg_file_hashing_lines += [
-            "\t\t" + depth*"\t" + f"if (mem_req_addr[WORD_W - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
+            "\t\t" + depth*"\t" + f"if (mem_req_addr[`VX_MEM_ADDR_WIDTH - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
             "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[0].start_addr}",
             "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[0].id};",
@@ -307,7 +314,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # second chunk
         bin_addr = remaining_chunk_list[1].bin_start_addr
         reg_file_hashing_lines += [
-            "\t\t" + depth*"\t" + f"else if (mem_req_addr[WORD_W - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
+            "\t\t" + depth*"\t" + f"else if (mem_req_addr[`VX_MEM_ADDR_WIDTH - {bin_len}] == 1'b{bin_addr[bin_len-1]})",
             "\t\t" + depth*"\t" + f"begin",
             "\t\t" + depth*"\t" + f"    // select chunk @ 0x{remaining_chunk_list[1].start_addr}",
             "\t\t" + depth*"\t" + f"    chunk_sel = {remaining_chunk_list[1].id};",
@@ -339,7 +346,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # pre print
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"// bit = 1 branch",
-            "\t\t" + depth*"\t" + f"if (mem_req_addr[WORD_W - {bin_len}] == 1'b1)",
+            "\t\t" + depth*"\t" + f"if (mem_req_addr[`VX_MEM_ADDR_WIDTH - {bin_len}] == 1'b1)",
             "\t\t" + depth*"\t" + f"begin",
         ]
         # recursive call for one
@@ -352,7 +359,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # zero branch:
         reg_file_hashing_lines += [
             "\t\t" + depth*"\t" + f"// bit = 0 branch",
-            "\t\t" + depth*"\t" + f"else if (mem_req_addr[WORD_W - {bin_len}] == 1'b0)",
+            "\t\t" + depth*"\t" + f"else if (mem_req_addr[`VX_MEM_ADDR_WIDTH - {bin_len}] == 1'b0)",
             "\t\t" + depth*"\t" + f"begin",
         ]
         # recursive call for zero
@@ -399,19 +406,20 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t// chunk {chunk.id}",
             f"\tlogic wen_{chunk.id}_{chunk.start_addr};",
             f"\tlogic [{chunk.SEL_W}-1:0] wsel_{chunk.id}_{chunk.start_addr};",
-            f"\tlogic [{WORD_W}-1:0] wdata_{chunk.id}_{chunk.start_addr};",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] wdata_{chunk.id}_{chunk.start_addr};",
             f"\tlogic [{chunk.SEL_W}-1:0] rsel_{chunk.id}_{chunk.start_addr};",
-            f"\tlogic [{WORD_W}-1:0] rdata_{chunk.id}_{chunk.start_addr};",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] rdata_{chunk.id}_{chunk.start_addr};",
         ]
 
         # make reg file signals
         reg_file_instance_lines += [
             f"\t",
-            f"\tlogic [{WORD_W}-1:0] reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
-            f"\tlogic [{WORD_W}-1:0] next_reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] next_reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
         ]
 
         # make reg file register logic:
+
         # begin reg logic block
         reg_file_instance_lines += [
             f"\t",
@@ -421,18 +429,45 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t        // enumerated reset values:",
         ]
         # make individual assignments for reset
+        bit_range = (
+            "31:0", "63:32", "95:64", "127:96", "159:128", "191:160", "223:192", "255:224",
+            "287:256", "319:288", "351:320", "383:352", "415:384", "447:416", "479:448", "511:480" 
+        )
+        bit_range_i = 0
+        word512_i = 0
         for i in range(len(chunk.word_list)):
             reg_file_instance_lines += [
-                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{i}] <= 32'h{chunk.word_list[i]};",
+                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h{chunk.word_list[i]};",
             ]
-        # make remaining assignments for reset
+            bit_range_i += 1
+            if (bit_range_i == 16):
+                word512_i += 1
+                bit_range_i = 0
+
+        # make remaining assignments for reset:
         reg_file_instance_lines += [
             f"\t        // fill-in reset values:",
         ]
-        for i in range(chunk.NUM_WORDS - chunk.word_size):
+        # finish remaining msb's of this 512 word
+        while(bit_range_i != 0):
             reg_file_instance_lines += [
-                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{i + chunk.word_size}] <= 32'h00000000;",
+                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h00000000;",
             ]
+            bit_range_i += 1
+            if (bit_range_i == 16):
+                word512_i += 1
+                bit_range_i = 0
+
+        # finish remaining 512 bit words
+        while(word512_i != 2**bits_needed(word512_i)):
+            reg_file_instance_lines += [
+                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h00000000;",
+            ]
+            bit_range_i += 1
+            if (bit_range_i == 16):
+                word512_i += 1
+                bit_range_i = 0
+
         # finish reg logic block
         reg_file_instance_lines += [
             f"\t    end",
@@ -536,7 +571,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     # make union of intersects of valid addresses within each reg file chunk
     for chunk in chunk_list:
         reg_file_hashing_lines += [
-            f"\t\t    (32'h{chunk.start_addr} <= mem_req_addr && mem_req_addr <= 32'h{hex(int(chunk.start_addr, 16) + chunk.word_size)[2:]}) ||",
+            f"\t\t    (26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} <= mem_req_addr && mem_req_addr <= 26'h{hex_str_to_bin_str(chunk.start_addr)[:-6]} + {chunk.word512_size}) ||",
         ]
     reg_file_hashing_lines[-1] = reg_file_hashing_lines[-1][:-3]
     reg_file_hashing_lines += [
@@ -557,9 +592,9 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     for chunk in chunk_list:
         reg_file_hashing_lines += [
             f"\t\t// hardwiring for chunk {chunk.id}",
-            f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 +2 : 0 +2];",
-            f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data[{chunk.SEL_W}-1 +2 : 0 +2];",
-            f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 +2 : 0 +2];",
+            f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
+            f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data;",
+            f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
         ]
 
     # default outputs

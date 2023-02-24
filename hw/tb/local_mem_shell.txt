@@ -5,10 +5,12 @@
     module for faking memory with basic register file which can interface with Vortex memory interface
 */
 
-`include "local_mem.vh"
+// temporary include to have defined vals
+// `include "local_mem.vh"
+`include "../include/VX_define.vh"
+// `include "VX_define.vh"
 
 module local_mem #(
-    parameter WORD_W = 32
 )(
     // seq
     input clk, reset,
@@ -17,18 +19,18 @@ module local_mem #(
     // vortex outputs
     input logic                             mem_req_valid,
     input logic                             mem_req_rw,
-    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
-    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
-    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
-    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
+    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen, // 64 (512 / 8)
+    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,   // 26
+    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,   // 512
+    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,    // 56 (55 for SM disabled)
     // vortex inputs
     output logic                            mem_req_ready,
 
     // Memory response:
     // vortex inputs
     output logic                            mem_rsp_valid,        
-    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,
-    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,
+    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,   // 512
+    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,    // 56 (55 for SM disabled)
     // vortex outputs
     input logic                             mem_rsp_ready,
 
@@ -57,7 +59,7 @@ module local_mem #(
 
     // NOTES:
     // don't know what to do with: 
-        // mem_req_byteeen
+        // mem_req_byteen
         // busy
 
 endmodule
