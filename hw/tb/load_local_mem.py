@@ -571,12 +571,12 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     # make union of intersects of valid addresses within each reg file chunk
     for chunk in chunk_list:
         reg_file_hashing_lines += [
-            f"\t\t    (26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} <= mem_req_addr && mem_req_addr <= 26'h{hex_str_to_bin_str(chunk.start_addr)[:-6]} + {chunk.word512_size}) ||",
+            f"\t\t    (26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} <= mem_req_addr && mem_req_addr < 26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} + {chunk.word512_size}) ||",
         ]
     reg_file_hashing_lines[-1] = reg_file_hashing_lines[-1][:-3]
     reg_file_hashing_lines += [
         f"\t\t) else begin",
-        f'\t\t    $display("mem request at address not available in chunk");',
+        f'\t\t    $display("mem request at address 0x%h = 0b%b not available in chunks", mem_req_addr, mem_req_addr);',
         f"\t\tend",
         f"\t\t",
     ]

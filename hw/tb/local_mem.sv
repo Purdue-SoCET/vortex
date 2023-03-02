@@ -843,11 +843,11 @@ module local_mem #(
         
         // bad address assertion:
         assert (
-            (26'b10000000000000000000000000 <= mem_req_addr && mem_req_addr <= 26'h10000000000000000000000000 + 32) ||
-            (26'b10000000000000000001000000 <= mem_req_addr && mem_req_addr <= 26'h10000000000000000001000000 + 2) ||
-            (26'b10000000000000000010000000 <= mem_req_addr && mem_req_addr <= 26'h10000000000000000010000000 + 8)
+            (26'b10000000000000000000000000 <= mem_req_addr && mem_req_addr < 26'b10000000000000000000000000 + 32) ||
+            (26'b10000000000000000001000000 <= mem_req_addr && mem_req_addr < 26'b10000000000000000001000000 + 2) ||
+            (26'b10000000000000000010000000 <= mem_req_addr && mem_req_addr < 26'b10000000000000000010000000 + 8)
         ) else begin
-            $display("mem request at address %h not available in chunk", mem_req_addr);
+            $display("mem request at address 0x%h = 0b%b not available in chunks", mem_req_addr, mem_req_addr);
         end
         
         // bit = 1 branch
