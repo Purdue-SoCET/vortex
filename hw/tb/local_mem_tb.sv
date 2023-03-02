@@ -333,7 +333,7 @@ program test
             expected_mem_rsp_data[479:448] = 32'h93E19153;
             expected_mem_rsp_data[511:480] = 32'h171F0000;
             expected_mem_rsp_tag = 56'd0;
-            expected_tb_addr_out_of_bounds = 1'b0;
+            expected_tb_addr_out_of_bounds = 1'b1;
             
             check_outputs();
 		end

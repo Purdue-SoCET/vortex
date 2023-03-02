@@ -840,6 +840,8 @@ module local_mem #(
 
     // addr hashing logic
     always_comb begin : ADDR_HASHING_LOGIC
+        // default as address not out of bounds
+        tb_addr_out_of_bounds = 1'b0;
         
         // bad address assertion:
         assert (
@@ -848,6 +850,7 @@ module local_mem #(
             (26'b10000000000000000010000000 <= mem_req_addr && mem_req_addr < 26'b10000000000000000010000000 + 8)
         ) else begin
             $display("mem request at address 0x%h = 0b%b not available in chunks", mem_req_addr, mem_req_addr);
+            tb_addr_out_of_bounds = 1'b1;
         end
         
         // bit = 1 branch
@@ -873,6 +876,7 @@ module local_mem #(
         else
         begin
             $display("error: got to else in high-level branch");
+            tb_addr_out_of_bounds = 1'b1;
         end
         
         // hardwired outputs:
@@ -888,10 +892,8 @@ module local_mem #(
         wsel_2_80002000 = mem_req_addr[3-1 : 0];
         wdata_2_80002000 = mem_req_data;
         rsel_2_80002000 = mem_req_addr[3-1 : 0];
-        
         // default outputs:
         mem_rsp_data = '0;
-        tb_addr_out_of_bounds = 1'b0;
         // chunk wen's:
         wen_0_80000000 = 1'b0;
         wen_1_80001000 = 1'b0;
@@ -930,7 +932,7 @@ module local_mem #(
             // shouldn't get here
             default:
             begin
-                mem_rsp_data = '0;
+                $display("error: got to default in chunk_sel case");                mem_rsp_data = '0;
                 tb_addr_out_of_bounds = 1'b1;
             end
         endcase

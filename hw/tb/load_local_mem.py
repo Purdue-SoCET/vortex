@@ -374,6 +374,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
             "\t\t" + depth*"\t" + f"else",
             "\t\t" + depth*"\t" + f"begin",
             "\t\t" + depth*"\t" + f'    $display("error: got to else in high-level branch");',
+            "\t\t" + depth*"\t" + f"    tb_addr_out_of_bounds = 1'b1;",
             "\t\t" + depth*"\t" + f"end",
         ]
 
@@ -562,6 +563,12 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
 
     reg_file_hashing_lines = []
 
+    # default as address not out of bounds
+    reg_file_hashing_lines += [
+        f"\t\t// default as address not out of bounds",
+        f"\t\ttb_addr_out_of_bounds = 1'b0;",
+    ]
+
     # create assertion to check for bad mem reads
     reg_file_hashing_lines += [
         f"\t\t",
@@ -577,6 +584,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     reg_file_hashing_lines += [
         f"\t\t) else begin",
         f'\t\t    $display("mem request at address 0x%h = 0b%b not available in chunks", mem_req_addr, mem_req_addr);',
+        f"\t\t    tb_addr_out_of_bounds = 1'b1;",
         f"\t\tend",
         f"\t\t",
     ]
@@ -599,10 +607,8 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
 
     # default outputs
     reg_file_hashing_lines += [
-        f"\t\t",
         f"\t\t// default outputs:",
         f"\t\tmem_rsp_data = '0;",
-        f"\t\ttb_addr_out_of_bounds = 1'b0;",
         f"\t\t// chunk wen's:",
     ]
     for chunk in chunk_list:
@@ -635,6 +641,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         f"\t\t    // shouldn't get here",
         f"\t\t    default:",
         f"\t\t    begin",
+        f"\t\t        $display(\"error: got to default in chunk_sel case\");"
         f"\t\t        mem_rsp_data = '0;",
         f"\t\t        tb_addr_out_of_bounds = 1'b1;",
         f"\t\t    end",
