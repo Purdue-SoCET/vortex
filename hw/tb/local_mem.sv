@@ -892,8 +892,9 @@ module local_mem #(
         wsel_2_80002000 = mem_req_addr[3-1 : 0];
         wdata_2_80002000 = mem_req_data;
         rsel_2_80002000 = mem_req_addr[3-1 : 0];
+        
         // default outputs:
-        mem_rsp_data = '0;
+        mem_rsp_data = {16{32'hdeadbeef}};
         // chunk wen's:
         wen_0_80000000 = 1'b0;
         wen_1_80001000 = 1'b0;
@@ -932,7 +933,8 @@ module local_mem #(
             // shouldn't get here
             default:
             begin
-                $display("error: got to default in chunk_sel case");                mem_rsp_data = '0;
+                $display("error: got to default in chunk_sel case");
+                mem_rsp_data = {16{32'hdeadbeef}};
                 tb_addr_out_of_bounds = 1'b1;
             end
         endcase

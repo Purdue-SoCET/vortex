@@ -607,8 +607,9 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
 
     # default outputs
     reg_file_hashing_lines += [
+        f"\t\t",
         f"\t\t// default outputs:",
-        f"\t\tmem_rsp_data = '0;",
+         "\t\tmem_rsp_data = {16{32'hdeadbeef}};",
         f"\t\t// chunk wen's:",
     ]
     for chunk in chunk_list:
@@ -641,8 +642,8 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         f"\t\t    // shouldn't get here",
         f"\t\t    default:",
         f"\t\t    begin",
-        f"\t\t        $display(\"error: got to default in chunk_sel case\");"
-        f"\t\t        mem_rsp_data = '0;",
+        f"\t\t        $display(\"error: got to default in chunk_sel case\");",
+         "\t\t        mem_rsp_data = {16{32'hdeadbeef}};",
         f"\t\t        tb_addr_out_of_bounds = 1'b1;",
         f"\t\t    end",
         f"\t\tendcase",
