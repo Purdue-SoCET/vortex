@@ -13,37 +13,36 @@ AR = $(RISCV_PREFIX)gcc-ar
 DP = $(RISCV_PREFIX)objdump
 CP = $(RISCV_PREFIX)objcopy
 
+
 ifeq ($(XLEN),32)
 CFLAGS += -march=rv32imf -mabi=ilp32f
 else
 CFLAGS += -march=rv64imfd -mabi=lp64d
 endif
 
-CFLAGS += -O3 -mcmodel=medany -Wstack-usage=1024 -fno-exceptions -fdata-sections -ffunction-sections
-CFLAGS += -I./include 
+CFLAGS += -O3 -Wstack-usage=1024 -mcmodel=medany -ffreestanding -nostartfiles -fdata-sections -ffunction-sections
+CFLAGS += -Iinclude 
 
-PROJECT = libvortexrt
+LDFLAGS += -lm -Wl,-Bstatic,-T,./linker/vx_link$(XLEN).ld 
+PROJECT = simple
 
-SRCS = ./vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./vortex.cpp
+SRCS = main.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
 
-OBJS := $(addsuffix .o, $(notdir $(SRCS)))
 
-all: $(PROJECT).a $(PROJECT).dump
+all: $(PROJECT).elf $(PROJECT).bin $(PROJECT).dump
 
-$(PROJECT).dump: $(PROJECT).a
-	$(DP) -D $(PROJECT).a > $(PROJECT).dump
+$(PROJECT).dump: $(PROJECT).elf
+	$(DP) -D $(PROJECT).elf > $(PROJECT).dump
 
-%.S.o: include/%.S
-	$(CC) $(CFLAGS) -c $< -o $@
+$(PROJECT).bin: $(PROJECT).elf
+	$(CP) -O binary $(PROJECT).elf $(PROJECT).bin
 
-%.c.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(PROJECT).elf: $(SRCS)
+	$(CC) $(CFLAGS) $(SRCS) $(LDFLAGS) -o $(PROJECT).elf
 
-$(PROJECT).a: $(OBJS)
-	$(AR) rcs $@ $^
 
 .depend: $(SRCS)
 	$(CC) $(CFLAGS) -MM $^ > .depend;
 
 clean:
-	rm -rf *.a *.o *.dump .depend 
+	rm -rf *.elf *.bin *.dump .depend 
