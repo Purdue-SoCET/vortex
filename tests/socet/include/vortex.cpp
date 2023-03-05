@@ -41,9 +41,11 @@ extern int vx_copy_from_dev(vx_buffer_h /*hbuffer*/, uint64_t /*dev_maddr*/, uin
 }
 
 extern int vx_start(vx_device_h /*hdevice*/) {
-    return -1;
+    	//program the cmd registers
+	return -1;
 }
 
 extern int vx_ready_wait(vx_device_h /*hdevice*/, uint64_t /*timeout*/) {
-    return -1;
+   	//poll on register
+	 return -1;
 }
