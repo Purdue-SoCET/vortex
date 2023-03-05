@@ -20,11 +20,11 @@ CFLAGS += -march=rv64imfd -mabi=lp64d
 endif
 
 CFLAGS += -O3 -mcmodel=medany -Wstack-usage=1024 -fno-exceptions -fdata-sections -ffunction-sections
-CFLAGS += -I./include -I../hw
+CFLAGS += -I./include 
 
 PROJECT = libvortexrt
 
-SRCS = ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S 
+SRCS = ./vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./vortex.cpp
 
 OBJS := $(addsuffix .o, $(notdir $(SRCS)))
 
@@ -33,7 +33,7 @@ all: $(PROJECT).a $(PROJECT).dump
 $(PROJECT).dump: $(PROJECT).a
 	$(DP) -D $(PROJECT).a > $(PROJECT).dump
 
-%.S.o: src/%.S
+%.S.o: include/%.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.c.o: src/%.c
