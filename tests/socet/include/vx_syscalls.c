@@ -2,7 +2,7 @@
 #include <newlib.h>
 #include <unistd.h>
 #include <vx_intrinsics.h>
-#include <vx_print.h>
+//#include <vx_print.h>
 #include <string.h>
  
 int _close(int file) { return -1; }
@@ -25,7 +25,7 @@ caddr_t _sbrk(int incr) {
 int _write(int file, char *ptr, int len) {
   int i; 
   for (i = 0; i < len; ++i) {
-    vx_putchar(*ptr++);
+   //	 vx_putchar(*ptr++);
   }
   return len;
 }

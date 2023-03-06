@@ -23,7 +23,7 @@ endif
 CFLAGS += -O3 -Wstack-usage=1024 -mcmodel=medany -ffreestanding -nostartfiles -fdata-sections -ffunction-sections
 CFLAGS += -Iinclude 
 
-LDFLAGS += -lm -Wl,-Bstatic,-T,./linker/vx_link$(XLEN).ld 
+LDFLAGS += -lm -Wl,-Bstatic,-T,./linker/vx_link$(XLEN).ld -fno-use-linker-plugin 
 PROJECT = simple
 
 SRCS = main.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
