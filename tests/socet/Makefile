@@ -29,7 +29,7 @@ PROJECT = simple
 SRCS = main.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
 
 
-all: $(PROJECT).elf $(PROJECT).bin $(PROJECT).dump
+all: $(PROJECT).elf $(PROJECT).bin $(PROJECT).dump $(PROJECT).hex
 
 $(PROJECT).dump: $(PROJECT).elf
 	$(DP) -D $(PROJECT).elf > $(PROJECT).dump
@@ -40,9 +40,11 @@ $(PROJECT).bin: $(PROJECT).elf
 $(PROJECT).elf: $(SRCS)
 	$(CC) $(CFLAGS) $(SRCS) $(LDFLAGS) -o $(PROJECT).elf
 
+$(PROJECT).hex: $(PROJECT).elf
+	$(CP) -O ihex $(PROJECT).elf $(PROJECT).hex
 
 .depend: $(SRCS)
 	$(CC) $(CFLAGS) -MM $^ > .depend;
 
 clean:
-	rm -rf *.elf *.bin *.dump .depend 
+	rm -rf *.hex *.elf *.bin *.dump .depend 
