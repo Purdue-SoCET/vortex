@@ -1,9 +1,15 @@
 // Guillaume Hu - hu724@purdue.edu
+<<<<<<< HEAD
 
 // `include "local_mem.vh"
 `include "VX_define.vh"
+=======
+>>>>>>> 9b7bb5888bcb4d8dabfa207b0691a527f4782875
 
-`timescale 1 ns / 1 ns
+`include "local_mem.vh"
+`include "VX_define.vh"
+
+`timescale 1 ps / 1 ps
 
 module VX_local_mem_tb; 
 
@@ -61,6 +67,7 @@ module VX_local_mem_tb;
                .mem_rsp_ready(mem_rsp_ready), 
                .busy(busy)
                );
+<<<<<<< HEAD
     local_mem MEM(.*); 
 
     initial begin 
@@ -69,6 +76,15 @@ module VX_local_mem_tb;
         // mem_rsp_data = '0; 
         // mem_rsp_tag = '0;
          
+=======
+    //local_mem MEM(.*); 
+
+    initial begin 
+        mem_req_ready = 1'b0; 
+        mem_rsp_valid = 1'b0; 
+        mem_rsp_data = '0; 
+        mem_rsp_tag = '0; 
+>>>>>>> 9b7bb5888bcb4d8dabfa207b0691a527f4782875
         reset = 1'b1; 
         // Reset
         #(PERIOD * 13); 
@@ -77,7 +93,11 @@ module VX_local_mem_tb;
         @(negedge reset); 
 
         // Handshake to GPU
+<<<<<<< HEAD
         // mem_req_ready = 1'b1; 
+=======
+        mem_req_ready = 1'b1; 
+>>>>>>> 9b7bb5888bcb4d8dabfa207b0691a527f4782875
 
         //$display("`VX_MEM_BYTEEN_WIDTH is %d, in VX it is: %d", `VX_MEM_BYTEEN_WIDTH, DUT.)
 
