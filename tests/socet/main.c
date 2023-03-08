@@ -5,7 +5,7 @@
 
 //kernel function (reduction)
 int kernel_function(context_t cxt, void * arg){
-	int tid = vx_thread_id();
+	int tid = vx_thread_gid(); //thread id of current thread
 	int sum = 0;
 	int div_test = 0;
 	//no locks in vortex 
