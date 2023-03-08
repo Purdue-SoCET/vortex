@@ -436,7 +436,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         )
         bit_range_i = 0
         word512_i = 0
-        for i in range(len(chunk.word_list)):
+        for i in reversed(range(len(chunk.word_list))):
             reg_file_instance_lines += [
                 f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h{chunk.word_list[i]};",
             ]
