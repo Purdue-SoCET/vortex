@@ -28,7 +28,7 @@ struct TBCfg {
     char *fname;
     Vaftx07 *dutp;
     MemoryMap *memp;
-    Vvortex *dut_vortexp;
+    VVortex *dut_vortexp;
     VerilatedFstC *tracep;
 };
 
@@ -209,6 +209,7 @@ void signalHandler(int signum) {
     std::cout << "Calling SystemVerilog 'final' block & exiting!" << std::endl;
 
     config.dutp->final();
+    config.dut_vortexp->final();
     config.memp->dump();
 
     if(config.trace_en) {
@@ -237,13 +238,13 @@ void reset(Vaftx07& dut, VVortex& dut_vortex, VerilatedFstC& trace) {
     dut.CLK = 0;
     dut.nRST = 0;
     dut_vortex.clk = 0;
-    dut_vortex.nrst = 0;
+    dut_vortex.reset = 0;
     tick(dut, dut_vortex, trace);
     dut.nRST = 0;
-    dut_vortex.nrst = 0;
+    dut_vortex.reset = 0;
     tick(dut, dut_vortex, trace);
     dut.nRST = 1;
-    dut_vortex.nrst = 1;
+    dut_vortex.reset = 1;
     tick(dut, dut_vortex, trace);
 }
 
@@ -265,7 +266,7 @@ int main(int argc, char **argv) {
     //config.memp = &memory;
     conif.dut_vortexp = &dut_vortex;
     config.tracep = &m_trace;
-
+    
     if(config.trace_en) {
         Verilated::traceEverOn(true);
         dut.trace(&m_trace, 5);
