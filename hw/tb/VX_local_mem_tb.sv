@@ -1,10 +1,13 @@
+// Guillaume Hu - hu724@purdue.edu
+
 // `include "local_mem.vh"
+`include "VX_define.vh"
 
 `timescale 1 ns / 1 ns
 
 module VX_local_mem_tb; 
 
-    parameter PERIOD = 10;
+    parameter PERIOD = 2;
     logic clk = 0;
     logic reset; 
 
@@ -43,17 +46,52 @@ module VX_local_mem_tb;
     // tb
     logic                             tb_addr_out_of_bounds; 
 
-    Vortex DUT(.*);
+    Vortex DUT(.clk(clk),
+               .reset(reset), 
+               .mem_req_valid(mem_req_valid), 
+               .mem_req_rw(mem_req_rw), 
+               .mem_req_byteen(mem_req_byteen),
+               .mem_req_addr(mem_req_addr), 
+               .mem_req_data(mem_req_data), 
+               .mem_req_tag(mem_req_tag), 
+               .mem_req_ready(mem_req_ready), 
+               .mem_rsp_valid(mem_rsp_valid), 
+               .mem_rsp_data(mem_rsp_data), 
+               .mem_rsp_tag(mem_rsp_tag), 
+               .mem_rsp_ready(mem_rsp_ready), 
+               .busy(busy)
+               );
     local_mem MEM(.*); 
 
     initial begin 
-        // Reset
+        // mem_req_ready = 1'b0; 
+        // mem_rsp_valid = 1'b0; 
+        // mem_rsp_data = '0; 
+        // mem_rsp_tag = '0;
+         
         reset = 1'b1; 
-        #(PERIOD); 
+        // Reset
+        #(PERIOD * 13); 
         reset = 1'b0; 
 
-        // Start the GPU
-        //mem_req_ready = 1'b1; 
+        @(negedge reset); 
+
+        // Handshake to GPU
+        // mem_req_ready = 1'b1; 
+
+        //$display("`VX_MEM_BYTEEN_WIDTH is %d, in VX it is: %d", `VX_MEM_BYTEEN_WIDTH, DUT.)
+
+        // @(DUT.mem_rsp_ready) begin 
+        // //@(posedge DUT.mem_req_valid); 
+        // $display("Resp ready to be received by VX"); 
+        // mem_rsp_valid = 1'b1; 
+        // mem_rsp_data = 32'h6F008004; 
+        // mem_rsp_tag = 0; 
+
+        // if (DUT.genblk1[0].cluster.genblk1[0].core.mem_unit.icache.NC_ENABLE) begin 
+        //     $display("NC is enabled"); 
+        // end 
+        //end
 
         //$stop; 
 
@@ -74,7 +112,7 @@ module VX_local_mem_tb;
 
     // Force end of sim
     initial begin 
-        #3000; 
+        #30000; 
         $stop(); 
     end 
 

@@ -212,7 +212,10 @@ def parse_intelhex(intelhex_lines):
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 chunk_list.append(new_chunk)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
@@ -226,7 +229,10 @@ def parse_intelhex(intelhex_lines):
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
                 last_incr = word_index_count * 4
@@ -243,7 +249,10 @@ def parse_intelhex(intelhex_lines):
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 chunk_list.append(new_chunk)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
