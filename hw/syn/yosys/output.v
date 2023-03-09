@@ -6119,6 +6119,8 @@ module Vortex (
 		end
 	endgenerate
 endmodule
+
+
 module local_mem (
 	clk,
 	reset,
@@ -18850,14 +18852,7 @@ module VX_fp_div (
 				.reset_o(fdiv_reset)
 			);
 			// Trace: ../../rtl/fp_cores/VX_fp_div.sv:56:9
-			acl_fdiv fdiv(
-				.clk(clk),
-				.areset(fdiv_reset),
-				.en(enable),
-				.a(dataa[i * 32+:32]),
-				.b(datab[i * 32+:32]),
-				.q(result[i * 32+:32])
-			);
+			
 		end
 	endgenerate
 	// Trace: ../../rtl/fp_cores/VX_fp_div.sv:67:5
@@ -18990,15 +18985,7 @@ module VX_fp_fma (
 				.reset_o(fma_reset)
 			);
 			// Trace: ../../rtl/fp_cores/VX_fp_fma.sv:85:9
-			acl_fmadd fmadd(
-				.clk(clk),
-				.areset(fma_reset),
-				.en(enable),
-				.a(a),
-				.b(b),
-				.c(c),
-				.q(result[i * 32+:32])
-			);
+			
 		end
 	endgenerate
 	// Trace: ../../rtl/fp_cores/VX_fp_fma.sv:97:5
@@ -19533,13 +19520,7 @@ module VX_fp_sqrt (
 				.reset_o(fsqrt_reset)
 			);
 			// Trace: ../../rtl/fp_cores/VX_fp_sqrt.sv:55:9
-			acl_fsqrt fsqrt(
-				.clk(clk),
-				.areset(fsqrt_reset),
-				.en(enable),
-				.a(dataa[i * 32+:32]),
-				.q(result[i * 32+:32])
-			);
+			
 		end
 	endgenerate
 	// Trace: ../../rtl/fp_cores/VX_fp_sqrt.sv:65:5
