@@ -3,7 +3,7 @@
 
 module VX_vortex_to_local_mem #()(
     // seq
-    input clk, reset,
+    input clk, reset
 )
     // Memory Request:
     // vortex outputs
@@ -79,4 +79,4 @@ module VX_vortex_to_local_mem #()(
 	);
 
 
-}
+endmodule
