@@ -304,12 +304,11 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
         # find bit to differentiate at
         bin_len = len(word_match_start([chunk.start_addr for chunk in remaining_chunk_list]))
 
-        # TODO: fix for single bit width select line
-        # # check for bad differentiation
-        # if (remaining_chunk_list[0].bin_start_addr[bin_len-1] == 
-        #     remaining_chunk_list[1].bin_start_addr[bin_len-1]):
-        #     print("bad differentiation, diff bits are equal")
-        #     quit()
+        # check for bad differentiation
+        if (remaining_chunk_list[0].bin_start_addr[bin_len-1] == 
+            remaining_chunk_list[1].bin_start_addr[bin_len-1]):
+            print("bad differentiation, diff bits are equal")
+            quit()
 
         # first chunk
         bin_addr = remaining_chunk_list[0].bin_start_addr
