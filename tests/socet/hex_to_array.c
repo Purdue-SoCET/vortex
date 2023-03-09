@@ -1,5 +1,5 @@
 //Taken from https://github.com/AhmedYousriSobhi/Hex-To-array-txt/edit/main/hextoarray.c
-
+//Converts hex file to C array
 #include<stdio.h>
 #include<stdint.h>
 #define PAGESIZE 128
