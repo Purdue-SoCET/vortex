@@ -56,7 +56,7 @@ module VX_vortex_to_local_mem (
 	);
     
     //local ram
-    local_memory RAM (
+    local_mem RAM (
         .clk            (clk),
         .reset          (reset),
 

@@ -51,7 +51,7 @@ module VX_vortex_to_local_mem (
 		.busy(busy)
 	);
 	// Trace: ../../rtl/VX_vortex_local_mem.sv:59:5
-	local_memory RAM(
+	local_mem RAM(
 		.clk(clk),
 		.reset(reset),
 		.mem_req_valid(mem_req_valid),
@@ -6352,7 +6352,85 @@ module Vortex_axi (
 	);
 endmodule
 // removed package "ahb_pkg"
-
+module VX_ahb (
+	VX_clk,
+	VX_reset,
+	ahbif
+);
+	// Trace: ../../rtl/VX_ahb.sv:6:5
+	input wire VX_clk;
+	input wire VX_reset;
+	// Trace: ../../rtl/VX_ahb.sv:7:5
+	input ahb_if.manager ahbif;
+	// Trace: ../../rtl/VX_ahb.sv:9:5
+	bus_protocol_if VX_bus_protocol_if();
+	// Trace: ../../rtl/VX_ahb.sv:10:5
+	ahb_manager VX_ahb_m(
+		VX_bus_protocol_if,
+		ahbif
+	);
+	// Trace: ../../rtl/VX_ahb.sv:12:5
+	wire mem_req_valid;
+	// Trace: ../../rtl/VX_ahb.sv:13:5
+	wire mem_req_rw;
+	// Trace: ../../rtl/VX_ahb.sv:14:5
+	wire [(0 || 0 ? 16 : 64) - 1:0] mem_req_byteen;
+	// Trace: ../../rtl/VX_ahb.sv:15:5
+	wire [(32 - $clog2((0 || 0 ? 16 : 64))) - 1:0] mem_req_addr;
+	// Trace: ../../rtl/VX_ahb.sv:16:5
+	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_req_data;
+	// Trace: ../../rtl/VX_ahb.sv:17:5
+	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_req_tag;
+	// Trace: ../../rtl/VX_ahb.sv:18:5
+	wire mem_req_ready;
+	// Trace: ../../rtl/VX_ahb.sv:20:5
+	wire mem_rsp_valid;
+	// Trace: ../../rtl/VX_ahb.sv:21:5
+	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_rsp_data;
+	// Trace: ../../rtl/VX_ahb.sv:22:5
+	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_rsp_tag;
+	// Trace: ../../rtl/VX_ahb.sv:23:5
+	wire mem_rsp_ready;
+	// Trace: ../../rtl/VX_ahb.sv:24:5
+	wire busy;
+	// Trace: ../../rtl/VX_ahb.sv:26:5
+	reg [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] dummy_tag = 1'sb1;
+	// Trace: ../../rtl/VX_ahb.sv:28:5
+	Vortex vortex(
+		.clk(VX_clk),
+		.reset(VX_reset),
+		.mem_req_valid(mem_req_valid),
+		.mem_req_rw(mem_req_rw),
+		.mem_req_byteen(mem_req_byteen),
+		.mem_req_addr(mem_req_addr),
+		.mem_req_data(mem_req_data),
+		.mem_req_tag(mem_req_tag),
+		.mem_req_ready(mem_req_ready),
+		.mem_rsp_valid(mem_rsp_valid),
+		.mem_rsp_data(mem_rsp_data),
+		.mem_rsp_tag(mem_rsp_tag),
+		.mem_rsp_ready(mem_rsp_ready),
+		.busy(busy)
+	);
+	// Trace: ../../rtl/VX_ahb.sv:49:5
+	assign VX_bus_protocol_if.wen = mem_req_rw & mem_req_valid;
+	// Trace: ../../rtl/VX_ahb.sv:50:5
+	assign VX_bus_protocol_if.ren = ~mem_req_rw & mem_req_valid;
+	// Trace: ../../rtl/VX_ahb.sv:51:5
+	assign VX_bus_protocol_if.addr = mem_req_addr;
+	// Trace: ../../rtl/VX_ahb.sv:52:5
+	assign VX_bus_protocol_if.wdata = mem_req_data;
+	// Trace: ../../rtl/VX_ahb.sv:53:5
+	assign VX_bus_protocol_if.strobe = mem_req_byteen;
+	// Trace: ../../rtl/VX_ahb.sv:55:5
+	assign mem_rsp_valid = ~VX_bus_protocol_if.error;
+	// Trace: ../../rtl/VX_ahb.sv:56:5
+	assign mem_rsp_tag = dummy_tag;
+	// Trace: ../../rtl/VX_ahb.sv:57:5
+	assign mem_rsp_data = VX_bus_protocol_if.rdata;
+	// Trace: ../../rtl/VX_ahb.sv:58:5
+	assign mem_req_ready = (mem_req_valid ? ~VX_bus_protocol_if.request_stall : 1'b0);
+endmodule
 module local_mem (
 	clk,
 	reset,
@@ -32934,7 +33012,9 @@ module fpnew_opgroup_fmt_slice_09303 (
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:130:9
 					assign lane_class_mask[lane * 10+:10] = 10'b0000000001;
 				end
-
+				else if (OpGroup == 2'd1) begin
+					;
+				end
 				else if (OpGroup == 2'd2) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:162:9
 					fpnew_noncomp_1F07E #(
@@ -33275,7 +33355,9 @@ module fpnew_opgroup_fmt_slice_970CB_15734 (
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:130:9
 					assign lane_class_mask[lane * 10+:10] = 10'b0000000001;
 				end
-
+				else if (OpGroup == 2'd1) begin
+					;
+				end
 				else if (OpGroup == 2'd2) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:162:9
 					fpnew_noncomp_546BA_F0963 #(
@@ -34003,7 +34085,9 @@ module fpnew_opgroup_multifmt_slice_180FF (
 						.busy_o(lane_busy[lane])
 					);
 				end
-				
+				else if (OpGroup == 2'd2) begin
+					;
+				end
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_7061A_0B31A #(
@@ -34841,7 +34925,9 @@ module fpnew_opgroup_multifmt_slice_F0F3F_DD878 (
 						.busy_o(lane_busy[lane])
 					);
 				end
-
+				else if (OpGroup == 2'd2) begin
+					;
+				end
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_35196_62023 #(
