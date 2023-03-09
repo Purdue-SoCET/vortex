@@ -33275,9 +33275,7 @@ module fpnew_opgroup_fmt_slice_970CB_15734 (
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:130:9
 					assign lane_class_mask[lane * 10+:10] = 10'b0000000001;
 				end
-				else if (OpGroup == 2'd1) begin
-					;
-				end
+
 				else if (OpGroup == 2'd2) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:162:9
 					fpnew_noncomp_546BA_F0963 #(
@@ -34005,9 +34003,7 @@ module fpnew_opgroup_multifmt_slice_180FF (
 						.busy_o(lane_busy[lane])
 					);
 				end
-				else if (OpGroup == 2'd2) begin
-					;
-				end
+				
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_7061A_0B31A #(
@@ -34845,9 +34841,7 @@ module fpnew_opgroup_multifmt_slice_F0F3F_DD878 (
 						.busy_o(lane_busy[lane])
 					);
 				end
-				else if (OpGroup == 2'd2) begin
-					;
-				end
+
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_35196_62023 #(
