@@ -6119,318 +6119,6 @@ module Vortex (
 		end
 	endgenerate
 endmodule
-module Vortex_axi (
-	clk,
-	reset,
-	m_axi_awid,
-	m_axi_awaddr,
-	m_axi_awlen,
-	m_axi_awsize,
-	m_axi_awburst,
-	m_axi_awlock,
-	m_axi_awcache,
-	m_axi_awprot,
-	m_axi_awqos,
-	m_axi_awvalid,
-	m_axi_awready,
-	m_axi_wdata,
-	m_axi_wstrb,
-	m_axi_wlast,
-	m_axi_wvalid,
-	m_axi_wready,
-	m_axi_bid,
-	m_axi_bresp,
-	m_axi_bvalid,
-	m_axi_bready,
-	m_axi_arid,
-	m_axi_araddr,
-	m_axi_arlen,
-	m_axi_arsize,
-	m_axi_arburst,
-	m_axi_arlock,
-	m_axi_arcache,
-	m_axi_arprot,
-	m_axi_arqos,
-	m_axi_arvalid,
-	m_axi_arready,
-	m_axi_rid,
-	m_axi_rdata,
-	m_axi_rresp,
-	m_axi_rlast,
-	m_axi_rvalid,
-	m_axi_rready,
-	busy
-);
-	// Trace: ../../rtl/Vortex_axi.sv:4:15
-	parameter AXI_DATA_WIDTH = (0 || 0 ? 16 : 64) * 8;
-	// Trace: ../../rtl/Vortex_axi.sv:5:15
-	parameter AXI_ADDR_WIDTH = 32;
-	// Trace: ../../rtl/Vortex_axi.sv:6:15
-	parameter AXI_TID_WIDTH = (1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 1;
-	// Trace: ../../rtl/Vortex_axi.sv:7:15
-	parameter AXI_STROBE_WIDTH = ((0 || 0 ? 16 : 64) * 8) / 8;
-	// Trace: ../../rtl/Vortex_axi.sv:10:5
-	input wire clk;
-	// Trace: ../../rtl/Vortex_axi.sv:11:5
-	input wire reset;
-	// Trace: ../../rtl/Vortex_axi.sv:14:5
-	output wire [AXI_TID_WIDTH - 1:0] m_axi_awid;
-	// Trace: ../../rtl/Vortex_axi.sv:15:5
-	output wire [AXI_ADDR_WIDTH - 1:0] m_axi_awaddr;
-	// Trace: ../../rtl/Vortex_axi.sv:16:5
-	output wire [7:0] m_axi_awlen;
-	// Trace: ../../rtl/Vortex_axi.sv:17:5
-	output wire [2:0] m_axi_awsize;
-	// Trace: ../../rtl/Vortex_axi.sv:18:5
-	output wire [1:0] m_axi_awburst;
-	// Trace: ../../rtl/Vortex_axi.sv:19:5
-	output wire m_axi_awlock;
-	// Trace: ../../rtl/Vortex_axi.sv:20:5
-	output wire [3:0] m_axi_awcache;
-	// Trace: ../../rtl/Vortex_axi.sv:21:5
-	output wire [2:0] m_axi_awprot;
-	// Trace: ../../rtl/Vortex_axi.sv:22:5
-	output wire [3:0] m_axi_awqos;
-	// Trace: ../../rtl/Vortex_axi.sv:23:5
-	output wire m_axi_awvalid;
-	// Trace: ../../rtl/Vortex_axi.sv:24:5
-	input wire m_axi_awready;
-	// Trace: ../../rtl/Vortex_axi.sv:27:5
-	output wire [AXI_DATA_WIDTH - 1:0] m_axi_wdata;
-	// Trace: ../../rtl/Vortex_axi.sv:28:5
-	output wire [AXI_STROBE_WIDTH - 1:0] m_axi_wstrb;
-	// Trace: ../../rtl/Vortex_axi.sv:29:5
-	output wire m_axi_wlast;
-	// Trace: ../../rtl/Vortex_axi.sv:30:5
-	output wire m_axi_wvalid;
-	// Trace: ../../rtl/Vortex_axi.sv:31:5
-	input wire m_axi_wready;
-	// Trace: ../../rtl/Vortex_axi.sv:34:5
-	input wire [AXI_TID_WIDTH - 1:0] m_axi_bid;
-	// Trace: ../../rtl/Vortex_axi.sv:35:5
-	input wire [1:0] m_axi_bresp;
-	// Trace: ../../rtl/Vortex_axi.sv:36:5
-	input wire m_axi_bvalid;
-	// Trace: ../../rtl/Vortex_axi.sv:37:5
-	output wire m_axi_bready;
-	// Trace: ../../rtl/Vortex_axi.sv:40:5
-	output wire [AXI_TID_WIDTH - 1:0] m_axi_arid;
-	// Trace: ../../rtl/Vortex_axi.sv:41:5
-	output wire [AXI_ADDR_WIDTH - 1:0] m_axi_araddr;
-	// Trace: ../../rtl/Vortex_axi.sv:42:5
-	output wire [7:0] m_axi_arlen;
-	// Trace: ../../rtl/Vortex_axi.sv:43:5
-	output wire [2:0] m_axi_arsize;
-	// Trace: ../../rtl/Vortex_axi.sv:44:5
-	output wire [1:0] m_axi_arburst;
-	// Trace: ../../rtl/Vortex_axi.sv:45:5
-	output wire m_axi_arlock;
-	// Trace: ../../rtl/Vortex_axi.sv:46:5
-	output wire [3:0] m_axi_arcache;
-	// Trace: ../../rtl/Vortex_axi.sv:47:5
-	output wire [2:0] m_axi_arprot;
-	// Trace: ../../rtl/Vortex_axi.sv:48:5
-	output wire [3:0] m_axi_arqos;
-	// Trace: ../../rtl/Vortex_axi.sv:49:5
-	output wire m_axi_arvalid;
-	// Trace: ../../rtl/Vortex_axi.sv:50:5
-	input wire m_axi_arready;
-	// Trace: ../../rtl/Vortex_axi.sv:53:5
-	input wire [AXI_TID_WIDTH - 1:0] m_axi_rid;
-	// Trace: ../../rtl/Vortex_axi.sv:54:5
-	input wire [AXI_DATA_WIDTH - 1:0] m_axi_rdata;
-	// Trace: ../../rtl/Vortex_axi.sv:55:5
-	input wire [1:0] m_axi_rresp;
-	// Trace: ../../rtl/Vortex_axi.sv:56:5
-	input wire m_axi_rlast;
-	// Trace: ../../rtl/Vortex_axi.sv:57:5
-	input wire m_axi_rvalid;
-	// Trace: ../../rtl/Vortex_axi.sv:58:5
-	output wire m_axi_rready;
-	// Trace: ../../rtl/Vortex_axi.sv:61:5
-	output wire busy;
-	// Trace: ../../rtl/Vortex_axi.sv:63:5
-	wire mem_req_valid;
-	// Trace: ../../rtl/Vortex_axi.sv:64:5
-	wire mem_req_rw;
-	// Trace: ../../rtl/Vortex_axi.sv:65:5
-	wire [(0 || 0 ? 16 : 64) - 1:0] mem_req_byteen;
-	// Trace: ../../rtl/Vortex_axi.sv:66:5
-	wire [(32 - $clog2((0 || 0 ? 16 : 64))) - 1:0] mem_req_addr;
-	// Trace: ../../rtl/Vortex_axi.sv:67:5
-	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_req_data;
-	// Trace: ../../rtl/Vortex_axi.sv:68:5
-	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_req_tag;
-	// Trace: ../../rtl/Vortex_axi.sv:69:5
-	wire mem_req_ready;
-	// Trace: ../../rtl/Vortex_axi.sv:71:5
-	wire mem_rsp_valid;
-	// Trace: ../../rtl/Vortex_axi.sv:72:5
-	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_rsp_data;
-	// Trace: ../../rtl/Vortex_axi.sv:73:5
-	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_rsp_tag;
-	// Trace: ../../rtl/Vortex_axi.sv:74:5
-	wire mem_rsp_ready;
-	// Trace: ../../rtl/Vortex_axi.sv:76:5
-	VX_axi_adapter #(
-		.VX_DATA_WIDTH((0 || 0 ? 16 : 64) * 8),
-		.VX_ADDR_WIDTH(32 - $clog2((0 || 0 ? 16 : 64))),
-		.VX_TAG_WIDTH((1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 1),
-		.VX_BYTEEN_WIDTH(AXI_STROBE_WIDTH),
-		.AXI_DATA_WIDTH(AXI_DATA_WIDTH),
-		.AXI_ADDR_WIDTH(AXI_ADDR_WIDTH),
-		.AXI_TID_WIDTH(AXI_TID_WIDTH),
-		.AXI_STROBE_WIDTH(AXI_STROBE_WIDTH)
-	) axi_adapter(
-		.clk(clk),
-		.reset(reset),
-		.mem_req_valid(mem_req_valid),
-		.mem_req_rw(mem_req_rw),
-		.mem_req_byteen(mem_req_byteen),
-		.mem_req_addr(mem_req_addr),
-		.mem_req_data(mem_req_data),
-		.mem_req_tag(mem_req_tag),
-		.mem_req_ready(mem_req_ready),
-		.mem_rsp_valid(mem_rsp_valid),
-		.mem_rsp_data(mem_rsp_data),
-		.mem_rsp_tag(mem_rsp_tag),
-		.mem_rsp_ready(mem_rsp_ready),
-		.m_axi_awid(m_axi_awid),
-		.m_axi_awaddr(m_axi_awaddr),
-		.m_axi_awlen(m_axi_awlen),
-		.m_axi_awsize(m_axi_awsize),
-		.m_axi_awburst(m_axi_awburst),
-		.m_axi_awlock(m_axi_awlock),
-		.m_axi_awcache(m_axi_awcache),
-		.m_axi_awprot(m_axi_awprot),
-		.m_axi_awqos(m_axi_awqos),
-		.m_axi_awvalid(m_axi_awvalid),
-		.m_axi_awready(m_axi_awready),
-		.m_axi_wdata(m_axi_wdata),
-		.m_axi_wstrb(m_axi_wstrb),
-		.m_axi_wlast(m_axi_wlast),
-		.m_axi_wvalid(m_axi_wvalid),
-		.m_axi_wready(m_axi_wready),
-		.m_axi_bid(m_axi_bid),
-		.m_axi_bresp(m_axi_bresp),
-		.m_axi_bvalid(m_axi_bvalid),
-		.m_axi_bready(m_axi_bready),
-		.m_axi_arid(m_axi_arid),
-		.m_axi_araddr(m_axi_araddr),
-		.m_axi_arlen(m_axi_arlen),
-		.m_axi_arsize(m_axi_arsize),
-		.m_axi_arburst(m_axi_arburst),
-		.m_axi_arlock(m_axi_arlock),
-		.m_axi_arcache(m_axi_arcache),
-		.m_axi_arprot(m_axi_arprot),
-		.m_axi_arqos(m_axi_arqos),
-		.m_axi_arvalid(m_axi_arvalid),
-		.m_axi_arready(m_axi_arready),
-		.m_axi_rid(m_axi_rid),
-		.m_axi_rdata(m_axi_rdata),
-		.m_axi_rresp(m_axi_rresp),
-		.m_axi_rlast(m_axi_rlast),
-		.m_axi_rvalid(m_axi_rvalid),
-		.m_axi_rready(m_axi_rready)
-	);
-	// Trace: ../../rtl/Vortex_axi.sv:145:5
-	Vortex vortex(
-		.clk(clk),
-		.reset(reset),
-		.mem_req_valid(mem_req_valid),
-		.mem_req_rw(mem_req_rw),
-		.mem_req_byteen(mem_req_byteen),
-		.mem_req_addr(mem_req_addr),
-		.mem_req_data(mem_req_data),
-		.mem_req_tag(mem_req_tag),
-		.mem_req_ready(mem_req_ready),
-		.mem_rsp_valid(mem_rsp_valid),
-		.mem_rsp_data(mem_rsp_data),
-		.mem_rsp_tag(mem_rsp_tag),
-		.mem_rsp_ready(mem_rsp_ready),
-		.busy(busy)
-	);
-endmodule
-// removed package "ahb_pkg"
-module VX_ahb (
-	VX_clk,
-	VX_reset,
-	ahbif
-);
-	// Trace: ../../rtl/VX_ahb.sv:6:5
-	input wire VX_clk;
-	input wire VX_reset;
-	// Trace: ../../rtl/VX_ahb.sv:7:5
-	input ahb_if.manager ahbif;
-	// Trace: ../../rtl/VX_ahb.sv:9:5
-	bus_protocol_if VX_bus_protocol_if();
-	// Trace: ../../rtl/VX_ahb.sv:10:5
-	ahb_manager VX_ahb_m(
-		VX_bus_protocol_if,
-		ahbif
-	);
-	// Trace: ../../rtl/VX_ahb.sv:12:5
-	wire mem_req_valid;
-	// Trace: ../../rtl/VX_ahb.sv:13:5
-	wire mem_req_rw;
-	// Trace: ../../rtl/VX_ahb.sv:14:5
-	wire [(0 || 0 ? 16 : 64) - 1:0] mem_req_byteen;
-	// Trace: ../../rtl/VX_ahb.sv:15:5
-	wire [(32 - $clog2((0 || 0 ? 16 : 64))) - 1:0] mem_req_addr;
-	// Trace: ../../rtl/VX_ahb.sv:16:5
-	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_req_data;
-	// Trace: ../../rtl/VX_ahb.sv:17:5
-	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_req_tag;
-	// Trace: ../../rtl/VX_ahb.sv:18:5
-	wire mem_req_ready;
-	// Trace: ../../rtl/VX_ahb.sv:20:5
-	wire mem_rsp_valid;
-	// Trace: ../../rtl/VX_ahb.sv:21:5
-	wire [((0 || 0 ? 16 : 64) * 8) - 1:0] mem_rsp_data;
-	// Trace: ../../rtl/VX_ahb.sv:22:5
-	wire [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] mem_rsp_tag;
-	// Trace: ../../rtl/VX_ahb.sv:23:5
-	wire mem_rsp_ready;
-	// Trace: ../../rtl/VX_ahb.sv:24:5
-	wire busy;
-	// Trace: ../../rtl/VX_ahb.sv:26:5
-	reg [(1 > (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 1 : (4 > ((1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48) ? 4 : (1 + $clog2((0 || 0 ? 16 : 64) / 4)) + 48)) + 0:0] dummy_tag = 1'sb1;
-	// Trace: ../../rtl/VX_ahb.sv:28:5
-	Vortex vortex(
-		.clk(VX_clk),
-		.reset(VX_reset),
-		.mem_req_valid(mem_req_valid),
-		.mem_req_rw(mem_req_rw),
-		.mem_req_byteen(mem_req_byteen),
-		.mem_req_addr(mem_req_addr),
-		.mem_req_data(mem_req_data),
-		.mem_req_tag(mem_req_tag),
-		.mem_req_ready(mem_req_ready),
-		.mem_rsp_valid(mem_rsp_valid),
-		.mem_rsp_data(mem_rsp_data),
-		.mem_rsp_tag(mem_rsp_tag),
-		.mem_rsp_ready(mem_rsp_ready),
-		.busy(busy)
-	);
-	// Trace: ../../rtl/VX_ahb.sv:49:5
-	assign VX_bus_protocol_if.wen = mem_req_rw & mem_req_valid;
-	// Trace: ../../rtl/VX_ahb.sv:50:5
-	assign VX_bus_protocol_if.ren = ~mem_req_rw & mem_req_valid;
-	// Trace: ../../rtl/VX_ahb.sv:51:5
-	assign VX_bus_protocol_if.addr = mem_req_addr;
-	// Trace: ../../rtl/VX_ahb.sv:52:5
-	assign VX_bus_protocol_if.wdata = mem_req_data;
-	// Trace: ../../rtl/VX_ahb.sv:53:5
-	assign VX_bus_protocol_if.strobe = mem_req_byteen;
-	// Trace: ../../rtl/VX_ahb.sv:55:5
-	assign mem_rsp_valid = ~VX_bus_protocol_if.error;
-	// Trace: ../../rtl/VX_ahb.sv:56:5
-	assign mem_rsp_tag = dummy_tag;
-	// Trace: ../../rtl/VX_ahb.sv:57:5
-	assign mem_rsp_data = VX_bus_protocol_if.rdata;
-	// Trace: ../../rtl/VX_ahb.sv:58:5
-	assign mem_req_ready = (mem_req_valid ? ~VX_bus_protocol_if.request_stall : 1'b0);
-endmodule
 module local_mem (
 	clk,
 	reset,
@@ -33012,9 +32700,7 @@ module fpnew_opgroup_fmt_slice_09303 (
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:130:9
 					assign lane_class_mask[lane * 10+:10] = 10'b0000000001;
 				end
-				else if (OpGroup == 2'd1) begin
-					;
-				end
+				
 				else if (OpGroup == 2'd2) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:162:9
 					fpnew_noncomp_1F07E #(
@@ -33355,9 +33041,7 @@ module fpnew_opgroup_fmt_slice_970CB_15734 (
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:130:9
 					assign lane_class_mask[lane * 10+:10] = 10'b0000000001;
 				end
-				else if (OpGroup == 2'd1) begin
-					;
-				end
+				
 				else if (OpGroup == 2'd2) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv:162:9
 					fpnew_noncomp_546BA_F0963 #(
@@ -34085,9 +33769,7 @@ module fpnew_opgroup_multifmt_slice_180FF (
 						.busy_o(lane_busy[lane])
 					);
 				end
-				else if (OpGroup == 2'd2) begin
-					;
-				end
+				
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_7061A_0B31A #(
@@ -34925,9 +34607,7 @@ module fpnew_opgroup_multifmt_slice_F0F3F_DD878 (
 						.busy_o(lane_busy[lane])
 					);
 				end
-				else if (OpGroup == 2'd2) begin
-					;
-				end
+				
 				else if (OpGroup == 2'd3) begin : lane_instance
 					// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv:262:9
 					fpnew_cast_multi_35196_62023 #(
