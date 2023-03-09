@@ -35146,24 +35146,7 @@ module fpnew_top_3ED0B_1EC5F (
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:144:3
 	wire [((WIDTH + 5) + (TagType_TAGW + 2)) - 1:0] arbiter_output;
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:147:3
-	rr_arb_tree_12F9A_F22A2 #(
-		.DataType_TagType_TAGW(TagType_TAGW),
-		.DataType_WIDTH(WIDTH),
-		.NumIn(NUM_OPGROUPS),
-		.AxiVldRdy(1'b1)
-	) i_arbiter(
-		.clk_i(clk_i),
-		.rst_ni(rst_ni),
-		.flush_i(flush_i),
-		.rr_i(1'sb0),
-		.req_i(opgrp_out_valid),
-		.gnt_o(opgrp_out_ready),
-		.data_i(opgrp_outputs),
-		.gnt_i(out_ready_i),
-		.req_o(out_valid_o),
-		.data_o(arbiter_output),
-		.idx_o()
-	);
+	
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:166:3
 	assign result_o = arbiter_output[WIDTH + (5 + (TagType_TAGW + 1))-:((WIDTH + (5 + (TagType_TAGW + 1))) >= (5 + (TagType_TAGW + 2)) ? ((WIDTH + (5 + (TagType_TAGW + 1))) - (5 + (TagType_TAGW + 2))) + 1 : ((5 + (TagType_TAGW + 2)) - (WIDTH + (5 + (TagType_TAGW + 1)))) + 1)];
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:167:3
@@ -35431,23 +35414,7 @@ module fpnew_top_FF541 (
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:144:3
 	wire [WIDTH + 5:0] arbiter_output;
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:147:3
-	rr_arb_tree_02E82_EBE23 #(
-		.DataType_WIDTH(WIDTH),
-		.NumIn(NUM_OPGROUPS),
-		.AxiVldRdy(1'b1)
-	) i_arbiter(
-		.clk_i(clk_i),
-		.rst_ni(rst_ni),
-		.flush_i(flush_i),
-		.rr_i(1'sb0),
-		.req_i(opgrp_out_valid),
-		.gnt_o(opgrp_out_ready),
-		.data_i(opgrp_outputs),
-		.gnt_i(out_ready_i),
-		.req_o(out_valid_o),
-		.data_o(arbiter_output),
-		.idx_o()
-	);
+	
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:166:3
 	assign result_o = arbiter_output[WIDTH + 5-:((WIDTH + 5) >= 6 ? WIDTH + 0 : 7 - (WIDTH + 5))];
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpnew_top.sv:167:3
@@ -40333,14 +40300,8 @@ module preprocess_mvp (
 	wire Mant_zero_S_a;
 	wire Mant_zero_S_b;
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:326:3
-	lzc #(
-		.WIDTH(53),
-		.MODE(1)
-	) LOD_Ua(
-		.in_i(Mant_a_D),
-		.cnt_o(Mant_leadingOne_a),
-		.empty_o(Mant_zero_S_a)
-	);
+	
+	
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:335:4
 	wire [defs_div_sqrt_mvp_C_MANT_FP64:0] Mant_a_norm_DN;
 	reg [defs_div_sqrt_mvp_C_MANT_FP64:0] Mant_a_norm_DP;
@@ -40370,14 +40331,7 @@ module preprocess_mvp (
 			// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:362:13
 			Exp_a_norm_DP <= Exp_a_norm_DN;
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:366:3
-	lzc #(
-		.WIDTH(53),
-		.MODE(1)
-	) LOD_Ub(
-		.in_i(Mant_b_D),
-		.cnt_o(Mant_leadingOne_b),
-		.empty_o(Mant_zero_S_b)
-	);
+	
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:376:4
 	wire [defs_div_sqrt_mvp_C_MANT_FP64:0] Mant_b_norm_DN;
 	reg [defs_div_sqrt_mvp_C_MANT_FP64:0] Mant_b_norm_DP;
@@ -40390,7 +40344,6 @@ module preprocess_mvp (
 			// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:384:13
 			Mant_b_norm_DP <= 1'sb0;
 		else
-			// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:388:13
 			Mant_b_norm_DP <= Mant_b_norm_DN;
 	// Trace: ../../rtl/../../third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv:392:4
 	wire [defs_div_sqrt_mvp_C_EXP_FP64:0] Exp_b_norm_DN;
