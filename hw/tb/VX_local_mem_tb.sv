@@ -11,13 +11,13 @@
 module VX_local_mem_tb; 
 
     parameter PERIOD = 2;
+    parameter RSP_DELAY = 2 * PERIOD; 
     logic clk = 0;
     logic reset; 
 
     // parameters
     parameter WORD_W = 32;
     parameter DRAM_SIZE = 64;
-    parameter RSP_DELAY = 15 * PERIOD; 
 
     // clock gen
     always #(PERIOD/2) clk = ~clk;
@@ -47,6 +47,7 @@ module VX_local_mem_tb;
     // vortex outputs
     logic                               busy;
 
+    // tb
     // tb signals
     logic                               tb_mem_req_valid;
     logic                               tb_mem_req_rw;    
@@ -86,7 +87,7 @@ module VX_local_mem_tb;
                .mem_rsp_ready(mem_rsp_ready), 
                .busy(busy)
                );
-<<<<<<< HEAD
+    //local_mem MEM(.*); 
 
     local_mem MEM(.clk(clk), 
                   .reset(reset), 
@@ -96,7 +97,7 @@ module VX_local_mem_tb;
                   .mem_req_addr(tb_mem_req_addr), 
                   .mem_req_data(tb_mem_req_data), 
                   .mem_req_tag(tb_mem_req_tag), 
-                  //.mem_req_ready(tb_mem_req_ready), // Signal driven in tb -> induce a delay
+                  .mem_req_ready(tb_mem_req_ready), 
                   .mem_rsp_valid(tb_mem_rsp_valid), 
                   .mem_rsp_data(tb_mem_rsp_data), 
                   .mem_rsp_tag(tb_mem_rsp_tag), 
@@ -105,63 +106,56 @@ module VX_local_mem_tb;
                   .tb_addr_out_of_bounds(tb_addr_out_of_bounds)
     ); 
 
-    // assign tb_mem_req_valid = mem_req_valid; 
-    // assign tb_mem_req_rw = mem_req_rw; 
-    // assign tb_mem_req_byteen = mem_req_byteen; 
-    // assign tb_mem_req_addr = mem_req_addr; 
-    // assign tb_mem_req_data = mem_req_data; 
-    // assign tb_mem_req_tag = mem_req_tag; 
-    // assign tb_mem_rsp_ready = mem_rsp_ready; 
-    // assign tb_busy = busy; 
-
-    //local_mem MEM(.*); 
-=======
-    local_mem MEM(.*); 
->>>>>>> fc966496a45f3f5bbc0f60a8e4e8e85463e7b1a6
+    assign tb_mem_rsp_ready = mem_rsp_ready; 
 
     initial begin 
         mem_req_ready = 1'b0; 
         mem_rsp_valid = 1'b0; 
         mem_rsp_data = '0; 
         mem_rsp_tag = '0; 
+
+        tb_mem_req_valid = 1'b0; 
+        tb_mem_req_rw = '0; 
+        tb_mem_req_byteen = '0; 
+        tb_mem_req_addr = '0; 
+        tb_mem_req_data = '0; 
+        tb_mem_req_tag = '0; 
+        
         reset = 1'b1; 
         // Reset
-        #(PERIOD * 12); 
+        #(PERIOD * 13); 
         reset = 1'b0; 
 
-        // Handshake to GPU 
-        #(PERIOD); 
+        // Handshake to GPU
         mem_req_ready = 1'b1; 
 
         forever begin 
-            @(posedge mem_req_valid);
-            tb_mem_rsp_tag = mem_req_tag; // Buffer the tag and addr
+            // Buffer the correct values for the rsp 
+            @(posedge mem_req_valid); 
+            tb_mem_rsp_tag = mem_req_tag;
             tb_mem_req_addr = mem_req_addr; 
             tb_mem_req_byteen = mem_req_byteen; 
             tb_mem_req_rw = mem_req_rw; 
             tb_mem_req_data = mem_req_data; 
-            tb_mem_rsp_ready = mem_rsp_ready; 
             #(RSP_DELAY);
 
             // Response to Vortex's request
-            tb_mem_req_valid = 1'b1; 
+            tb_mem_req_valid = 1'b1; // Trigger the local_mem
             mem_rsp_valid = 1'b1; 
             mem_rsp_data = tb_mem_rsp_data; 
-            mem_rsp_tag = tb_mem_rsp_tag; 
+            mem_rsp_tag = tb_mem_req_tag; 
             #(PERIOD); 
             mem_rsp_valid = 1'b0; 
-        end  
-        
+        end 
+
+        //$stop; 
+
     end
 
     // Force end of sim
     initial begin 
-        #3000; 
+        #30000; 
         $stop(); 
-    end 
-
-    initial begin 
-
     end 
 
 
