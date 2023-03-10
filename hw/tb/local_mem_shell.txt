@@ -52,14 +52,41 @@ module local_mem #(
     // other combinational logic for memory interface
     always_comb begin : OTHER_MEM_COMB_LOGIC
 
-        mem_req_ready = 1'b1;           // always ready for request
+        // mem_req_ready = 1'b1;           // always ready for request
         mem_rsp_valid = mem_req_valid;  // read ready immediately
+            // update to buffer to later clock cycle
+                // along with data read value
+
         mem_rsp_tag = mem_req_tag;      // match req immediately
+    end
+
+    // delayed mem_req_ready signals
+    parameter MEM_REQ_READY_DELAY = 0;
+    logic [MEM_REQ_READY_DELAY-1:0] mem_req_ready_reg, next_mem_req_ready_reg; 
+
+    // delayed mem_req_ready reg logic
+    always_ff @ (posedge clk) begin : MEM_REQ_READY_REG_LOGIC
+    
+        if (reset)
+        begin
+            mem_req_ready_reg = '0;
+        end
+        else
+        begin
+            mem_req_ready_reg = next_mem_req_ready_reg;
+        end
+    end
+
+    // delayed mem_req_ready delay next state logic
+    always_comb begin : MEM_REQ_READY_DELAY_NEXT_STATE_LOGIC
+
+        next_mem_req_ready_reg = {mem_req_ready_reg[MEM_REQ_READY_DELAY-2:0], 1'b1};    // shift 1 left
+        mem_req_ready = mem_req_ready_reg[MEM_REQ_READY_DELAY-1];                       // msb of shifter
     end
 
     // NOTES:
     // don't know what to do with: 
-        // mem_req_byteen
         // busy
 
 endmodule
+

@@ -314,30 +314,40 @@ program test
             #(PERIOD / 4);
 
             // expected outputs:
-            expected_mem_req_ready = 1'b1;
+            expected_mem_req_ready = 1'b0;
             expected_mem_rsp_valid = 1'b0;
-            expected_mem_rsp_data[31:0] = 32'h6F008004;
-            expected_mem_rsp_data[63:32] = 32'h732F2034;
-            expected_mem_rsp_data[95:64] = 32'h930F8000;
-            expected_mem_rsp_data[127:96] = 32'h6308FF03;
-            expected_mem_rsp_data[159:128] = 32'h930F9000;
-            expected_mem_rsp_data[191:160] = 32'h6304FF03;
-            expected_mem_rsp_data[223:192] = 32'h930FB000;
-            expected_mem_rsp_data[255:224] = 32'h6300FF03;
-            expected_mem_rsp_data[287:256] = 32'h130F0000;
-            expected_mem_rsp_data[319:288] = 32'h63040F00;
-            expected_mem_rsp_data[351:320] = 32'h67000F00;
-            expected_mem_rsp_data[383:352] = 32'h732F2034;
-            expected_mem_rsp_data[415:384] = 32'h63540F00;
-            expected_mem_rsp_data[447:416] = 32'h6F004000;
-            expected_mem_rsp_data[479:448] = 32'h93E19153;
-            expected_mem_rsp_data[511:480] = 32'h171F0000;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+
             expected_mem_rsp_tag = 56'd0;
             expected_tb_addr_out_of_bounds = 1'b1;
             
             check_outputs();
 		end
         $display("");
+
+        /////////////////////////////
+        // wait for mem_req_ready: //
+        /////////////////////////////
+
+        test_string = "wait for mem_req_ready";
+        $display("<< wait for mem_req_ready >>");
+        $display("");
+        @(posedge mem_req_ready);
 
         ///////////////////
 		// read testing: //
@@ -366,22 +376,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h6F008004;
-            expected_mem_rsp_data[63:32] = 32'h732F2034;
-            expected_mem_rsp_data[95:64] = 32'h930F8000;
-            expected_mem_rsp_data[127:96] = 32'h6308FF03;
-            expected_mem_rsp_data[159:128] = 32'h930F9000;
-            expected_mem_rsp_data[191:160] = 32'h6304FF03;
-            expected_mem_rsp_data[223:192] = 32'h930FB000;
-            expected_mem_rsp_data[255:224] = 32'h6300FF03;
-            expected_mem_rsp_data[287:256] = 32'h130F0000;
-            expected_mem_rsp_data[319:288] = 32'h63040F00;
-            expected_mem_rsp_data[351:320] = 32'h67000F00;
-            expected_mem_rsp_data[383:352] = 32'h732F2034;
-            expected_mem_rsp_data[415:384] = 32'h63540F00;
-            expected_mem_rsp_data[447:416] = 32'h6F004000;
-            expected_mem_rsp_data[479:448] = 32'h93E19153;
-            expected_mem_rsp_data[511:480] = 32'h171F0000;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
             expected_mem_rsp_tag = 56'd1;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -407,22 +417,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h83234500;
-            expected_mem_rsp_data[63:32] = 32'h03250500;
-            expected_mem_rsp_data[95:64] = 32'hF3151000;
-            expected_mem_rsp_data[127:96] = 32'h13060000;
-            expected_mem_rsp_data[159:128] = 32'h631ED50C;
-            expected_mem_rsp_data[191:160] = 32'h631C730C;
-            expected_mem_rsp_data[223:192] = 32'h639AC50C;
-            expected_mem_rsp_data[255:224] = 32'h93019000;
-            expected_mem_rsp_data[287:256] = 32'h17250000;
-            expected_mem_rsp_data[319:288] = 32'h130505D8;
-            expected_mem_rsp_data[351:320] = 32'h07300500;
-            expected_mem_rsp_data[383:352] = 32'h87308500;
-            expected_mem_rsp_data[415:384] = 32'h07310501;
-            expected_mem_rsp_data[447:416] = 32'h83268501;
-            expected_mem_rsp_data[479:448] = 32'h0323C501;
-            expected_mem_rsp_data[511:480] = 32'hD3711012;
+			expected_mem_rsp_data[31:0] = 32'h00452383;
+			expected_mem_rsp_data[63:32] = 32'h00052503;
+			expected_mem_rsp_data[95:64] = 32'h001015F3;
+			expected_mem_rsp_data[127:96] = 32'h00000613;
+			expected_mem_rsp_data[159:128] = 32'h0CD51E63;
+			expected_mem_rsp_data[191:160] = 32'h0C731C63;
+			expected_mem_rsp_data[223:192] = 32'h0CC59A63;
+			expected_mem_rsp_data[255:224] = 32'h00900193;
+			expected_mem_rsp_data[287:256] = 32'h00002517;
+			expected_mem_rsp_data[319:288] = 32'hD8050513;
+			expected_mem_rsp_data[351:320] = 32'h00053007;
+			expected_mem_rsp_data[383:352] = 32'h00853087;
+			expected_mem_rsp_data[415:384] = 32'h01053107;
+			expected_mem_rsp_data[447:416] = 32'h01852683;
+			expected_mem_rsp_data[479:448] = 32'h01C52303;
+			expected_mem_rsp_data[511:480] = 32'h121071D3;
             expected_mem_rsp_tag = 56'd2;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -448,22 +458,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h00000000;
-            expected_mem_rsp_data[63:32] = 32'h00000000;
-            expected_mem_rsp_data[95:64] = 32'h00000000;
-            expected_mem_rsp_data[127:96] = 32'h00000000;
-            expected_mem_rsp_data[159:128] = 32'h00000000;
-            expected_mem_rsp_data[191:160] = 32'h00000000;
-            expected_mem_rsp_data[223:192] = 32'h00000000;
-            expected_mem_rsp_data[255:224] = 32'h00000000;
-            expected_mem_rsp_data[287:256] = 32'h00000000;
-            expected_mem_rsp_data[319:288] = 32'h00000000;
-            expected_mem_rsp_data[351:320] = 32'h00000000;
-            expected_mem_rsp_data[383:352] = 32'h00000000;
-            expected_mem_rsp_data[415:384] = 32'h00000000;
-            expected_mem_rsp_data[447:416] = 32'h00000000;
-            expected_mem_rsp_data[479:448] = 32'h00000000;
-            expected_mem_rsp_data[511:480] = 32'h00000000;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+			expected_mem_rsp_data[63:32] = 32'h00000000;
+			expected_mem_rsp_data[95:64] = 32'h00000000;
+			expected_mem_rsp_data[127:96] = 32'h00000000;
+			expected_mem_rsp_data[159:128] = 32'h00000000;
+			expected_mem_rsp_data[191:160] = 32'h00000000;
+			expected_mem_rsp_data[223:192] = 32'h00000000;
+			expected_mem_rsp_data[255:224] = 32'h00000000;
+			expected_mem_rsp_data[287:256] = 32'h00000000;
+			expected_mem_rsp_data[319:288] = 32'h00000000;
+			expected_mem_rsp_data[351:320] = 32'h00000000;
+			expected_mem_rsp_data[383:352] = 32'h00000000;
+			expected_mem_rsp_data[415:384] = 32'h00000000;
+			expected_mem_rsp_data[447:416] = 32'h00000000;
+			expected_mem_rsp_data[479:448] = 32'h00000000;
+			expected_mem_rsp_data[511:480] = 32'h00000000;
             expected_mem_rsp_tag = 56'd3;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -489,22 +499,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h00000000;
-            expected_mem_rsp_data[63:32] = 32'h00000000;
-            expected_mem_rsp_data[95:64] = 32'h00000000;
-            expected_mem_rsp_data[127:96] = 32'h00000000;
-            expected_mem_rsp_data[159:128] = 32'h00000000;
-            expected_mem_rsp_data[191:160] = 32'h00000000;
-            expected_mem_rsp_data[223:192] = 32'h00000000;
-            expected_mem_rsp_data[255:224] = 32'h00000000;
-            expected_mem_rsp_data[287:256] = 32'h00000000;
-            expected_mem_rsp_data[319:288] = 32'h00000000;
-            expected_mem_rsp_data[351:320] = 32'h00000000;
-            expected_mem_rsp_data[383:352] = 32'h00000000;
-            expected_mem_rsp_data[415:384] = 32'h00000000;
-            expected_mem_rsp_data[447:416] = 32'h00000000;
-            expected_mem_rsp_data[479:448] = 32'h00000000;
-            expected_mem_rsp_data[511:480] = 32'h00000000;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+			expected_mem_rsp_data[63:32] = 32'h00000000;
+			expected_mem_rsp_data[95:64] = 32'h00000000;
+			expected_mem_rsp_data[127:96] = 32'h00000000;
+			expected_mem_rsp_data[159:128] = 32'h00000000;
+			expected_mem_rsp_data[191:160] = 32'h00000000;
+			expected_mem_rsp_data[223:192] = 32'h00000000;
+			expected_mem_rsp_data[255:224] = 32'h00000000;
+			expected_mem_rsp_data[287:256] = 32'h00000000;
+			expected_mem_rsp_data[319:288] = 32'h00000000;
+			expected_mem_rsp_data[351:320] = 32'h00000000;
+			expected_mem_rsp_data[383:352] = 32'h00000000;
+			expected_mem_rsp_data[415:384] = 32'h00000000;
+			expected_mem_rsp_data[447:416] = 32'h00000000;
+			expected_mem_rsp_data[479:448] = 32'h00000000;
+			expected_mem_rsp_data[511:480] = 32'h00000000;
             expected_mem_rsp_tag = 56'd4;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -530,22 +540,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h00000000;
-            expected_mem_rsp_data[63:32] = 32'h00000440;
-            expected_mem_rsp_data[95:64] = 32'h00000000;
-            expected_mem_rsp_data[127:96] = 32'h0000F03F;
-            expected_mem_rsp_data[159:128] = 32'h00000000;
-            expected_mem_rsp_data[191:160] = 32'h00000000;
-            expected_mem_rsp_data[223:192] = 32'h00000000;
-            expected_mem_rsp_data[255:224] = 32'h00000C40;
-            expected_mem_rsp_data[287:256] = 32'h66666666;
-            expected_mem_rsp_data[319:288] = 32'h664C93C0;
-            expected_mem_rsp_data[351:320] = 32'h9A999999;
-            expected_mem_rsp_data[383:352] = 32'h9999F13F;
-            expected_mem_rsp_data[415:384] = 32'h00000000;
-            expected_mem_rsp_data[447:416] = 32'h00000000;
-            expected_mem_rsp_data[479:448] = 32'h00000000;
-            expected_mem_rsp_data[511:480] = 32'h004893C0;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+			expected_mem_rsp_data[63:32] = 32'h40040000;
+			expected_mem_rsp_data[95:64] = 32'h00000000;
+			expected_mem_rsp_data[127:96] = 32'h3FF00000;
+			expected_mem_rsp_data[159:128] = 32'h00000000;
+			expected_mem_rsp_data[191:160] = 32'h00000000;
+			expected_mem_rsp_data[223:192] = 32'h00000000;
+			expected_mem_rsp_data[255:224] = 32'h400C0000;
+			expected_mem_rsp_data[287:256] = 32'h66666666;
+			expected_mem_rsp_data[319:288] = 32'hC0934C66;
+			expected_mem_rsp_data[351:320] = 32'h9999999A;
+			expected_mem_rsp_data[383:352] = 32'h3FF19999;
+			expected_mem_rsp_data[415:384] = 32'h00000000;
+			expected_mem_rsp_data[447:416] = 32'h00000000;
+			expected_mem_rsp_data[479:448] = 32'h00000000;
+			expected_mem_rsp_data[511:480] = 32'hC0934800;
             expected_mem_rsp_tag = 56'd5;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -571,22 +581,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h00000000;
-            expected_mem_rsp_data[63:32] = 32'h00000440;
-            expected_mem_rsp_data[95:64] = 32'h00000000;
-            expected_mem_rsp_data[127:96] = 32'h0000F03F;
-            expected_mem_rsp_data[159:128] = 32'h00000000;
-            expected_mem_rsp_data[191:160] = 32'h00000000;
-            expected_mem_rsp_data[223:192] = 32'h00000000;
-            expected_mem_rsp_data[255:224] = 32'h00000440;
-            expected_mem_rsp_data[287:256] = 32'h66666666;
-            expected_mem_rsp_data[319:288] = 32'h664C93C0;
-            expected_mem_rsp_data[351:320] = 32'h9A999999;
-            expected_mem_rsp_data[383:352] = 32'h9999F1BF;
-            expected_mem_rsp_data[415:384] = 32'h00000000;
-            expected_mem_rsp_data[447:416] = 32'h00000000;
-            expected_mem_rsp_data[479:448] = 32'h3D0AD7A3;
-            expected_mem_rsp_data[511:480] = 32'h703A9540;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+			expected_mem_rsp_data[63:32] = 32'h40040000;
+			expected_mem_rsp_data[95:64] = 32'h00000000;
+			expected_mem_rsp_data[127:96] = 32'h3FF00000;
+			expected_mem_rsp_data[159:128] = 32'h00000000;
+			expected_mem_rsp_data[191:160] = 32'h00000000;
+			expected_mem_rsp_data[223:192] = 32'h00000000;
+			expected_mem_rsp_data[255:224] = 32'h40040000;
+			expected_mem_rsp_data[287:256] = 32'h66666666;
+			expected_mem_rsp_data[319:288] = 32'hC0934C66;
+			expected_mem_rsp_data[351:320] = 32'h9999999A;
+			expected_mem_rsp_data[383:352] = 32'hBFF19999;
+			expected_mem_rsp_data[415:384] = 32'h00000000;
+			expected_mem_rsp_data[447:416] = 32'h00000000;
+			expected_mem_rsp_data[479:448] = 32'hA3D70A3D;
+			expected_mem_rsp_data[511:480] = 32'h40953A70;
             expected_mem_rsp_tag = 16'd6;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -609,7 +619,7 @@ program test
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
-            mem_req_byteen = '0;
+            mem_req_byteen = 64'hffff0000ffff0000;
             mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
@@ -636,22 +646,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h0;
-            expected_mem_rsp_data[63:32] = 32'h0;
-            expected_mem_rsp_data[95:64] = 32'h0;
-            expected_mem_rsp_data[127:96] = 32'h0;
-            expected_mem_rsp_data[159:128] = 32'h0;
-            expected_mem_rsp_data[191:160] = 32'h0;
-            expected_mem_rsp_data[223:192] = 32'h0;
-            expected_mem_rsp_data[255:224] = 32'h0;
-            expected_mem_rsp_data[287:256] = 32'h0;
-            expected_mem_rsp_data[319:288] = 32'h0;
-            expected_mem_rsp_data[351:320] = 32'h0;
-            expected_mem_rsp_data[383:352] = 32'h0;
-            expected_mem_rsp_data[415:384] = 32'h0;
-            expected_mem_rsp_data[447:416] = 32'h0;
-            expected_mem_rsp_data[479:448] = 32'h0;
-            expected_mem_rsp_data[511:480] = 32'h0;
+			expected_mem_rsp_data[31:0] = 32'h000000000;
+			expected_mem_rsp_data[63:32] = 32'h000000000;
+			expected_mem_rsp_data[95:64] = 32'h000000000;
+			expected_mem_rsp_data[127:96] = 32'h000000000;
+			expected_mem_rsp_data[159:128] = 32'h000000000;
+			expected_mem_rsp_data[191:160] = 32'h000000000;
+			expected_mem_rsp_data[223:192] = 32'h000000000;
+			expected_mem_rsp_data[255:224] = 32'h000000000;
+			expected_mem_rsp_data[287:256] = 32'h000000000;
+			expected_mem_rsp_data[319:288] = 32'h000000000;
+			expected_mem_rsp_data[351:320] = 32'h000000000;
+			expected_mem_rsp_data[383:352] = 32'h000000000;
+			expected_mem_rsp_data[415:384] = 32'h000000000;
+			expected_mem_rsp_data[447:416] = 32'h000000000;
+			expected_mem_rsp_data[479:448] = 32'h000000000;
+			expected_mem_rsp_data[511:480] = 32'h000000000;
             expected_mem_rsp_tag = 16'd7;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -677,18 +687,18 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h89abcdef;
-            expected_mem_rsp_data[63:32] = 32'h01234567;
-            expected_mem_rsp_data[95:64] = 32'h89abcdef;
-            expected_mem_rsp_data[127:96] = 32'h01234567;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000000;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h00000000;
             expected_mem_rsp_data[159:128] = 32'h89abcdef;
             expected_mem_rsp_data[191:160] = 32'h01234567;
             expected_mem_rsp_data[223:192] = 32'h89abcdef;
             expected_mem_rsp_data[255:224] = 32'h01234567;
-            expected_mem_rsp_data[287:256] = 32'h89abcdef;
-            expected_mem_rsp_data[319:288] = 32'h01234567;
-            expected_mem_rsp_data[351:320] = 32'h89abcdef;
-            expected_mem_rsp_data[383:352] = 32'h01234567;
+            expected_mem_rsp_data[287:256] = 32'h00000000;
+            expected_mem_rsp_data[319:288] = 32'h00000000;
+            expected_mem_rsp_data[351:320] = 32'h00000000;
+            expected_mem_rsp_data[383:352] = 32'h00000000;
             expected_mem_rsp_data[415:384] = 32'h89abcdef;
             expected_mem_rsp_data[447:416] = 32'h01234567;
             expected_mem_rsp_data[479:448] = 32'h89abcdef;
@@ -706,7 +716,7 @@ program test
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
-            mem_req_byteen = '0;
+            mem_req_byteen = 64'h0ff0f00f0f0ff0f0;
             mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
@@ -733,22 +743,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h00000000;
-            expected_mem_rsp_data[63:32] = 32'h00000440;
-            expected_mem_rsp_data[95:64] = 32'h00000000;
-            expected_mem_rsp_data[127:96] = 32'h0000F03F;
-            expected_mem_rsp_data[159:128] = 32'h00000000;
-            expected_mem_rsp_data[191:160] = 32'h00000000;
-            expected_mem_rsp_data[223:192] = 32'h00000000;
-            expected_mem_rsp_data[255:224] = 32'h00000440;
-            expected_mem_rsp_data[287:256] = 32'h66666666;
-            expected_mem_rsp_data[319:288] = 32'h664C93C0;
-            expected_mem_rsp_data[351:320] = 32'h9A999999;
-            expected_mem_rsp_data[383:352] = 32'h9999F1BF;
-            expected_mem_rsp_data[415:384] = 32'h00000000;
-            expected_mem_rsp_data[447:416] = 32'h00000000;
-            expected_mem_rsp_data[479:448] = 32'h3D0AD7A3;
-            expected_mem_rsp_data[511:480] = 32'h703A9540;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+			expected_mem_rsp_data[63:32] = 32'h40040000;
+			expected_mem_rsp_data[95:64] = 32'h00000000;
+			expected_mem_rsp_data[127:96] = 32'h3FF00000;
+			expected_mem_rsp_data[159:128] = 32'h00000000;
+			expected_mem_rsp_data[191:160] = 32'h00000000;
+			expected_mem_rsp_data[223:192] = 32'h00000000;
+			expected_mem_rsp_data[255:224] = 32'h40040000;
+			expected_mem_rsp_data[287:256] = 32'h66666666;
+			expected_mem_rsp_data[319:288] = 32'hC0934C66;
+			expected_mem_rsp_data[351:320] = 32'h9999999A;
+			expected_mem_rsp_data[383:352] = 32'hBFF19999;
+			expected_mem_rsp_data[415:384] = 32'h00000000;
+			expected_mem_rsp_data[447:416] = 32'h00000000;
+			expected_mem_rsp_data[479:448] = 32'hA3D70A3D;
+			expected_mem_rsp_data[511:480] = 32'h40953A70;
             expected_mem_rsp_tag = 16'd9;
             expected_tb_addr_out_of_bounds = 1'b0;
             
@@ -774,22 +784,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-            expected_mem_rsp_data[31:0] = 32'h89abcdef;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
             expected_mem_rsp_data[63:32] = 32'h01234567;
-            expected_mem_rsp_data[95:64] = 32'h89abcdef;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
             expected_mem_rsp_data[127:96] = 32'h01234567;
             expected_mem_rsp_data[159:128] = 32'h89abcdef;
-            expected_mem_rsp_data[191:160] = 32'h01234567;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
             expected_mem_rsp_data[223:192] = 32'h89abcdef;
-            expected_mem_rsp_data[255:224] = 32'h01234567;
+            expected_mem_rsp_data[255:224] = 32'h40040000;
             expected_mem_rsp_data[287:256] = 32'h89abcdef;
-            expected_mem_rsp_data[319:288] = 32'h01234567;
-            expected_mem_rsp_data[351:320] = 32'h89abcdef;
+            expected_mem_rsp_data[319:288] = 32'hC0934C66;
+            expected_mem_rsp_data[351:320] = 32'h9999999A;
             expected_mem_rsp_data[383:352] = 32'h01234567;
-            expected_mem_rsp_data[415:384] = 32'h89abcdef;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
             expected_mem_rsp_data[447:416] = 32'h01234567;
             expected_mem_rsp_data[479:448] = 32'h89abcdef;
-            expected_mem_rsp_data[511:480] = 32'h01234567;
+            expected_mem_rsp_data[511:480] = 32'h40953A70;
             expected_mem_rsp_tag = 16'd10;
             expected_tb_addr_out_of_bounds = 1'b0;
             

@@ -43,7 +43,7 @@ class Chunk():
     # word_list -> list of data words starting from addr
     # word_size -> number of contiguous words in chunk
     # byte_size -> number of contiguous bytes in chunk
-    # NUM_WORDS -> 2 ** ceil(log2(number of words)) = total number of words for reg size  
+    # NUM_BLOCKS -> 2 ** ceil(log2(number of words)) = total number of words for reg size  
     # SEL_W -> ceil(log2(number of words)) = number of bits needed to select word for reg size
 
     # methods:
@@ -55,9 +55,9 @@ class Chunk():
         self.id = id
         self.word_list = []
         self.word_size = 0
-        self.word512_size = 0
+        self.block_size = 0
         self.byte_size = 0
-        self.NUM_WORDS = 0
+        self.NUM_BLOCKS = 0
         self.SEL_W = 0
         
     # add word to chunk
@@ -68,9 +68,9 @@ class Chunk():
     # update class variables
     def update_vars(self):
         self.byte_size = self.word_size * 4
-        self.word512_size = 2**bits_needed((self.byte_size // 64) + 1)
-        self.SEL_W = bits_needed(self.word512_size)
-        self.NUM_WORDS = 1 << self.SEL_W
+        self.block_size = 2**bits_needed((self.byte_size // 64) + 1)
+        self.SEL_W = bits_needed(self.block_size)
+        self.NUM_BLOCKS = 1 << self.SEL_W
 
     # print output
     def __repr__(self):
@@ -80,7 +80,7 @@ class Chunk():
                 f"chunk id:             {self.id}\n" + \
                 f"chunk word size:      {self.word_size}\n" + \
                 f"chunk byte size:      {self.byte_size}\n" + \
-                f"chunk NUM_WORDS:      {self.NUM_WORDS}\n" + \
+                f"chunk NUM_BLOCKS:      {self.NUM_BLOCKS}\n" + \
                 f"chunk SEL_W:          {self.SEL_W}\n" + \
                 f"chunk word list:      {self.word_list}\n"
 
@@ -176,6 +176,7 @@ def parse_intelhex(intelhex_lines):
     chunk_list = []
     chunk_num = 0
     line_num = 0
+    # last_incr = 0
     for line in intelhex_lines:
         line_num += 1
 
@@ -194,6 +195,8 @@ def parse_intelhex(intelhex_lines):
         elif (line[7:8 +1] == "04"):
 
             # prep for new chunk
+            if (DO_PRINTS):
+                print(f"intelhex: upper address bits 0x{line[9:12 +1]}")
             last_line = "addr"
             last_addr = line[9:12 +1] + "0000"
 
@@ -209,27 +212,42 @@ def parse_intelhex(intelhex_lines):
                 new_chunk = Chunk(chunk_num, last_addr[0:3 +1] + line[3:6 +1]) 
                 chunk_num += 1
                 word_index_count = 0
+                # this_offset = int(line[1:2 +1], base=16) // 4
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
+                # for word_index in range(this_offset):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 chunk_list.append(new_chunk)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
                 last_incr = word_index_count * 4
+                # last_incr = this_offset * 4
 
             # check for data in same chunk (last addr + 16 == this addr)
+            # elif ((int(last_addr[4:7 +1], base=16) + last_incr) <= int(line[3:6 +1], base=16)): 
             elif ((int(last_addr[4:7 +1], base=16) + last_incr) == int(line[3:6 +1], base=16)):  
                 
                 # continue chunk
+                # word_index_count = 0
+                # this_offset = int(line[1:2 +1], base=16) // 4
                 word_index_count = 0
+                # this_offset = int(line[1:2 +1], base=16) // 4
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
+                # for word_index in range(this_offset):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
                 last_incr = word_index_count * 4
+                # last_incr = this_offset * 4
 
             # check for data in diff chunk (last addr + 16 < this addr)
             elif ((int(last_addr[4:7 +1], base=16) + last_incr) < int(line[3:6 +1], base=16)):
@@ -240,14 +258,20 @@ def parse_intelhex(intelhex_lines):
                 new_chunk = Chunk(chunk_num, last_addr[0:3 +1] + line[3:6 +1]) 
                 chunk_num += 1
                 word_index_count = 0
+                # this_offset = int(line[1:2 +1], base=16) // 4
                 for word_index in range(int(line[1:2 +1], base=16) // 4):
+                # for word_index in range(this_offset):
                     word_index_count += 1
                     # get next word (8-char string) from data section
-                    new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    # new_chunk.append(line[9 + 8*word_index:9 + 8*(word_index + 1)])
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    next_word = next_word[6:8] + next_word[4:6] + next_word[2:4] + next_word[0:2]
+                    new_chunk.append(next_word)
                 chunk_list.append(new_chunk)
                 last_line = "data"
                 last_addr = last_addr[0:3 +1] + line[3:6 +1]
                 last_incr = word_index_count * 4
+                # last_incr = this_offset * 4
 
             # otherwise, have address before
             else:
@@ -275,6 +299,7 @@ def recursive_bin_select(reg_file_hashing_lines, remaining_chunk_list, depth):
     outputs:
         none
     """
+    # print(remaining_chunk_list)
 
     # bad case
     if (len(remaining_chunk_list) < 1):
@@ -406,17 +431,46 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t",
             f"\t// chunk {chunk.id}",
             f"\tlogic wen_{chunk.id}_{chunk.start_addr};",
-            f"\tlogic [{chunk.SEL_W}-1:0] wsel_{chunk.id}_{chunk.start_addr};",
+        ]
+
+        # only need select line if > 1 block
+        if (chunk.SEL_W == 0):
+            reg_file_instance_lines += [
+                f"\t",
+                f"\t// don't need select lines for reg file",
+                f"\t// logic wsel_{chunk.id}_{chunk.start_addr};",            
+                f"\t// logic rsel_{chunk.id}_{chunk.start_addr};",
+            ]
+        else:
+            reg_file_instance_lines += [
+                f"\t",
+                f"\t// block selection within reg file",
+                f"\tlogic [{chunk.SEL_W}-1:0] wsel_{chunk.id}_{chunk.start_addr};",            
+                f"\tlogic [{chunk.SEL_W}-1:0] rsel_{chunk.id}_{chunk.start_addr};",
+            ]
+
+        # make block-sized register file write input and read output
+        reg_file_instance_lines += [
+            f"\t",
+            f"\t// lock-sized reg file write input and read output",
             f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] wdata_{chunk.id}_{chunk.start_addr};",
-            f"\tlogic [{chunk.SEL_W}-1:0] rsel_{chunk.id}_{chunk.start_addr};",
             f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] rdata_{chunk.id}_{chunk.start_addr};",
         ]
 
-        # make reg file signals
-        reg_file_instance_lines += [
+        # only need 2D reg file signals if > 1 block
+        if (chunk.SEL_W == 0):
+            reg_file_instance_lines += [
+                f"\t",
+                f"\t// single block register file",
+                f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] reg_val_{chunk.id}_{chunk.start_addr};",
+                f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] next_reg_val_{chunk.id}_{chunk.start_addr};",
+            ]
+        else:
+            reg_file_instance_lines += [
             f"\t",
-            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
-            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] next_reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_WORDS}-1:0];",
+            f"\t// 2D register file",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_BLOCKS}-1:0];",
+            f"\tlogic [`VX_MEM_DATA_WIDTH-1:0] next_reg_val_{chunk.id}_{chunk.start_addr} [{chunk.NUM_BLOCKS}-1:0];",
         ]
 
         # make reg file register logic:
@@ -430,51 +484,66 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t        // enumerated reset values:",
         ]
         # make individual assignments for reset
-        bit_range = (
+        word_range_in_block = (
             "31:0", "63:32", "95:64", "127:96", "159:128", "191:160", "223:192", "255:224",
             "287:256", "319:288", "351:320", "383:352", "415:384", "447:416", "479:448", "511:480" 
         )
-        bit_range_i = 0
-        word512_i = 0
-        for i in reversed(range(len(chunk.word_list))):
-            reg_file_instance_lines += [
-                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h{chunk.word_list[i]};",
-            ]
-            bit_range_i += 1
-            if (bit_range_i == 16):
-                word512_i += 1
-                bit_range_i = 0
+        word_range_in_block_i = 0
+        block_i = 0
+        for i in range(len(chunk.word_list)):
+            if (chunk.SEL_W == 0):
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word_range_in_block[word_range_in_block_i]}] <= 32'h{chunk.word_list[i]};",
+                ]
+            else:
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{block_i}][{word_range_in_block[word_range_in_block_i]}] <= 32'h{chunk.word_list[i]};",
+                ]
+            word_range_in_block_i += 1
+            if (word_range_in_block_i == 16):
+                block_i += 1
+                word_range_in_block_i = 0
 
         # make remaining assignments for reset:
         reg_file_instance_lines += [
             f"\t        // fill-in reset values:",
         ]
         # finish remaining msb's of this 512 word
-        while(bit_range_i != 0):
-            reg_file_instance_lines += [
-                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h00000000;",
-            ]
-            bit_range_i += 1
-            if (bit_range_i == 16):
-                word512_i += 1
-                bit_range_i = 0
+        while(word_range_in_block_i != 0):
+            if (chunk.SEL_W == 0):
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word_range_in_block[word_range_in_block_i]}] <= 32'h00000000;",
+                ]
+            else:
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{block_i}][{word_range_in_block[word_range_in_block_i]}] <= 32'h00000000;",
+                ]
+            word_range_in_block_i += 1
+            if (word_range_in_block_i == 16):
+                block_i += 1
+                word_range_in_block_i = 0
 
         # finish remaining 512 bit words
-        while(word512_i != 2**bits_needed(word512_i)):
-            reg_file_instance_lines += [
-                f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word512_i}][{bit_range[bit_range_i]}] <= 32'h00000000;",
-            ]
-            bit_range_i += 1
-            if (bit_range_i == 16):
-                word512_i += 1
-                bit_range_i = 0
+        while(block_i != 2**bits_needed(block_i)):
+            if (chunk.SEL_W == 0):
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{word_range_in_block[word_range_in_block_i]}] <= 32'h00000000;",
+                ]
+            else:
+                reg_file_instance_lines += [
+                    f"\t        reg_val_{chunk.id}_{chunk.start_addr}[{block_i}][{word_range_in_block[word_range_in_block_i]}] <= 32'h00000000;",
+                ]
+            word_range_in_block_i += 1
+            if (word_range_in_block_i == 16):
+                block_i += 1
+                word_range_in_block_i = 0
 
         # finish reg logic block
         reg_file_instance_lines += [
             f"\t    end",
             f"\t    else",
             f"\t    begin",
-            f"\t        reg_val_{chunk.id}_{chunk.start_addr} = next_reg_val_{chunk.id}_{chunk.start_addr};",
+            f"\t        reg_val_{chunk.id}_{chunk.start_addr} <= next_reg_val_{chunk.id}_{chunk.start_addr};",
             f"\t    end",
             f"\tend",
         ]
@@ -484,14 +553,38 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t",
             f"\talways_comb begin : WRITE_LOGIC_{chunk.id}_{chunk.start_addr}",
             f"\t    // hold reg val by default",
-            f"\t    for (int i = 0; i < {chunk.NUM_WORDS}; i++)",
+            f"\t    for (int i = 0; i < {chunk.NUM_BLOCKS}; i++)",
             f"\t    begin",
             f"\t        next_reg_val_{chunk.id}_{chunk.start_addr}[i] = reg_val_{chunk.id}_{chunk.start_addr}[i];",
             f"\t    end",
             f"\t    // update reg val if wen",
             f"\t    if (wen_{chunk.id}_{chunk.start_addr})",
             f"\t    begin",
-            f"\t        next_reg_val_{chunk.id}_{chunk.start_addr}[wsel_{chunk.id}_{chunk.start_addr}] = wdata_{chunk.id}_{chunk.start_addr};",
+        ]
+        
+        # iterate through byte enable bits
+        reg_file_instance_lines += [
+            f"\t        // check for this byte enabled"
+        ]
+        # single block version
+        if (chunk.SEL_W == 0):
+            # define range of bytes in block for byteen
+                # need to do since "Range must be bounded by constant expressions." for compiltion
+            for i in range(64):
+                new_range = str(8*i + 8 - 1) + ":" + str(8*i)
+                reg_file_instance_lines += [
+                    f"\t\t\tif (mem_req_byteen[{i}])  next_reg_val_{chunk.id}_{chunk.start_addr}[{8*i+8-1}:{8*i}] = wdata_{chunk.id}_{chunk.start_addr}[{8*i+8-1}:{8*i}];"
+            ]
+        # multi block version
+        else:
+            # define range of bytes in block for byteen
+                # need to do since "Range must be bounded by constant expressions." for compiltion
+            for i in range(64):
+                new_range = str(8*i + 8 - 1) + ":" + str(8*i)
+                reg_file_instance_lines += [
+                    f"\t\t\tif (mem_req_byteen[{i}])  next_reg_val_{chunk.id}_{chunk.start_addr}[wsel_{chunk.id}_{chunk.start_addr}][{8*i+8-1}:{8*i}] = wdata_{chunk.id}_{chunk.start_addr}[{8*i+8-1}:{8*i}];"
+            ]
+        reg_file_instance_lines += [
             f"\t    end",
             f"\tend",
         ]
@@ -501,7 +594,20 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t",
             f"\talways_comb begin : READ_LOGIC_{chunk.id}_{chunk.start_addr}",
             f"\t    // read val at rsel",
-            f"\t    rdata_{chunk.id}_{chunk.start_addr} = reg_val_{chunk.id}_{chunk.start_addr}[rsel_{chunk.id}_{chunk.start_addr}];",
+        ]
+        # single block version
+        if (chunk.SEL_W == 0):
+            reg_file_instance_lines += [
+                f"\t    // single block version (don't need select line)",
+                f"\t    rdata_{chunk.id}_{chunk.start_addr} = reg_val_{chunk.id}_{chunk.start_addr};",
+            ]
+        # multi block version
+        else:
+            reg_file_instance_lines += [
+                f"\t    // multi block version (need select line)",
+                f"\t    rdata_{chunk.id}_{chunk.start_addr} = reg_val_{chunk.id}_{chunk.start_addr}[rsel_{chunk.id}_{chunk.start_addr}];",
+            ]
+        reg_file_instance_lines += [
             f"\tend",
         ]
 
@@ -512,7 +618,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         reg_file_instance_lines += [
             f"\treg_file #(",
             f"\t\t.WORD_W ({WORD_W}),",
-            f"\t\t.NUM_WORDS ({chunk.NUM_WORDS}),",
+            f"\t\t.NUM_BLOCKS ({chunk.NUM_BLOCKS}),",
             f"\t\t.SEL_W ({chunk.SEL_W}),",
             "\t\t.RESET_WORDS ({",
         ]
@@ -523,7 +629,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         for i in range(chunk.word_size):
             RESET_WORDS += f"32'h{chunk.word_list[i]}, "
         # fill in 0's for rest of words
-        RESET_WORDS += (chunk.NUM_WORDS - chunk.word_size) * "32'h00000000, "
+        RESET_WORDS += (chunk.NUM_BLOCKS - chunk.word_size) * "32'h00000000, "
         RESET_WORDS = RESET_WORDS[:-2] + "\n\t\t})"
         reg_file_instance_lines.append(RESET_WORDS)
 
@@ -578,7 +684,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
     # make union of intersects of valid addresses within each reg file chunk
     for chunk in chunk_list:
         reg_file_hashing_lines += [
-            f"\t\t    (26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} <= mem_req_addr && mem_req_addr < 26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} + {chunk.word512_size}) ||",
+            f"\t\t    (26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} <= mem_req_addr && mem_req_addr < 26'b{hex_str_to_bin_str(chunk.start_addr)[:-6]} + {chunk.block_size}) ||",
         ]
     reg_file_hashing_lines[-1] = reg_file_hashing_lines[-1][:-3]
     reg_file_hashing_lines += [
@@ -598,12 +704,22 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
         f"\t\t// hardwired outputs:",
     ]
     for chunk in chunk_list:
-        reg_file_hashing_lines += [
-            f"\t\t// hardwiring for chunk {chunk.id}",
-            f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
-            f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data;",
-            f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
-        ]
+        if (chunk.SEL_W == 0):
+            reg_file_hashing_lines += [
+                f"\t\t",
+                f"\t\t// hardwiring for chunk {chunk.id} with one block (select line not used)",
+                f"\t\t// wsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[0];",
+                f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data;",
+                f"\t\t// rsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[0];",
+            ]
+        else:
+            reg_file_hashing_lines += [
+                f"\t\t",
+                f"\t\t// hardwiring for chunk {chunk.id} with multiple blocks",
+                f"\t\twsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
+                f"\t\twdata_{chunk.id}_{chunk.start_addr} = mem_req_data;",
+                f"\t\trsel_{chunk.id}_{chunk.start_addr} = mem_req_addr[{chunk.SEL_W}-1 : 0];",
+            ]
 
     # default outputs
     reg_file_hashing_lines += [
@@ -631,7 +747,7 @@ def construct_local_mem_sv(local_mem_shell_lines, chunk_list):
             f"\t\t    {chunk.id}:",
             f"\t\t    begin",
             f"\t\t        // write routing",
-            f"\t\t        wen_{chunk.id}_{chunk.start_addr} = mem_req_rw;",
+            f"\t\t        wen_{chunk.id}_{chunk.start_addr} = mem_req_rw & mem_req_valid;",
             f"\t\t        // read routing",
             f"\t\t        mem_rsp_data = rdata_{chunk.id}_{chunk.start_addr};",
             f"\t\t    end",

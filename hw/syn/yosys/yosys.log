@@ -26,93 +26,91 @@
 
 1. Executing Verilog-2005 frontend: output.v
 Parsing SystemVerilog input from `output.v' to AST representation.
-Warning: Yosys has only limited support for tri-state logic at the moment. (output.v:9447)
-Generating RTLIL representation for module `\VX_muldiv'.
-Generating RTLIL representation for module `\Vortex_axi'.
-Generating RTLIL representation for module `\VX_ipdom_stack'.
-Generating RTLIL representation for module `\VX_smem_arb'.
-Generating RTLIL representation for module `\VX_mem_arb'.
-Generating RTLIL representation for module `\Vortex'.
-Generating RTLIL representation for module `\VX_core'.
-output.v:1651: Warning: Identifier `\VX_core.icache_req_if.valid' is implicitly declared.
-output.v:1654: Warning: Identifier `\VX_core.icache_req_if.addr' is implicitly declared.
-output.v:1656: Warning: Identifier `\VX_core.icache_req_if.tag' is implicitly declared.
-output.v:1657: Warning: Identifier `\VX_core.icache_req_if.ready' is implicitly declared.
-output.v:1658: Warning: Identifier `\VX_core.icache_rsp_if.valid' is implicitly declared.
-output.v:1659: Warning: Identifier `\VX_core.icache_rsp_if.data' is implicitly declared.
-output.v:1660: Warning: Identifier `\VX_core.icache_rsp_if.tag' is implicitly declared.
-output.v:1661: Warning: Identifier `\VX_core.icache_rsp_if.ready' is implicitly declared.
-output.v:1662: Warning: Identifier `\icache_mem_req_if.valid' is implicitly declared.
-output.v:1663: Warning: Identifier `\icache_mem_req_if.rw' is implicitly declared.
-output.v:1664: Warning: Identifier `\icache_mem_req_if.byteen' is implicitly declared.
-output.v:1665: Warning: Identifier `\icache_mem_req_if.addr' is implicitly declared.
-output.v:1666: Warning: Identifier `\icache_mem_req_if.data' is implicitly declared.
-output.v:1667: Warning: Identifier `\icache_mem_req_if.tag' is implicitly declared.
-output.v:1668: Warning: Identifier `\icache_mem_req_if.ready' is implicitly declared.
-output.v:1669: Warning: Identifier `\icache_mem_rsp_if.valid' is implicitly declared.
-output.v:1670: Warning: Identifier `\icache_mem_rsp_if.data' is implicitly declared.
-output.v:1671: Warning: Identifier `\icache_mem_rsp_if.tag' is implicitly declared.
-output.v:1672: Warning: Identifier `\icache_mem_rsp_if.ready' is implicitly declared.
-output.v:1696: Warning: Identifier `\dcache_req_tmp_if.valid' is implicitly declared.
-output.v:1697: Warning: Identifier `\dcache_req_tmp_if.rw' is implicitly declared.
-output.v:1698: Warning: Identifier `\dcache_req_tmp_if.byteen' is implicitly declared.
-output.v:1699: Warning: Identifier `\dcache_req_tmp_if.addr' is implicitly declared.
-output.v:1700: Warning: Identifier `\dcache_req_tmp_if.data' is implicitly declared.
-output.v:1701: Warning: Identifier `\dcache_req_tmp_if.tag' is implicitly declared.
-output.v:1702: Warning: Identifier `\dcache_req_tmp_if.ready' is implicitly declared.
-output.v:1703: Warning: Identifier `\dcache_rsp_tmp_if.valid' is implicitly declared.
-output.v:1704: Warning: Identifier `\dcache_rsp_tmp_if.tmask' is implicitly declared.
-output.v:1705: Warning: Identifier `\dcache_rsp_tmp_if.data' is implicitly declared.
-output.v:1706: Warning: Identifier `\dcache_rsp_tmp_if.tag' is implicitly declared.
-output.v:1707: Warning: Identifier `\dcache_rsp_tmp_if.ready' is implicitly declared.
-output.v:1708: Warning: Identifier `\dcache_mem_req_if.valid' is implicitly declared.
-output.v:1709: Warning: Identifier `\dcache_mem_req_if.rw' is implicitly declared.
-output.v:1710: Warning: Identifier `\dcache_mem_req_if.byteen' is implicitly declared.
-output.v:1711: Warning: Identifier `\dcache_mem_req_if.addr' is implicitly declared.
-output.v:1712: Warning: Identifier `\dcache_mem_req_if.data' is implicitly declared.
-output.v:1713: Warning: Identifier `\dcache_mem_req_if.tag' is implicitly declared.
-output.v:1714: Warning: Identifier `\dcache_mem_req_if.ready' is implicitly declared.
-output.v:1715: Warning: Identifier `\dcache_mem_rsp_if.valid' is implicitly declared.
-output.v:1716: Warning: Identifier `\dcache_mem_rsp_if.data' is implicitly declared.
-output.v:1717: Warning: Identifier `\dcache_mem_rsp_if.tag' is implicitly declared.
-output.v:1718: Warning: Identifier `\dcache_mem_rsp_if.ready' is implicitly declared.
-output.v:1805: Warning: Identifier `\VX_core.dcache_req_if.valid' is implicitly declared.
-output.v:1806: Warning: Identifier `\VX_core.dcache_req_if.rw' is implicitly declared.
-output.v:1807: Warning: Identifier `\VX_core.dcache_req_if.byteen' is implicitly declared.
-output.v:1808: Warning: Identifier `\VX_core.dcache_req_if.addr' is implicitly declared.
-output.v:1809: Warning: Identifier `\VX_core.dcache_req_if.data' is implicitly declared.
-output.v:1810: Warning: Identifier `\VX_core.dcache_req_if.tag' is implicitly declared.
-output.v:1811: Warning: Identifier `\VX_core.dcache_req_if.ready' is implicitly declared.
-output.v:1812: Warning: Identifier `\smem_req_if.valid' is implicitly declared.
-output.v:1813: Warning: Identifier `\smem_req_if.rw' is implicitly declared.
-output.v:1814: Warning: Identifier `\smem_req_if.byteen' is implicitly declared.
-output.v:1815: Warning: Identifier `\smem_req_if.addr' is implicitly declared.
-output.v:1816: Warning: Identifier `\smem_req_if.data' is implicitly declared.
-output.v:1817: Warning: Identifier `\smem_req_if.tag' is implicitly declared.
-output.v:1818: Warning: Identifier `\smem_req_if.ready' is implicitly declared.
-output.v:1819: Warning: Identifier `\smem_rsp_if.valid' is implicitly declared.
-output.v:1820: Warning: Identifier `\smem_rsp_if.tmask' is implicitly declared.
-output.v:1821: Warning: Identifier `\smem_rsp_if.data' is implicitly declared.
-output.v:1822: Warning: Identifier `\smem_rsp_if.tag' is implicitly declared.
-output.v:1823: Warning: Identifier `\smem_rsp_if.ready' is implicitly declared.
-output.v:1824: Warning: Identifier `\VX_core.dcache_rsp_if.valid' is implicitly declared.
-output.v:1825: Warning: Identifier `\VX_core.dcache_rsp_if.tmask' is implicitly declared.
-output.v:1826: Warning: Identifier `\VX_core.dcache_rsp_if.tag' is implicitly declared.
-output.v:1827: Warning: Identifier `\VX_core.dcache_rsp_if.data' is implicitly declared.
-output.v:1828: Warning: Identifier `\VX_core.dcache_rsp_if.ready' is implicitly declared.
-output.v:1885: Warning: Identifier `\VX_core.mem_req_if.valid' is implicitly declared.
-output.v:1886: Warning: Identifier `\VX_core.mem_req_if.rw' is implicitly declared.
-output.v:1887: Warning: Identifier `\VX_core.mem_req_if.byteen' is implicitly declared.
-output.v:1888: Warning: Identifier `\VX_core.mem_req_if.addr' is implicitly declared.
-output.v:1889: Warning: Identifier `\VX_core.mem_req_if.data' is implicitly declared.
-output.v:1890: Warning: Identifier `\VX_core.mem_req_if.tag' is implicitly declared.
-output.v:1891: Warning: Identifier `\VX_core.mem_req_if.ready' is implicitly declared.
-output.v:1896: Warning: Identifier `\VX_core.mem_rsp_if.valid' is implicitly declared.
-output.v:1897: Warning: Identifier `\VX_core.mem_rsp_if.tag' is implicitly declared.
-output.v:1898: Warning: Identifier `\VX_core.mem_rsp_if.data' is implicitly declared.
-output.v:1899: Warning: Identifier `\VX_core.mem_rsp_if.ready' is implicitly declared.
+Warning: Yosys has only limited support for tri-state logic at the moment. (output.v:11781)
+Generating RTLIL representation for module `\VX_vortex_to_local_mem'.
 Generating RTLIL representation for module `\VX_cache_arb'.
 Generating RTLIL representation for module `\VX_cluster'.
+Generating RTLIL representation for module `\VX_core'.
+output.v:934: Warning: Identifier `\VX_core.icache_req_if.valid' is implicitly declared.
+output.v:937: Warning: Identifier `\VX_core.icache_req_if.addr' is implicitly declared.
+output.v:939: Warning: Identifier `\VX_core.icache_req_if.tag' is implicitly declared.
+output.v:940: Warning: Identifier `\VX_core.icache_req_if.ready' is implicitly declared.
+output.v:941: Warning: Identifier `\VX_core.icache_rsp_if.valid' is implicitly declared.
+output.v:942: Warning: Identifier `\VX_core.icache_rsp_if.data' is implicitly declared.
+output.v:943: Warning: Identifier `\VX_core.icache_rsp_if.tag' is implicitly declared.
+output.v:944: Warning: Identifier `\VX_core.icache_rsp_if.ready' is implicitly declared.
+output.v:945: Warning: Identifier `\icache_mem_req_if.valid' is implicitly declared.
+output.v:946: Warning: Identifier `\icache_mem_req_if.rw' is implicitly declared.
+output.v:947: Warning: Identifier `\icache_mem_req_if.byteen' is implicitly declared.
+output.v:948: Warning: Identifier `\icache_mem_req_if.addr' is implicitly declared.
+output.v:949: Warning: Identifier `\icache_mem_req_if.data' is implicitly declared.
+output.v:950: Warning: Identifier `\icache_mem_req_if.tag' is implicitly declared.
+output.v:951: Warning: Identifier `\icache_mem_req_if.ready' is implicitly declared.
+output.v:952: Warning: Identifier `\icache_mem_rsp_if.valid' is implicitly declared.
+output.v:953: Warning: Identifier `\icache_mem_rsp_if.data' is implicitly declared.
+output.v:954: Warning: Identifier `\icache_mem_rsp_if.tag' is implicitly declared.
+output.v:955: Warning: Identifier `\icache_mem_rsp_if.ready' is implicitly declared.
+output.v:979: Warning: Identifier `\dcache_req_tmp_if.valid' is implicitly declared.
+output.v:980: Warning: Identifier `\dcache_req_tmp_if.rw' is implicitly declared.
+output.v:981: Warning: Identifier `\dcache_req_tmp_if.byteen' is implicitly declared.
+output.v:982: Warning: Identifier `\dcache_req_tmp_if.addr' is implicitly declared.
+output.v:983: Warning: Identifier `\dcache_req_tmp_if.data' is implicitly declared.
+output.v:984: Warning: Identifier `\dcache_req_tmp_if.tag' is implicitly declared.
+output.v:985: Warning: Identifier `\dcache_req_tmp_if.ready' is implicitly declared.
+output.v:986: Warning: Identifier `\dcache_rsp_tmp_if.valid' is implicitly declared.
+output.v:987: Warning: Identifier `\dcache_rsp_tmp_if.tmask' is implicitly declared.
+output.v:988: Warning: Identifier `\dcache_rsp_tmp_if.data' is implicitly declared.
+output.v:989: Warning: Identifier `\dcache_rsp_tmp_if.tag' is implicitly declared.
+output.v:990: Warning: Identifier `\dcache_rsp_tmp_if.ready' is implicitly declared.
+output.v:991: Warning: Identifier `\dcache_mem_req_if.valid' is implicitly declared.
+output.v:992: Warning: Identifier `\dcache_mem_req_if.rw' is implicitly declared.
+output.v:993: Warning: Identifier `\dcache_mem_req_if.byteen' is implicitly declared.
+output.v:994: Warning: Identifier `\dcache_mem_req_if.addr' is implicitly declared.
+output.v:995: Warning: Identifier `\dcache_mem_req_if.data' is implicitly declared.
+output.v:996: Warning: Identifier `\dcache_mem_req_if.tag' is implicitly declared.
+output.v:997: Warning: Identifier `\dcache_mem_req_if.ready' is implicitly declared.
+output.v:998: Warning: Identifier `\dcache_mem_rsp_if.valid' is implicitly declared.
+output.v:999: Warning: Identifier `\dcache_mem_rsp_if.data' is implicitly declared.
+output.v:1000: Warning: Identifier `\dcache_mem_rsp_if.tag' is implicitly declared.
+output.v:1001: Warning: Identifier `\dcache_mem_rsp_if.ready' is implicitly declared.
+output.v:1088: Warning: Identifier `\VX_core.dcache_req_if.valid' is implicitly declared.
+output.v:1089: Warning: Identifier `\VX_core.dcache_req_if.rw' is implicitly declared.
+output.v:1090: Warning: Identifier `\VX_core.dcache_req_if.byteen' is implicitly declared.
+output.v:1091: Warning: Identifier `\VX_core.dcache_req_if.addr' is implicitly declared.
+output.v:1092: Warning: Identifier `\VX_core.dcache_req_if.data' is implicitly declared.
+output.v:1093: Warning: Identifier `\VX_core.dcache_req_if.tag' is implicitly declared.
+output.v:1094: Warning: Identifier `\VX_core.dcache_req_if.ready' is implicitly declared.
+output.v:1095: Warning: Identifier `\smem_req_if.valid' is implicitly declared.
+output.v:1096: Warning: Identifier `\smem_req_if.rw' is implicitly declared.
+output.v:1097: Warning: Identifier `\smem_req_if.byteen' is implicitly declared.
+output.v:1098: Warning: Identifier `\smem_req_if.addr' is implicitly declared.
+output.v:1099: Warning: Identifier `\smem_req_if.data' is implicitly declared.
+output.v:1100: Warning: Identifier `\smem_req_if.tag' is implicitly declared.
+output.v:1101: Warning: Identifier `\smem_req_if.ready' is implicitly declared.
+output.v:1102: Warning: Identifier `\smem_rsp_if.valid' is implicitly declared.
+output.v:1103: Warning: Identifier `\smem_rsp_if.tmask' is implicitly declared.
+output.v:1104: Warning: Identifier `\smem_rsp_if.data' is implicitly declared.
+output.v:1105: Warning: Identifier `\smem_rsp_if.tag' is implicitly declared.
+output.v:1106: Warning: Identifier `\smem_rsp_if.ready' is implicitly declared.
+output.v:1107: Warning: Identifier `\VX_core.dcache_rsp_if.valid' is implicitly declared.
+output.v:1108: Warning: Identifier `\VX_core.dcache_rsp_if.tmask' is implicitly declared.
+output.v:1109: Warning: Identifier `\VX_core.dcache_rsp_if.tag' is implicitly declared.
+output.v:1110: Warning: Identifier `\VX_core.dcache_rsp_if.data' is implicitly declared.
+output.v:1111: Warning: Identifier `\VX_core.dcache_rsp_if.ready' is implicitly declared.
+output.v:1168: Warning: Identifier `\VX_core.mem_req_if.valid' is implicitly declared.
+output.v:1169: Warning: Identifier `\VX_core.mem_req_if.rw' is implicitly declared.
+output.v:1170: Warning: Identifier `\VX_core.mem_req_if.byteen' is implicitly declared.
+output.v:1171: Warning: Identifier `\VX_core.mem_req_if.addr' is implicitly declared.
+output.v:1172: Warning: Identifier `\VX_core.mem_req_if.data' is implicitly declared.
+output.v:1173: Warning: Identifier `\VX_core.mem_req_if.tag' is implicitly declared.
+output.v:1174: Warning: Identifier `\VX_core.mem_req_if.ready' is implicitly declared.
+output.v:1179: Warning: Identifier `\VX_core.mem_rsp_if.valid' is implicitly declared.
+output.v:1180: Warning: Identifier `\VX_core.mem_rsp_if.tag' is implicitly declared.
+output.v:1181: Warning: Identifier `\VX_core.mem_rsp_if.data' is implicitly declared.
+output.v:1182: Warning: Identifier `\VX_core.mem_rsp_if.ready' is implicitly declared.
+Generating RTLIL representation for module `\VX_ipdom_stack'.
+Generating RTLIL representation for module `\VX_mem_arb'.
+Generating RTLIL representation for module `\VX_muldiv'.
 Generating RTLIL representation for module `\VX_pipeline'.
 Warning: Deep recursion in AST simplifier.
 Does this design contain insanely long expressions?

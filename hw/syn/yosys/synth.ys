@@ -1,5 +1,5 @@
 read_verilog   -sv output.v
-synth -top Vortex_ahb
+synth -top VX_vortex_local_mem
 dfflibmap -liberty mycells.lib
 abc -liberty mycells.lib
 clean

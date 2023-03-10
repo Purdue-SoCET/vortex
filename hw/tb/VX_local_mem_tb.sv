@@ -1,6 +1,9 @@
 // Guillaume Hu - hu724@purdue.edu
 
-//`include "local_mem.vh"
+// `include "local_mem.vh"
+`include "VX_define.vh"
+
+`include "local_mem.vh"
 `include "VX_define.vh"
 
 `timescale 1 ps / 1 ps
@@ -83,6 +86,7 @@ module VX_local_mem_tb;
                .mem_rsp_ready(mem_rsp_ready), 
                .busy(busy)
                );
+<<<<<<< HEAD
 
     local_mem MEM(.clk(clk), 
                   .reset(reset), 
@@ -111,6 +115,9 @@ module VX_local_mem_tb;
     // assign tb_busy = busy; 
 
     //local_mem MEM(.*); 
+=======
+    local_mem MEM(.*); 
+>>>>>>> fc966496a45f3f5bbc0f60a8e4e8e85463e7b1a6
 
     initial begin 
         mem_req_ready = 1'b0; 
