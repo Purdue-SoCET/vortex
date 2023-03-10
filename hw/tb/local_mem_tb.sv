@@ -619,7 +619,7 @@ program test
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
-            mem_req_byteen = '0;
+            mem_req_byteen = 64'hffff0000ffff0000;
             mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
@@ -687,18 +687,18 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-			expected_mem_rsp_data[31:0] = 32'h89abcdef;
-            expected_mem_rsp_data[63:32] = 32'h01234567;
-            expected_mem_rsp_data[95:64] = 32'h89abcdef;
-            expected_mem_rsp_data[127:96] = 32'h01234567;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
+            expected_mem_rsp_data[63:32] = 32'h00000000;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
+            expected_mem_rsp_data[127:96] = 32'h00000000;
             expected_mem_rsp_data[159:128] = 32'h89abcdef;
             expected_mem_rsp_data[191:160] = 32'h01234567;
             expected_mem_rsp_data[223:192] = 32'h89abcdef;
             expected_mem_rsp_data[255:224] = 32'h01234567;
-            expected_mem_rsp_data[287:256] = 32'h89abcdef;
-            expected_mem_rsp_data[319:288] = 32'h01234567;
-            expected_mem_rsp_data[351:320] = 32'h89abcdef;
-            expected_mem_rsp_data[383:352] = 32'h01234567;
+            expected_mem_rsp_data[287:256] = 32'h00000000;
+            expected_mem_rsp_data[319:288] = 32'h00000000;
+            expected_mem_rsp_data[351:320] = 32'h00000000;
+            expected_mem_rsp_data[383:352] = 32'h00000000;
             expected_mem_rsp_data[415:384] = 32'h89abcdef;
             expected_mem_rsp_data[447:416] = 32'h01234567;
             expected_mem_rsp_data[479:448] = 32'h89abcdef;
@@ -716,7 +716,7 @@ program test
             // input stimuli:
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
-            mem_req_byteen = '0;
+            mem_req_byteen = 64'h0ff0f00f0f0ff0f0;
             mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
@@ -784,22 +784,22 @@ program test
             // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
-			expected_mem_rsp_data[31:0] = 32'h89abcdef;
+			expected_mem_rsp_data[31:0] = 32'h00000000;
             expected_mem_rsp_data[63:32] = 32'h01234567;
-            expected_mem_rsp_data[95:64] = 32'h89abcdef;
+            expected_mem_rsp_data[95:64] = 32'h00000000;
             expected_mem_rsp_data[127:96] = 32'h01234567;
             expected_mem_rsp_data[159:128] = 32'h89abcdef;
-            expected_mem_rsp_data[191:160] = 32'h01234567;
+            expected_mem_rsp_data[191:160] = 32'h00000000;
             expected_mem_rsp_data[223:192] = 32'h89abcdef;
-            expected_mem_rsp_data[255:224] = 32'h01234567;
+            expected_mem_rsp_data[255:224] = 32'h40040000;
             expected_mem_rsp_data[287:256] = 32'h89abcdef;
-            expected_mem_rsp_data[319:288] = 32'h01234567;
-            expected_mem_rsp_data[351:320] = 32'h89abcdef;
+            expected_mem_rsp_data[319:288] = 32'hC0934C66;
+            expected_mem_rsp_data[351:320] = 32'h9999999A;
             expected_mem_rsp_data[383:352] = 32'h01234567;
-            expected_mem_rsp_data[415:384] = 32'h89abcdef;
+            expected_mem_rsp_data[415:384] = 32'h00000000;
             expected_mem_rsp_data[447:416] = 32'h01234567;
             expected_mem_rsp_data[479:448] = 32'h89abcdef;
-            expected_mem_rsp_data[511:480] = 32'h01234567;
+            expected_mem_rsp_data[511:480] = 32'h40953A70;
             expected_mem_rsp_tag = 16'd10;
             expected_tb_addr_out_of_bounds = 1'b0;
             
