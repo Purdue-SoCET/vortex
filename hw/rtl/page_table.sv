@@ -4,7 +4,7 @@
 `include "ahb_if.vh"
 `include "VX_define.vh"
 
-module page_table_table(
+module page_table(
     input logic CLK,
     input logic nRST,
     output logic page_fault_reg,
