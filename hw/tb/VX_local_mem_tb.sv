@@ -132,7 +132,8 @@ module VX_local_mem_tb;
         forever begin 
             // Buffer the correct values for the rsp 
             @(posedge mem_req_valid); 
-            tb_mem_rsp_tag = mem_req_tag;
+            //$display("VX request at addr %h, @%0t", mem_req_addr, $time); 
+            tb_mem_req_tag = mem_req_tag;
             tb_mem_req_addr = mem_req_addr; 
             tb_mem_req_byteen = mem_req_byteen; 
             tb_mem_req_rw = mem_req_rw; 
@@ -141,9 +142,11 @@ module VX_local_mem_tb;
 
             // Response to Vortex's request
             tb_mem_req_valid = 1'b1; // Trigger the local_mem
-            mem_rsp_valid = 1'b1; 
-            mem_rsp_data = tb_mem_rsp_data; 
-            mem_rsp_tag = tb_mem_req_tag; 
+            if (~tb_mem_req_rw) begin // RSP only on read requests 
+                mem_rsp_valid = 1'b1; 
+                mem_rsp_data = tb_mem_rsp_data; 
+                mem_rsp_tag = tb_mem_req_tag; 
+            end
             #(PERIOD); 
             mem_rsp_valid = 1'b0; 
         end 
