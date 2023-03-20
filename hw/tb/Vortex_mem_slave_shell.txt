@@ -2,7 +2,11 @@
     socet115 / zlagpaca@purdue.edu
     Zach Lagpacan
 
-    module for on-chip RAM fake register file with AFTx07 AHB slave interface and Vortex memory interface 
+    module for on-chip RAM fake register file with AFTx07 AHB slave interface (at generic bus interface) 
+    and Vortex memory interface 
+
+    assumptions:
+        AHB only references word addresses
 */
 
 // temporary include to have defined vals
@@ -147,20 +151,24 @@ module Vortex_mem_slave #(
         // read logic: //
         /////////////////
 
-        // Vortex read logic
-        
+        // Vortex read logic (this part is automated by load_Vortex_mem_slave.py)
+< Vortex read logic here >
 
         // AHB read logic
-        gbif.rdata = reg_file[]
+        gbif.rdata[7:0] = reg_file[{gbif.addr[13:2], 2'd0}];
+        gbif.rdata[15:8] = reg_file[{gbif.addr[13:2], 2'd1}];
+        gbif.rdata[23:16] = reg_file[{gbif.addr[13:2], 2'd2}];
+        gbif.rdata[31:24] = reg_file[{gbif.addr[13:2], 2'd3}];
 
         //////////////////////////////////////////
         // Vortex write logic (first priority): //
         //////////////////////////////////////////
 
-        if (mem_req_rw & ~Vortex_bad_address)
+        // check for valid, write, and address in range
+        if (mem_req_valid & mem_req_rw & ~Vortex_bad_address)
         begin
-            < Vortex write logic here >
-            if (mem_req_byteen[0]) next_reg_file[{mem_req_addr[7:0], 6'd0}] = mem_req_data[7:0];
+            // this part is automated by load_Vortex_mem_slave.py:
+< Vortex write logic here >
 
             // ahb busy
             gbif.busy = 1'b1;
@@ -170,10 +178,14 @@ module Vortex_mem_slave #(
         // AHB write logic (second priority): //
         ////////////////////////////////////////
 
+        // if Vortex not writing, check for write and address in range
         else if (gbif.wen & ~AHB_bad_address)
         begin
-            < AHB write logic here >
-            if (gbif.byte_en[0]) next_reg_file[{gbif.addr[7:0], 6'd0}] = gbif.wdata[7:0];
+            // assumption: follow word address
+            if (gbif.byte_en[0]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[7:0];
+            if (gbif.byte_en[1]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[15:8];
+            if (gbif.byte_en[2]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[23:16];
+            if (gbif.byte_en[3]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[31:24];
         end
 
         ////////////////////////////////

@@ -165,17 +165,56 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     # add newlines to end of each line and replace \t tabs with 4 spaces
     reg_file_instance_lines = [line.replace("\t", "    ") + "\n" for line in reg_file_instance_lines]
 
+    #########################################
+    # make Vortex mem interface read logic: #
+    #########################################
+
+    # start lines
+    Vortex_read_logic_lines = []
+
+    # iterate through 512 bits = 64 bytes of data 
+    for i in range(64):
+        Vortex_read_logic_lines.append(
+            f"\t\tmem_rsp_data[{8*i+7}:{8*i}] = reg_file[{{mem_req_addr[7:0], 6'd{i}}}];"
+        )
+
+    # add newlines to end of each line and replace \t tabs with 4 spaces
+    Vortex_read_logic_lines = [line.replace("\t", "    ") + "\n" for line in Vortex_read_logic_lines]
+
+    ##########################################
+    # make Vortex mem interface write logic: #
+    ##########################################
+
+    # start lines
+    Vortex_write_logic_lines =[]
+
+    # iterate through 512 bits = 64 bytes of data
+    for i in range(64):
+        Vortex_write_logic_lines.append(
+            f"\t\t\tif (mem_req_byteen[{i}]) next_reg_file[{{mem_req_addr[7:0], 6'd{i}}}] = "
+            + f"mem_req_data[{8*i+7}:{8*i}];"
+        )
+
+    # add newlines to end of each line and replace \t tabs with 4 spaces
+    Vortex_write_logic_lines = [line.replace("\t", "    ") + "\n" for line in Vortex_write_logic_lines]
+
     ##########################
     # compile lines of file: #
     ##########################
 
     # get indices in shell file
     reg_file_instance_index = Vortex_mem_slave_shell_lines.index("< reset vals here >\n")
+    Vortex_read_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex read logic here >\n")
+    Vortex_write_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex write logic here >\n")
 
     # add up shell pieces and instance piece
     reg_file_sv_lines = Vortex_mem_slave_shell_lines[:reg_file_instance_index]
     reg_file_sv_lines += reg_file_instance_lines
-    reg_file_sv_lines += Vortex_mem_slave_shell_lines[reg_file_instance_index +1:]
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[reg_file_instance_index +1:Vortex_read_logic_index]
+    reg_file_sv_lines += Vortex_read_logic_lines
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_read_logic_index +1:Vortex_write_logic_index]
+    reg_file_sv_lines += Vortex_write_logic_lines
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_write_logic_index +1:]
 
     # return completed lines of file
     return reg_file_sv_lines
