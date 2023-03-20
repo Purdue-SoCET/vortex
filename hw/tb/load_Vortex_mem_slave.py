@@ -129,7 +129,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
                 quit()
             while (last_byte_num < byte_num):
                 reg_file_instance_lines += [
-                    f"\t\t\treg_file[{last_byte_num}] <= 8'h00",
+                    f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
                 ]
                 last_byte_num += 1
 
@@ -138,10 +138,10 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
                 # get next word (8-char string) from data section
                 next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
                 reg_file_instance_lines += [
-                    f"\t\t\treg_file[{last_byte_num}] <= 8'h{next_word[0:2]}",
-                    f"\t\t\treg_file[{last_byte_num + 1}] <= 8'h{next_word[2:4]}",
-                    f"\t\t\treg_file[{last_byte_num + 2}] <= 8'h{next_word[4:6]}",
-                    f"\t\t\treg_file[{last_byte_num + 3}] <= 8'h{next_word[6:8]}",
+                    f"\t\t\treg_file[{last_byte_num}] <= 8'h{next_word[0:2]};",
+                    f"\t\t\treg_file[{last_byte_num + 1}] <= 8'h{next_word[2:4]};",
+                    f"\t\t\treg_file[{last_byte_num + 2}] <= 8'h{next_word[4:6]};",
+                    f"\t\t\treg_file[{last_byte_num + 3}] <= 8'h{next_word[6:8]};",
                 ]
                 last_byte_num += 4
 
@@ -158,7 +158,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     # check for any bytes to fill in after lines
     while (last_byte_num < REG_FILE_BYTE_SIZE):
         reg_file_instance_lines += [
-            f"\t\t\treg_file[{last_byte_num}] <= 8'h00",
+            f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
         ]
         last_byte_num += 1
 

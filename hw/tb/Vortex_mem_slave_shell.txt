@@ -10,13 +10,16 @@
 */
 
 // temporary include to have defined vals
-// `include "local_mem.vh"
-`include "../include/VX_define.vh"
-// `include "VX_define.vh"
+`include "Vortex_mem_slave.vh"
 
-// size of register file (128 Kb -> 16 KB -> 16*2^10 B -> 2^14 B -> 0x4000 B worth of byte address space)
-`define REG_FILE_BYTE_WIDTH = 14
-`define REG_FILE_BYTE_SIZE = 2**REG_FILE_BYTE_WIDTH
+// include for Vortex widths
+`include "../include/VX_define.vh"
+
+// // size of register file (128 Kb -> 16 KB -> 16*2^10 B -> 2^14 B -> 0x4000 B worth of byte address space)
+// `define REG_FILE_BYTE_WIDTH 14
+// `define REG_FILE_BYTE_SIZE 2**REG_FILE_BYTE_WIDTH
+
+// `define WORD_SIZE 32
 
 //////////////////////////////////
 // Generic Bus Interface (AHB): //
@@ -25,7 +28,8 @@
 `ifndef GENERIC_BUS_IF_VH
 `define GENERIC_BUS_IF_VH
 
-typedef logic [WORD_SIZE-1:0] word_t;
+// typedef logic [WORD_SIZE-1:0] word_t;
+typedef logic [32-1:0] word_t;
 
 interface generic_bus_if ();
     // import rv32i_types_pkg::*;
@@ -99,8 +103,11 @@ module Vortex_mem_slave #(
     logic AHB_bad_address;
 
     // reg file signals (bytewise)
-    logic [7:0] reg_file        [REG_FILE_BYTE_SIZE-1:0];
-    logic [7:0] next_reg_file   [REG_FILE_BYTE_SIZE-1:0];
+    // reg file signals (bytewise)
+    // logic [7:0] reg_file        [REG_FILE_BYTE_SIZE-1:0];
+    // logic [7:0] next_reg_file   [REG_FILE_BYTE_SIZE-1:0];
+    logic [7:0] reg_file        [2**14-1:0];
+    logic [7:0] next_reg_file   [2**14-1:0];
 
     // reg file instance
     always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
@@ -130,6 +137,7 @@ module Vortex_mem_slave #(
 
         // AHB outputs
         AHB_bad_address = 1'b0;
+        gbif.busy = 1'b0;
 
         //////////////////
         // bad address: //

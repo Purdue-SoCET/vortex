@@ -3,6 +3,11 @@ LOCAL_MEM_DEF := local_mem.vh
 LOCAL_MEM_RTL_FILES := local_mem.sv 
 LOCAL_MEM_TB := local_mem_tb.sv
 
+# VORTEX_MEM_SLAVE
+VORTEX_MEM_SLAVE_DEF := Vortex_mem_slave.vh
+VORTEX_MEM_SLAVE_RTL_FILES := Vortex_mem_slave.sv 
+VORTEX_MEM_SLAVE_TB := Vortex_mem_slave_tb.sv
+
 # DIR's
 INCL := 
 INCL := include
@@ -13,9 +18,13 @@ SCRDIR			= scripts
 SIMTIME := -all
 
 # view waveform in graphical mode and load do file if there is one
-DOFILE 				= local_mem
-WAVDO				= do $(SCRDIR)/$(DOFILE).do
-SIMDO				= "view objects; $(WAVDO); run $(SIMTIME);" -onfinish stop
+LOCAL_MEM_DOFILE 		= local_mem
+LOCAL_MEM_WAVDO			= do $(SCRDIR)/$(LOCAL_MEM_DOFILE).do
+LOCAL_MEM_SIMDO			= "view objects; $(LOCAL_MEM_WAVDO); run $(SIMTIME);" -onfinish stop
+
+VORTEX_MEM_SLAVE_DOFILE	= Vortex_local_mem
+VORTEX_MEM_SLAVE_WAVDO	= do $(SCRDIR)/$(VORTEX_MEM_SLAVE_DOFILE).do
+VORTEX_MEM_SLAVE_SIMDO	= "view objects; $(VORTEX_MEM_SLAVEWAVDO); run $(SIMTIME);" -onfinish stop
 
 # SIM_UI_OPT := -gui
 # SIM_UI_OPT := -c
@@ -26,21 +35,38 @@ VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt +define+SYNTHESIS #+define+SYNTHESI
 # VLOGOPTS_DPI := -sv -work $(WORKDIR) -dpiheader dpi_header_file.h -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors" +define+UTIL_DPI +define+FLOAT_DPI
 # VLOGOPTS_DPI_CPP := -work $(WORKDIR) -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors"
 
-
-compile: $(WORKDIR)
+# TARGETS:
+compile_local_mem: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_DEF)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_RTL_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_TB)
 
-local_mem.wav: compile
+local_mem.wav: compile_local_mem
 		vsim $(VSIMOPTS) -gui \
 		local_mem_tb \
 		-coverage -voptargs=+acc \
-		-do $(SIMDO)
+		-do $(LOCAL_MEM_SIMDO)
 
-local_mem.sim: compile
+local_mem.sim: compile_local_mem
 		vsim $(VSIMOPTS) -c \
 		local_mem_tb \
+		-coverage \
+		-do "run $(SIMTIME);"
+
+compile_Vortex_mem_slave: $(WORKDIR)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_DEF)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_TB)
+
+Vortex_mem_slave.wav: compile_Vortex_mem_slave
+		vsim $(VSIMOPTS) -gui \
+		Vortex_mem_slave_tb \
+		-coverage -voptargs=+acc \
+		-do $(VORTEX_MEM_SLAVE_SIMDO)
+
+Vortex_mem_slave.sim: compile_Vortex_mem_slave
+		vsim $(VSIMOPTS) -c \
+		Vortex_mem_slave_tb \
 		-coverage \
 		-do "run $(SIMTIME);"
 
