@@ -9,7 +9,7 @@ module VX_dp_ram #(
     parameter NO_RWCHECK  = 0,
     parameter LUTRAM      = 0,
     parameter ADDRW       = $clog2(SIZE),
-    parameter INIT_ENABLE = 0,
+    parameter INIT_ENABLE = 1,
     parameter INIT_FILE   = "",
     parameter [DATAW-1:0] INIT_VALUE = 0
 ) ( 
