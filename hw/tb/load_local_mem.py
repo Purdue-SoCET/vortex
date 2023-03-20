@@ -25,6 +25,8 @@ import sys
 
 # consts:
 
+LOCAL_MEM_SIZE = 2**15
+
 VX_MEM_BYTEEN_WIDTH = 64
 VX_MEM_ADDR_WIDTH = 26
 VX_MEM_DATA_WIDTH = 512
