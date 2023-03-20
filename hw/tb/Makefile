@@ -22,9 +22,9 @@ LOCAL_MEM_DOFILE 		= local_mem
 LOCAL_MEM_WAVDO			= do $(SCRDIR)/$(LOCAL_MEM_DOFILE).do
 LOCAL_MEM_SIMDO			= "view objects; $(LOCAL_MEM_WAVDO); run $(SIMTIME);" -onfinish stop
 
-VORTEX_MEM_SLAVE_DOFILE	= Vortex_local_mem
+VORTEX_MEM_SLAVE_DOFILE	= Vortex_mem_slave
 VORTEX_MEM_SLAVE_WAVDO	= do $(SCRDIR)/$(VORTEX_MEM_SLAVE_DOFILE).do
-VORTEX_MEM_SLAVE_SIMDO	= "view objects; $(VORTEX_MEM_SLAVEWAVDO); run $(SIMTIME);" -onfinish stop
+VORTEX_MEM_SLAVE_SIMDO	= "view objects; $(VORTEX_MEM_SLAVE_WAVDO); run $(SIMTIME);" -onfinish stop
 
 # SIM_UI_OPT := -gui
 # SIM_UI_OPT := -c
