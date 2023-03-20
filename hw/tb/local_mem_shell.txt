@@ -10,6 +10,8 @@
 `include "../include/VX_define.vh"
 // `include "VX_define.vh"
 
+// size of register file (2**15 -> 0x8000 worth of address space)
+
 module local_mem #(
 )(
     // seq
