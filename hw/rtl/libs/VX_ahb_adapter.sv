@@ -71,7 +71,7 @@ module VX_ahb_adapter #(
     data_buff data_read, nxt_data_read; 
 
     logic [511:0] nxt_data, data;
-    logic nxt_rw, rw;
+    logic nxt_rw, rw, clear;
     logic [25:0] nxt_addr, addr;
     
     always_ff @(posedge clk, negedge reset) begin : STATE_TRANSITIONS
@@ -265,5 +265,14 @@ module VX_ahb_adapter #(
 
     assign mem_rsp_data = logic'(data_read);
 
+    counter
+    SIXTEEN(
+        .clk(clk),
+        .n_rst(reset),
+        .clear(clear),
+        .count_enable(count_en),
+        .rollover_val(4'd15),
+        .count_out(count)
+    );
 
 endmodule
