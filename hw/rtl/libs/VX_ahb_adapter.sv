@@ -30,12 +30,14 @@ module VX_ahb_adapter #(
 
 
     ahb_if.manager ahb,
-    VX_mem_rsp_if.master rsp,
     VX_mem_req_if.slave req,
-    input logic [3:0] count
+    VX_mem_rsp_if.master rsp
+    
+    
     //to do: add burst
 );
 
+    logic [3:0] count;
     localparam size = $clog2(VX_DATA_WIDTH/8);
     localparam num_cycles = (512/VX_DATA_WIDTH);
 
