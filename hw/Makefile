@@ -22,7 +22,7 @@ WAVE:= $(WAVE_DIR)/VX_top_level.do
 
 # Additional files 
 ADD_INCL += $(INCL)
-ADD_RTL += tb/local_mem.sv
+ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh
 
 #Macros
 MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE

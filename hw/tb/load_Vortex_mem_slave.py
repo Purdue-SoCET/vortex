@@ -33,6 +33,7 @@ VX_MEM_DATA_WIDTH = 512
 VX_MEM_TAG_WIDTH = 56       # 55 for ENABLE_SM = 0
 
 DO_PRINTS = False
+LOAD_ZEROS = False
 
 ###########################################################################################################
 # classes:
@@ -89,78 +90,87 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     # start lines of reg file instance
     reg_file_instance_lines = []
 
-    # iterate through intel hex str lines, checking for different record types, making reg file reset values
-    line_num = 0
-    last_byte_num = 0
-    byte_num = 0
-    for line in intelhex_lines:
-        line_num += 1
+    # check for LOAD_ZEROS
+    if (LOAD_ZEROS):
+        reg_file_instance_lines += [
+            f"\t\t\t// LOAD_ZEROS",
+            f"\t\t\treg_file <= '0;",
+        ]
 
-        # check for eof
-        if (line[7:8 +1] == "01"):
-            if (DO_PRINTS):
-                print("intelhex: eof\n")
-            break
+    # otherwise, follow hex file
+    else:
+        # iterate through intel hex str lines, checking for different record types, making reg file reset values
+        line_num = 0
+        last_byte_num = 0
+        byte_num = 0
+        for line in intelhex_lines:
+            line_num += 1
 
-        # check for PC start line
-        elif (line[7:8 +1] == "05"):
-            if (DO_PRINTS):
-                print(f"intelhex: PC should start at 0x{line[9:16 +1]}")
-        
-        # check for extended addr line
-        elif (line[7:8 +1] == "04"):
+            # check for eof
+            if (line[7:8 +1] == "01"):
+                if (DO_PRINTS):
+                    print("intelhex: eof\n")
+                break
 
-            # prep for new chunk
-            if (DO_PRINTS):
-                print(f"intelhex: upper address bits 0x{line[9:12 +1]}")
+            # check for PC start line
+            elif (line[7:8 +1] == "05"):
+                if (DO_PRINTS):
+                    print(f"intelhex: PC should start at 0x{line[9:16 +1]}")
+            
+            # check for extended addr line
+            elif (line[7:8 +1] == "04"):
 
-            # reset byte_num
-            byte_num = 0
+                # prep for new chunk
+                if (DO_PRINTS):
+                    print(f"intelhex: upper address bits 0x{line[9:12 +1]}")
 
-        # check for data line
-        elif (line[7:8 +1] == "00"):
+                # reset byte_num
+                byte_num = 0
 
-            # get next byte_num
-            byte_num = hex_str_to_int(line[3:6 +1])
+            # check for data line
+            elif (line[7:8 +1] == "00"):
 
-            # check for bytes to fill in after to get to current line
-            if (last_byte_num > byte_num):
-                print("ERROR: last_byte_num > byte_num")
+                # get next byte_num
+                byte_num = hex_str_to_int(line[3:6 +1])
+
+                # check for bytes to fill in after to get to current line
+                if (last_byte_num > byte_num):
+                    print("ERROR: last_byte_num > byte_num")
+                    quit()
+                while (last_byte_num < byte_num):
+                    reg_file_instance_lines += [
+                        f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
+                    ]
+                    last_byte_num += 1
+
+                # iterate through data words
+                for word_index in range(hex_str_to_int(line[1:2 +1]) // 4):
+                    # get next word (8-char string) from data section
+                    next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
+                    reg_file_instance_lines += [
+                        f"\t\t\treg_file[{last_byte_num}] <= 8'h{next_word[0:2]};",
+                        f"\t\t\treg_file[{last_byte_num + 1}] <= 8'h{next_word[2:4]};",
+                        f"\t\t\treg_file[{last_byte_num + 2}] <= 8'h{next_word[4:6]};",
+                        f"\t\t\treg_file[{last_byte_num + 3}] <= 8'h{next_word[6:8]};",
+                    ]
+                    last_byte_num += 4
+
+            # otherwise, can't parse this
+            else:
+                print(f"ERROR: don't know how to parse line {line_num} of intel hex")
                 quit()
-            while (last_byte_num < byte_num):
-                reg_file_instance_lines += [
-                    f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
-                ]
-                last_byte_num += 1
 
-            # iterate through data words
-            for word_index in range(hex_str_to_int(line[1:2 +1]) // 4):
-                # get next word (8-char string) from data section
-                next_word = line[9 + 8*word_index:9 + 8*(word_index + 1)]
-                reg_file_instance_lines += [
-                    f"\t\t\treg_file[{last_byte_num}] <= 8'h{next_word[0:2]};",
-                    f"\t\t\treg_file[{last_byte_num + 1}] <= 8'h{next_word[2:4]};",
-                    f"\t\t\treg_file[{last_byte_num + 2}] <= 8'h{next_word[4:6]};",
-                    f"\t\t\treg_file[{last_byte_num + 3}] <= 8'h{next_word[6:8]};",
-                ]
-                last_byte_num += 4
-
-        # otherwise, can't parse this
-        else:
-            print(f"ERROR: don't know how to parse line {line_num} of intel hex")
+        # check for too many bytes
+        if (last_byte_num > REG_FILE_BYTE_SIZE):
+            print(f"ERROR: too many bytes to fit in {REG_FILE_BYTE_SIZE} byte reg file")
             quit()
 
-    # check for too many bytes
-    if (last_byte_num > REG_FILE_BYTE_SIZE):
-        print(f"ERROR: too many bytes to fit in {REG_FILE_BYTE_SIZE} byte reg file")
-        quit()
-
-    # check for any bytes to fill in after lines
-    while (last_byte_num < REG_FILE_BYTE_SIZE):
-        reg_file_instance_lines += [
-            f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
-        ]
-        last_byte_num += 1
+        # check for any bytes to fill in after lines
+        while (last_byte_num < REG_FILE_BYTE_SIZE):
+            reg_file_instance_lines += [
+                f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
+            ]
+            last_byte_num += 1
 
     # add newlines to end of each line and replace \t tabs with 4 spaces
     reg_file_instance_lines = [line.replace("\t", "    ") + "\n" for line in reg_file_instance_lines]
@@ -244,20 +254,27 @@ def intelhex_to_Vortex_mem_slave_sv(hex_file_name, Vortex_mem_slave_sv_name):
         print("ERROR: need Vortex_mem_slave_shell.txt")
         quit()
 
-    # try to get .hex file and 
-    try:
-        # get .hex lines
-        intelhex_fp = open(hex_file_name, "r")
-        intelhex_lines = intelhex_fp.readlines()
-        intelhex_lines = [line.strip() for line in intelhex_lines]
-        intelhex_fp.close()
+    # try to get .hex file
+    if (not LOAD_ZEROS):
+        try:
+            # get .hex lines
+            intelhex_fp = open(hex_file_name, "r")
+            intelhex_lines = intelhex_fp.readlines()
+            intelhex_lines = [line.strip() for line in intelhex_lines]
+            intelhex_fp.close()
 
-    except:
-        print("ERROR: couldn't find .hex file")
-        quit()
+        except:
+            print("ERROR: couldn't find .hex file")
+            quit()
 
-    # generating source .sv lines for reg file
-    Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines)
+    # construct source .sv lines for reg file:
+
+    # check for LOAD_ZEROS
+    if (LOAD_ZEROS):
+        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, False)
+    # otherwise, use hex file
+    else:
+        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines)
 
     # try to write source .sv file
     try:
@@ -278,15 +295,18 @@ if __name__ == "__main__":
     # check for 1 commandline argument with python load_local_mem.py
     if (len(sys.argv) < 2):
         print("required format:")
-        print("python load_Vortex_mem_slave.py <.hex file name>  <flags>")
+        print("python3 load_Vortex_mem_slave.py <.hex file name>  <flags>")
         quit()
 
-    if (not sys.argv[1].endswith(".hex")):
+    if ("-p" in sys.argv):
+        DO_PRINTS = True
+
+    if ("-zero" in sys.argv):
+        LOAD_ZEROS = True
+
+    elif (not sys.argv[1].endswith(".hex")):
         print("input must be intel hex file")
         quit()
-    
-    if (len(sys.argv) > 2 and (sys.argv[2] in ["-p", "-DO_PRINTS"])):
-        DO_PRINTS = True
 
     # run .sv source builder
     intelhex_to_Vortex_mem_slave_sv(sys.argv[1], "Vortex_mem_slave.sv")

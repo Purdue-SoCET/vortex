@@ -11,41 +11,6 @@
 // include for Vortex widths
 `include "../include/VX_define.vh"
 
-//////////////////////////////////
-// Generic Bus Interface (AHB): //
-//////////////////////////////////
-
-`ifndef GENERIC_BUS_IF_VH
-`define GENERIC_BUS_IF_VH
-
-// typedef logic [WORD_SIZE-1:0] word_t;
-typedef logic [32-1:0] word_t;
-
-interface generic_bus_if ();
-    // import rv32i_types_pkg::*;
-
-    // logic [RAM_ADDR_SIZE-1:0] addr;
-    logic [32-1:0] addr;                // RAM_ADDR_SIZE = 32
-    word_t wdata;
-    word_t rdata;
-    logic ren,wen;
-    logic busy;
-    logic [3:0] byte_en;
-
-    modport generic_bus (
-        input addr, ren, wen, wdata, byte_en,
-        output rdata, busy
-    );
-
-    modport cpu (
-        input rdata, busy,
-        output addr, ren, wen, wdata, byte_en
-    );
-
-endinterface
-
-`endif //GENERIC_BUS_IF_VH
-
 `timescale 1 ns / 1 ns
 
 module Vortex_mem_slave_tb ();
@@ -398,16 +363,16 @@ program test
         // $display("");
         // @(posedge mem_req_ready);
 
-        ///////////////////
-		// read testing: //
-		///////////////////
+        //////////////////////////
+		// Vortex read testing: //
+		//////////////////////////
 		@(negedge clk);
         test_num++;
-        test_string = "read testing";
-		$display("read testing");
+        test_string = "Vortex read testing";
+		$display("Vortex read testing");
 		begin
             @(negedge clk);
-            task_string = "read from first reg file 1";
+            task_string = "read from instr segment 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -457,7 +422,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read from first reg file 2";
+            task_string = "read from instr segment 2";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -507,7 +472,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read from second reg file 1";
+            task_string = "read from first data segment 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -557,7 +522,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read from second reg file 2";
+            task_string = "read from first data segment 2";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -607,7 +572,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read from third reg file 1";
+            task_string = "read from second data segment 1";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -657,7 +622,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read from third reg file 2";
+            task_string = "read from second data segment 2";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -707,16 +672,16 @@ program test
 		end
         $display("");
 
-        ////////////////////
-		// write testing: //
-		////////////////////
+        ///////////////////////////
+		// Vortex write testing: //
+		///////////////////////////
 		@(negedge clk);
         test_num++;
-        test_string = "write testing";
-		$display("write testing");
+        test_string = "Vortex write testing";
+		$display("Vortex write testing");
 		begin
             @(negedge clk);
-            task_string = "write to second reg file";
+            task_string = "write to first data segment";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -781,7 +746,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read after write to second reg file";
+            task_string = "read after write to first data segment";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -831,7 +796,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "write to third reg file";
+            task_string = "write to second data segment";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -896,7 +861,7 @@ program test
 		end
         begin
             @(negedge clk);
-            task_string = "read after write to third reg file";
+            task_string = "read after write to second data segment";
             $display("\n-> testing %s", task_string);
 
             // input stimuli:
@@ -942,6 +907,676 @@ program test
             expected_rdata = 32'h0480006f;
             expected_busy = 1'b0;
             
+            check_outputs();
+		end
+
+        ///////////////////////
+		// AHB read testing: //
+		///////////////////////
+		@(negedge clk);
+        test_num++;
+        test_string = "AHB read testing";
+		$display("AHB read testing");
+		begin
+            @(negedge clk);
+            task_string = "AHB read from instr segment 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0000000;   // instruction 0
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h0480006f;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "AHB read from instr segment 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB000003c;   // instruction 15
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h00001F17;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+        end
+        begin
+            @(negedge clk);
+            task_string = "AHB read from first data segment 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0001004;   // second word in first data segment
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h00000000;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+        end
+        begin
+            @(negedge clk);
+            task_string = "AHB read from first data segment 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB00013c7;   // random word in first data segment
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h00000000;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+        end
+        begin
+            @(negedge clk);
+            task_string = "AHB read from second data segment 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0002024;   // word 9 in second data segment
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'hC0934C66;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+        end
+        begin
+            @(negedge clk);
+            task_string = "AHB read from second data segment 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0002109;   // word 0x108 in second data segment
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b0000;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'hE2308C3A;
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+        end
+
+        ////////////////////////
+		// AHB write testing: //
+		////////////////////////
+		@(negedge clk);
+        test_num++;
+        test_string = "AHB write testing";
+		$display("AHB write testing");
+		begin
+            @(negedge clk);
+            task_string = "write to first data segment 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0001014;   // word 5
+            gbif.ren = 1'b0;
+            gbif.wen = 1'b1;
+            gbif.wdata = 32'habcd5678;
+            gbif.byte_en = 4'b1111;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h01234567;  // old data value
+            expected_busy = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read after write to first data segment 1";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0001014;   // word 5
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b1111;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'habcd5678;  // write val
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "write to first data segment 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0001036;   // word 0x1034
+            gbif.ren = 1'b0;
+            gbif.wen = 1'b1;
+            gbif.wdata = 32'habcdabcd;
+            gbif.byte_en = 4'b0110;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h01234567;  // old data value
+            expected_busy = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read after write to first data segment 2";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0001036;   // word 0x1034
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b1111;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h01cdab67;  // write val (on top of old val)
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "write to random word";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0003333;   // word 0x3330
+            gbif.ren = 1'b0;
+            gbif.wen = 1'b1;
+            gbif.wdata = 32'h0a1b2c3d;
+            gbif.byte_en = 4'b1010;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h00000000;  // old data value
+            expected_busy = 1'b0;
+            
+            check_outputs();
+		end
+        begin
+            @(negedge clk);
+            task_string = "read after write to random word";
+            $display("\n-> testing %s", task_string);
+
+            // input stimuli:
+            mem_req_valid = 1'b0;   // vortex side idle
+            mem_req_rw = 1'b0;
+            mem_req_byteen = '0;
+            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_data = '0;
+            mem_req_tag = 56'd0;
+            mem_rsp_ready = 1'b0;
+            busy = 1'b0;
+
+            gbif.addr = 32'hB0003333;   // word 0x3330
+            gbif.ren = 1'b1;
+            gbif.wen = 1'b0;
+            gbif.wdata = 32'hdeadbeef;
+            gbif.byte_en = 4'b1111;
+            
+            #(PERIOD / 4);
+
+            // expected outputs:    // vortex side idle
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+			expected_mem_rsp_data[31:0] = 32'h0480006F;
+			expected_mem_rsp_data[63:32] = 32'h34202F73;
+			expected_mem_rsp_data[95:64] = 32'h00800F93;
+			expected_mem_rsp_data[127:96] = 32'h03FF0863;
+			expected_mem_rsp_data[159:128] = 32'h00900F93;
+			expected_mem_rsp_data[191:160] = 32'h03FF0463;
+			expected_mem_rsp_data[223:192] = 32'h00B00F93;
+			expected_mem_rsp_data[255:224] = 32'h03FF0063;
+			expected_mem_rsp_data[287:256] = 32'h00000F13;
+			expected_mem_rsp_data[319:288] = 32'h000F0463;
+			expected_mem_rsp_data[351:320] = 32'h000F0067;
+			expected_mem_rsp_data[383:352] = 32'h34202F73;
+			expected_mem_rsp_data[415:384] = 32'h000F5463;
+			expected_mem_rsp_data[447:416] = 32'h0040006F;
+			expected_mem_rsp_data[479:448] = 32'h5391E193;
+			expected_mem_rsp_data[511:480] = 32'h00001F17;
+            expected_mem_rsp_tag = 56'd0;
+            // expected_tb_addr_out_of_bounds = 1'b0;
+
+            expected_rdata = 32'h0a002c00;  // write val
+            expected_busy = 1'b0;
+            
+            check_outputs();
+
+            // check for same outputs over multiple cycles, no deadbeef write
+            #(PERIOD);
+            check_outputs();
+            #(PERIOD);
             check_outputs();
 		end
 

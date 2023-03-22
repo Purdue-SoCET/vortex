@@ -1,12 +1,14 @@
 // Guillaume Hu - hu724@purdue.edu
 
 // `include "local_mem.vh"
-`include "VX_define.vh"
+`include "include/VX_define.vh"
+`include "Vortex_mem_slave.vh"
 
-`include "local_mem.vh"
-`include "VX_define.vh"
+// `include "local_mem.vh"
+`include "Vortex_mem_slave.vh"
+// `include "VX_define.vh"
 
-`timescale 1 ps / 1 ps
+`timescale 1 ns / 1 ns
 
 module VX_local_mem_tb; 
 
@@ -16,8 +18,8 @@ module VX_local_mem_tb;
     logic reset; 
 
     // parameters
-    parameter WORD_W = 32;
-    parameter DRAM_SIZE = 64;
+    // parameter WORD_W = 32;
+    // parameter DRAM_SIZE = 64;
 
     // clock gen
     always #(PERIOD/2) clk = ~clk;
@@ -70,7 +72,8 @@ module VX_local_mem_tb;
     // vortex outputs
     logic                               tb_busy;
 
-    logic                             tb_addr_out_of_bounds; 
+    // Generic Bus Protocol Interface
+    generic_bus_if                      gbif(); 
 
     Vortex DUT(.clk(clk),
                .reset(reset), 
@@ -89,74 +92,94 @@ module VX_local_mem_tb;
                );
     //local_mem MEM(.*); 
 
-    local_mem MEM(.clk(clk), 
+    // local_mem MEM(.clk(clk), 
+    //               .reset(reset), 
+    //               .mem_req_valid(tb_mem_req_valid), 
+    //               .mem_req_rw(tb_mem_req_rw), 
+    //               .mem_req_byteen(tb_mem_req_byteen),
+    //               .mem_req_addr(tb_mem_req_addr), 
+    //               .mem_req_data(tb_mem_req_data), 
+    //               .mem_req_tag(tb_mem_req_tag), 
+    //               .mem_req_ready(tb_mem_req_ready), 
+    //               .mem_rsp_valid(tb_mem_rsp_valid), 
+    //               .mem_rsp_data(tb_mem_rsp_data), 
+    //               .mem_rsp_tag(tb_mem_rsp_tag), 
+    //               .mem_rsp_ready(tb_mem_rsp_ready), 
+    //               .busy(tb_busy), 
+    //               .tb_addr_out_of_bounds(tb_addr_out_of_bounds)
+    // ); 
+
+    Vortex_mem_slave MEM(.clk(clk), 
                   .reset(reset), 
-                  .mem_req_valid(tb_mem_req_valid), 
-                  .mem_req_rw(tb_mem_req_rw), 
-                  .mem_req_byteen(tb_mem_req_byteen),
-                  .mem_req_addr(tb_mem_req_addr), 
-                  .mem_req_data(tb_mem_req_data), 
-                  .mem_req_tag(tb_mem_req_tag), 
-                  .mem_req_ready(tb_mem_req_ready), 
-                  .mem_rsp_valid(tb_mem_rsp_valid), 
-                  .mem_rsp_data(tb_mem_rsp_data), 
-                  .mem_rsp_tag(tb_mem_rsp_tag), 
-                  .mem_rsp_ready(tb_mem_rsp_ready), 
-                  .busy(tb_busy), 
-                  .tb_addr_out_of_bounds(tb_addr_out_of_bounds)
+                  .mem_req_valid(mem_req_valid), 
+                  .mem_req_rw(mem_req_rw), 
+                  .mem_req_byteen(mem_req_byteen),
+                  .mem_req_addr(mem_req_addr), 
+                  .mem_req_data(mem_req_data), 
+                  .mem_req_tag(mem_req_tag), 
+                  .mem_req_ready(mem_req_ready), 
+                  .mem_rsp_valid(mem_rsp_valid), 
+                  .mem_rsp_data(mem_rsp_data), 
+                  .mem_rsp_tag(mem_rsp_tag), 
+                  .mem_rsp_ready(mem_rsp_ready), 
+                  .busy(busy), 
+                  .gbif(gbif)
     ); 
 
-    assign tb_mem_rsp_ready = mem_rsp_ready; 
+    // assign tb_mem_rsp_ready = mem_rsp_ready; 
 
-    initial begin 
-        mem_req_ready = 1'b0; 
-        mem_rsp_valid = 1'b0; 
-        mem_rsp_data = '0; 
-        mem_rsp_tag = '0; 
+    // initial begin 
+    //     mem_req_ready = 1'b0; 
+    //     mem_rsp_valid = 1'b0; 
+    //     mem_rsp_data = '0; 
+    //     mem_rsp_tag = '0; 
 
-        tb_mem_req_valid = 1'b0; 
-        tb_mem_req_rw = '0; 
-        tb_mem_req_byteen = '0; 
-        tb_mem_req_addr = '0; 
-        tb_mem_req_data = '0; 
-        tb_mem_req_tag = '0; 
+    //     tb_mem_req_valid = 1'b0; 
+    //     tb_mem_req_rw = '0; 
+    //     tb_mem_req_byteen = '0; 
+    //     tb_mem_req_addr = '0; 
+    //     tb_mem_req_data = '0; 
+    //     tb_mem_req_tag = '0; 
         
-        reset = 1'b1; 
-        // Reset
-        #(PERIOD * 13); 
-        reset = 1'b0; 
+    //     reset = 1'b1; 
+    //     // Reset
+    //     #(PERIOD * 13); 
+    //     reset = 1'b0; 
 
-        // Handshake to GPU
-        mem_req_ready = 1'b1; 
+    //     // Handshake to GPU
+    //     mem_req_ready = 1'b1; 
 
-        forever begin 
-            // Buffer the correct values for the rsp 
-            @(posedge mem_req_valid); 
-            //$display("VX request at addr %h, @%0t", mem_req_addr, $time); 
-            tb_mem_req_tag = mem_req_tag;
-            tb_mem_req_addr = mem_req_addr; 
-            tb_mem_req_byteen = mem_req_byteen; 
-            tb_mem_req_rw = mem_req_rw; 
-            tb_mem_req_data = mem_req_data; 
-            #(RSP_DELAY);
+    //     forever begin 
+    //         // Buffer the correct values for the rsp 
+    //         @(posedge mem_req_valid); 
+    //         tb_mem_rsp_tag = mem_req_tag;
+    //         tb_mem_req_addr = mem_req_addr; 
+    //         tb_mem_req_byteen = mem_req_byteen; 
+    //         tb_mem_req_rw = mem_req_rw; 
+    //         tb_mem_req_data = mem_req_data; 
+    //         #(RSP_DELAY);
 
-            // Response to Vortex's request
-            tb_mem_req_valid = 1'b1; // Trigger the local_mem
-            if (~tb_mem_req_rw) begin // RSP only on read requests 
-                mem_rsp_valid = 1'b1; 
-                mem_rsp_data = tb_mem_rsp_data; 
-                mem_rsp_tag = tb_mem_req_tag; 
-            end
-            #(PERIOD); 
-            mem_rsp_valid = 1'b0; 
-        end 
+    //         // Response to Vortex's request
+    //         tb_mem_req_valid = 1'b1; // Trigger the local_mem
+    //         mem_rsp_valid = 1'b1; 
+    //         mem_rsp_data = tb_mem_rsp_data; 
+    //         mem_rsp_tag = tb_mem_req_tag; 
+    //         #(PERIOD); 
+    //         mem_rsp_valid = 1'b0; 
+    //     end 
 
-        //$stop; 
+    //     //$stop; 
 
-    end
+    // end
 
     // Force end of sim
     initial begin 
+
+        // Reset
+        reset = 1'b1; 
+        #(PERIOD * 13); 
+        reset = 1'b0; 
+
         #30000; 
         $stop(); 
     end 
