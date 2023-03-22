@@ -11,6 +11,13 @@
 #			- ADD_RTL: Additional design files 
 #			- ADD_INCL: The file's include directory if one 
 #
+# Macros: 
+#			- SYNTHESIS
+#           - FPU_FPNEW: FPNEW FPU 
+#			- VX_TOP_TRACE: Creates a logfile with top level transactions
+#			- SV_TRACE_EN: Allows the tracing of relevant VX signals 
+#			- SV_TRACE_CORE_PIPELINE: Adds the tracing of signals inside VX's cores
+#
 # Run: make all or make all_gui
 
 TB_DIR := tb
@@ -22,10 +29,10 @@ WAVE:= $(WAVE_DIR)/VX_top_level.do
 
 # Additional files 
 ADD_INCL += $(INCL)
-ADD_RTL += tb/local_mem.sv
+ADD_RTL += tb/Vortex_mem_slave.sv
 
 #Macros
-MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE
+MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE
 
 ### Directories 
 # Vortex
@@ -137,7 +144,7 @@ clean:
 	rm -rf work $(WORKDIR) transcript *.vstf 
 	rm *.wlf
 	rm VX_top_trace.txt
-
+	rm VX_logfile.txt
 
 # RTL_DIR=./rtl
 # SCRIPT_DIR=./scripts
