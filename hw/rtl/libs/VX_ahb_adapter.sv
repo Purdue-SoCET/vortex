@@ -70,24 +70,30 @@ module VX_ahb_adapter #(
     
     data_buff data_read, nxt_data_read; 
 
+    logic [31:0] full_addr;
+
     logic [511:0] nxt_data, data;
-    logic nxt_rw, rw, clear;
-    logic [25:0] nxt_addr, addr;
+    logic nxt_rw, rw, clear, count_en;
+    logic [31:0] nxt_addr, addr;
     
     always_ff @(posedge clk, negedge reset) begin : STATE_TRANSITIONS
-        if (!reset)
+        if (!reset) begin
             state <= IDLE;
             data <= '0;
             addr <= '0;
             rw <= '0;
             data_read <= '0;
-        else
+        end
+        else begin
             data_read <= nxt_data_read;
             state <= nxt_state;
             data <= nxt_data;
             addr <= nxt_addr;
             rw <= nxt_rw;
+        end
     end
+
+    assign full_addr = {mem_req_addr, 6'd0};
 
     always_comb begin : STATES_CTRL
         nxt_state = state;
@@ -144,9 +150,9 @@ module VX_ahb_adapter #(
                     HSIZE = 3'b010;
                     HTRANS = 2'b10;
                     HWRITE = mem_req_rw;
-                    HADDR = {mem_req_addr, 6'd0};
+                    HADDR = full_addr;
                     nxt_data = mem_req_data;
-                    nxt_addr = mem_req_addr;
+                    nxt_addr = full_addr;
                     nxt_rw = mem_req_rw;
                     clear = 1;
                 end
@@ -159,7 +165,7 @@ module VX_ahb_adapter #(
                     HSIZE = 3'b010;
                     HTRANS = 2'b10;
                     HWRITE = rw;
-                    HADDR = {addr + 4, 6'd0};
+                    HADDR = addr + 4;
                     nxt_addr = addr + 4;
                     case (count)
                         4'd0: begin
