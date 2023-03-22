@@ -1,5 +1,5 @@
 `include "VX_define.vh"
-
+//Author of interpolate unit: Raghul Prakash
 module VX_gpu_unit #(
     parameter CORE_ID = 0
 ) (
@@ -46,7 +46,8 @@ module VX_gpu_unit #(
     gpu_wspawn_t    wspawn;
     gpu_barrier_t   barrier;
     gpu_split_t     split;
-    
+    gpu_interpolate_t interpolate;    
+
     wire [WCTL_DATAW-1:0] warp_ctl_data;
     wire is_warp_ctl;
     
@@ -57,6 +58,7 @@ module VX_gpu_unit #(
     wire is_split  = (gpu_req_if.op_type == `INST_GPU_SPLIT);
     wire is_bar    = (gpu_req_if.op_type == `INST_GPU_BAR);
     wire is_pred   = (gpu_req_if.op_type == `INST_GPU_PRED);
+    wire is_inter  = (gpu_req_if.op_type == `INST_GPU_INTER);
 
     wire [31:0] rs1_data = gpu_req_if.rs1_data[gpu_req_if.tid];
     wire [31:0] rs2_data = gpu_req_if.rs2_data[gpu_req_if.tid];
@@ -101,6 +103,55 @@ module VX_gpu_unit #(
     assign barrier.valid   = is_bar;
     assign barrier.id      = rs1_data[`NB_BITS-1:0];
     assign barrier.size_m1 = (`NW_BITS)'(rs2_data - 1);       
+
+    // interpolate (ax + by + c) 
+ 
+`ifdef EXT_INTER_ENABLE   
+
+    VX_inter_req_if   inter_req_if();
+    VX_inter_rsp_if   inter_rsp_if();  
+
+    wire is_inter = (gpu_req_if.op_type == `INST_GPU_INTER);
+
+    assign inter_req_if.valid = gpu_req_if.valid && is_inter;
+    assign inter_req_if.uuid  = gpu_req_if.uuid;
+    assign inter_req_if.wid   = gpu_req_if.wid;
+    assign inter_req_if.tmask = gpu_req_if.tmask;
+    assign inter_req_if.PC    = gpu_req_if.PC;
+    assign inter_req_if.rd    = gpu_req_if.rd;
+    assign inter_req_if.wb    = gpu_req_if.wb;
+    
+    assign inter_req_if.x_operand = gpu_req_if.rs1_data;
+    assign inter_req_if.y_operand = gpu_req_if.rs2_data;       
+
+
+    VX_interpolate #(
+        .CORE_ID(CORE_ID)
+    ) interpolate (
+        .clk           (clk),
+        .reset         (reset),
+        .inter_req_if    (inter_req_if),
+        .inter_csr_if    (inter_csr_if),
+        .inter_rsp_if    (inter_rsp_if),
+    );
+
+    assign inter_rsp_if.ready = !stall_out;
+
+    assign stall_in = (is_inter && ~inter_req_if.ready)
+                   || (~is_inter && (inter_rsp_if.valid || stall_out));
+
+    assign is_warp_ctl = !(is_inter || inter_rsp_if.valid);
+
+    assign rsp_valid = inter_rsp_if.valid || (gpu_req_if.valid && ~is_inter);
+    assign rsp_uuid  = inter_rsp_if.valid ? inter_rsp_if.uuid : gpu_req_if.uuid;
+    assign rsp_wid   = inter_rsp_if.valid ? inter_rsp_if.wid : gpu_req_if.wid;
+    assign rsp_tmask = inter_rsp_if.valid ? inter_rsp_if.tmask : gpu_req_if.tmask;
+    assign rsp_PC    = inter_rsp_if.valid ? inter_rsp_if.PC : gpu_req_if.PC;
+    assign rsp_rd    = inter_rsp_if.rd;
+    assign rsp_wb    = inter_rsp_if.valid && inter_rsp_if.wb;
+    assign rsp_data  = inter_rsp_if.valid ? RSP_DATAW'(inter_rsp_if.data) : RSP_DATAW'(warp_ctl_data);
+
+`endif
 
     // pack warp ctl result
     assign warp_ctl_data = {tmc, wspawn, split, barrier};

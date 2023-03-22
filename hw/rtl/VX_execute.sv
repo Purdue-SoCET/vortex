@@ -189,6 +189,9 @@ module VX_execute #(
     `ifdef EXT_TEX_ENABLE
         .tex_csr_if     (tex_csr_if),
     `endif
+    `ifdef EXT_INTER_ENABLE
+        .inter_csr_if     (inter_csr_if),
+    `endif
         .busy           (busy)
     );
 
@@ -222,6 +225,9 @@ module VX_execute #(
         .tex_csr_if     (tex_csr_if),
         .dcache_req_if  (tex_dcache_req_if),
         .dcache_rsp_if  (tex_dcache_rsp_if),
+    `endif
+    `ifdef EXT_INTER_ENABLE
+    	.inter_csr_if     (inter_csr_if),
     `endif
         .warp_ctl_if    (warp_ctl_if),
         .gpu_commit_if  (gpu_commit_if)
