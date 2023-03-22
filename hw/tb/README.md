@@ -7,6 +7,7 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
 ``python3 load_Vortex_mem_slave.py <.hex file name> <optional flags>``  
 
 - flags:  
+  - ``-zero``: reset all registers to 0 instead of corresponding hex file values
   - ``-p``: print debugging info
 
 # Loading local_mem.sv with corresponding hex file data
