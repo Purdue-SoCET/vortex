@@ -1,17 +1,13 @@
 `include "VX_define.vh"
 
+localparam AHB_DATA_WIDTH = 32;
+localparam TRANS_PER_BLOCK = `VX_MEM_DATA_WIDTH/AHB_DATA_WIDTH;
+
 module VX_ahb_adapter_tb;
     parameter PERIOD = 10; 
     logic CLK = 0;
-    logic nRST; // Active low
 
     always #(PERIOD/2) CLK = ~CLK; 
-
-    parameter AHB_DATA_WIDTH = 32;
-
-    parameter SEED = 0;
-
-    localparam TRANS_PER_BLOCK = `VX_MEM_DATA_WIDTH/AHB_DATA_WIDTH;
 
     ahb_if #(
         .DATA_WIDTH(AHB_DATA_WIDTH),
@@ -30,15 +26,15 @@ module VX_ahb_adapter_tb;
 
     VX_ahb_adapter DUT(CLK, nRST, ahbif, mreqif, mrspif);
 
-    test(CLK, nRST, ahbif, mreqif, mrspif);
+    test prog(CLK, nRST, ahbif, mreqif, mrspif);
 endmodule
 
 program test(
     input logic CLK,
-    input logic nRST,
+    output logic nRST,
     ahb_if.subordinate ahbif,
-    mreqif.master mreqif,
-    mrspif.slave mrspif
+    VX_mem_req_if.master mreqif,
+    VX_mem_rsp_if.slave mrspif
 );
     // Signals for keeping track of failures
     integer tests = 0;
@@ -65,7 +61,7 @@ program test(
     logic [`VX_MEM_DATA_WIDTH-1:0]        expected_rsp_data;
 
     // Buffer to hold data to send via AHB
-    logic [`VX_MEM_DATA_WIDTH-1]          ahb_buffer;
+    logic [`VX_MEM_DATA_WIDTH-1:0]        ahb_buffer;
 
     task reset_inputs;
         mreqif.valid  = '0;
@@ -76,7 +72,7 @@ program test(
         mreqif.tag    = '0;
         mrspif.ready  = '1;
 
-        ahbif.HREADY  = '1;
+        ahbif.HREADYOUT  = '1;
         ahbif.HRESP   = '0;
         ahbif.HRDATA  = '0;
     endtask
@@ -109,7 +105,7 @@ program test(
         end
     endtask
 
-    task check_ahb_outputs(input bit check_data_signals);
+    task check_ahb_outputs(input bit check_data_signals = 0);
         tests += 1;
         assert (ahbif.HSEL == expected_HSEL)
             else begin
@@ -184,7 +180,7 @@ program test(
     // following the read request, and before the negedge following that.
     task check_receive_data(
         input logic [`VX_MEM_ADDR_WIDTH-1:0] base_addr,
-        input integer transactions,
+        input integer transactions
     );
         expected_HSEL = 1'b1;
         expected_HWRITE = 1'b0;
@@ -197,7 +193,7 @@ program test(
         for (integer i = 0; i < transactions; ++i) begin
             @(posedge CLK);
             ahbif.HRDATA = ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
-            expected_HADDR = base_addr + (`VX_MEM_DATA_WIDTH*(i + 1))/8;
+            expected_HADDR = base_addr + (AHB_DATA_WIDTH*(i + 1))/8;
             if (i < transactions - 1) begin
                 @(negedge CLK);
                 check_ahb_outputs();
@@ -238,7 +234,7 @@ program test(
         mreqif.valid = 1'b1;
         mreqif.rw = 1'b0;
         mreqif.byteen = '1;
-        mreqif.addr = 32'h12345600
+        mreqif.addr = 32'h12340000;
         mrspif.ready = 1'b1;
 
         // req_ready should go low in the next cycle to prevent another
@@ -248,7 +244,9 @@ program test(
         check_vx_outputs();
 
         // Stream the AHB transactions
-        ahb_buffer = $urandom(SEED);
+        for (int i=0; i<`VX_MEM_DATA_WIDTH/32; ++i) begin
+            ahb_buffer[i] = $urandom();
+        end
         check_receive_data(mreqif.addr, TRANS_PER_BLOCK);
 
         // Check that the value correctly gets passed to Vortex
