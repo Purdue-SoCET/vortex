@@ -38,7 +38,8 @@ module VX_ahb_adapter #(
     output wire [AHB_DATA_WIDTH-1:0] HWDATA,
     input wire [AHB_DATA_WIDTH-1:0] HRDATA,
     input wire HREADY,
-    input wire HRESP
+    input wire HRESP,
+    input logic [3:0] count
     //to do: add burst
 );
 
