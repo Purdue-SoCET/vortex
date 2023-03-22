@@ -15,47 +15,6 @@
 // include for Vortex widths
 `include "../include/VX_define.vh"
 
-// // size of register file (128 Kb -> 16 KB -> 16*2^10 B -> 2^14 B -> 0x4000 B worth of byte address space)
-// `define REG_FILE_BYTE_WIDTH 14
-// `define REG_FILE_BYTE_SIZE 2**REG_FILE_BYTE_WIDTH
-
-// `define WORD_SIZE 32
-
-//////////////////////////////////
-// Generic Bus Interface (AHB): //
-//////////////////////////////////
-
-`ifndef GENERIC_BUS_IF_VH
-`define GENERIC_BUS_IF_VH
-
-// typedef logic [WORD_SIZE-1:0] word_t;
-typedef logic [32-1:0] word_t;
-
-interface generic_bus_if ();
-    // import rv32i_types_pkg::*;
-
-    // logic [RAM_ADDR_SIZE-1:0] addr;
-    logic [32-1:0] addr;                // RAM_ADDR_SIZE = 32
-    word_t wdata;
-    word_t rdata;
-    logic ren,wen;
-    logic busy;
-    logic [3:0] byte_en;
-
-    modport generic_bus (
-        input addr, ren, wen, wdata, byte_en,
-        output rdata, busy
-    );
-
-    modport cpu (
-        input rdata, busy,
-        output addr, ren, wen, wdata, byte_en
-    );
-
-endinterface
-
-`endif //GENERIC_BUS_IF_VH
-
 module Vortex_mem_slave #(
 )(
     /////////////////
@@ -102,12 +61,11 @@ module Vortex_mem_slave #(
     logic Vortex_bad_address;
     logic AHB_bad_address;
 
-    // reg file signals (bytewise)
-    // reg file signals (bytewise)
-    // logic [7:0] reg_file        [REG_FILE_BYTE_SIZE-1:0];
-    // logic [7:0] next_reg_file   [REG_FILE_BYTE_SIZE-1:0];
-    logic [7:0] reg_file        [2**14-1:0];
-    logic [7:0] next_reg_file   [2**14-1:0];
+    // reg file signals (bytewise, packed)
+    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] reg_file;
+    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] next_reg_file;
+    logic [2**14-1:0][7:0] reg_file;
+    logic [2**14-1:0][7:0] next_reg_file;
 
     // reg file instance
     always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
@@ -150,7 +108,7 @@ module Vortex_mem_slave #(
             Vortex_bad_address = 1'b0;
 
         // AHB bad address
-        if (gbif.addr[31:32-14] != 18'b101100000000000000)
+        if (gbif.addr[31:14] != 18'b101100000000000000)
             AHB_bad_address = 1'b1;
         else
             AHB_bad_address = 1'b0;
@@ -191,9 +149,9 @@ module Vortex_mem_slave #(
         begin
             // assumption: follow word address
             if (gbif.byte_en[0]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[7:0];
-            if (gbif.byte_en[1]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[15:8];
-            if (gbif.byte_en[2]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[23:16];
-            if (gbif.byte_en[3]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[31:24];
+            if (gbif.byte_en[1]) next_reg_file[{gbif.addr[13:2], 2'd1}] = gbif.wdata[15:8];
+            if (gbif.byte_en[2]) next_reg_file[{gbif.addr[13:2], 2'd2}] = gbif.wdata[23:16];
+            if (gbif.byte_en[3]) next_reg_file[{gbif.addr[13:2], 2'd3}] = gbif.wdata[31:24];
         end
 
         ////////////////////////////////
