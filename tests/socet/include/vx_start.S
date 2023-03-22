@@ -97,9 +97,6 @@ init_regs:
   beqz a3, RETURN
   li a0, 0
   .insn s 0x6b, 0, x0, 0(a0)  # tmc a0
-  li a0, 0
-  li a1, 0
-  .insn s 0x6b, 1, a1, 0(a0)  # wspawn a0, a1
 RETURN:
   ret
 
