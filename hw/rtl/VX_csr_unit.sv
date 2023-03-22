@@ -26,6 +26,9 @@ module VX_csr_unit #(
 `ifdef EXT_TEX_ENABLE
     VX_tex_csr_if.master        tex_csr_if,
 `endif
+`ifdef EXT_INTER_ENABLE
+    VX_inter_csr_if.master        inter_csr_if,
+`endif
 
     output wire[`NUM_WARPS-1:0] pending,
     input wire                  busy
@@ -59,6 +62,9 @@ module VX_csr_unit #(
     `endif
     `ifdef EXT_TEX_ENABLE
         .tex_csr_if     (tex_csr_if),
+    `endif
+    `ifdef EXT_INTER_ENABLE
+        .inter_csr_if     (inter_csr_if),
     `endif
         .read_enable    (csr_req_if.valid),
         .read_uuid      (csr_req_if.uuid),

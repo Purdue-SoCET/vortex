@@ -23,6 +23,9 @@ module VX_csr_data #(
 `ifdef EXT_TEX_ENABLE
     VX_tex_csr_if.master            tex_csr_if,
 `endif 
+`ifdef EXT_INTER_ENABLE
+    VX_inter_csr_if.master          inter_csr_if,
+`endif 
 
     input wire                      read_enable,
     input wire [`UUID_BITS-1:0]     read_uuid,
@@ -102,6 +105,13 @@ module VX_csr_data #(
     assign tex_csr_if.write_data   = write_data;
     assign tex_csr_if.write_uuid   = write_uuid;
 `endif
+`ifdef EXT_INTER_ENABLE    
+    assign inter_csr_if.write_enable = write_enable;
+    assign inter_csr_if.write_addr   = write_addr;
+    assign inter_csr_if.write_data   = write_data;
+    assign inter_csr_if.write_uuid   = write_uuid;
+`endif
+
 
     always @(posedge clk) begin
        if (reset) begin
@@ -246,6 +256,13 @@ module VX_csr_data #(
                 if ((read_addr == `CSR_TEX_UNIT)
                  || (read_addr >= `CSR_TEX_STATE_BEGIN
                   && read_addr < `CSR_TEX_STATE_END)) begin
+                    read_addr_valid_r = 1;
+                end else
+            `endif
+
+   	    `ifdef EXT_INTER_ENABLE    
+                if ((read_addr >= `CSR_INTER_STATE_BEGIN
+                  && read_addr < `CSR_INTER_STATE_END)) begin
                     read_addr_valid_r = 1;
                 end else
             `endif
