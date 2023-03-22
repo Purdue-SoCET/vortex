@@ -8,7 +8,6 @@ module VX_ahb_adapter_tb;
     always #(PERIOD/2) CLK = ~CLK; 
 
     parameter AHB_DATA_WIDTH = 32;
-    parameter AHB_ADDR_WIDTH = 32;
 
     parameter SEED = 0;
 

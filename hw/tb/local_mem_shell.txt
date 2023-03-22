@@ -10,6 +10,8 @@
 `include "../include/VX_define.vh"
 // `include "VX_define.vh"
 
+// size of register file (2**15 -> 0x8000 worth of address space)
+
 module local_mem #(
 )(
     // seq
@@ -61,7 +63,7 @@ module local_mem #(
     end
 
     // delayed mem_req_ready signals
-    parameter MEM_REQ_READY_DELAY = 15;
+    parameter MEM_REQ_READY_DELAY = 0;
     logic [MEM_REQ_READY_DELAY-1:0] mem_req_ready_reg, next_mem_req_ready_reg; 
 
     // delayed mem_req_ready reg logic
@@ -86,7 +88,6 @@ module local_mem #(
 
     // NOTES:
     // don't know what to do with: 
-        // mem_req_byteen
         // busy
 
 endmodule

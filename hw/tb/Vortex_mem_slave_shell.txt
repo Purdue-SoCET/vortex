@@ -1,0 +1,179 @@
+/*
+    socet115 / zlagpaca@purdue.edu
+    Zach Lagpacan
+
+    module for on-chip RAM fake register file with AFTx07 AHB slave interface (at generic bus interface) 
+    and Vortex memory interface 
+
+    assumptions:
+        AHB only references word addresses
+*/
+
+// temporary include to have defined vals
+`include "Vortex_mem_slave.vh"
+
+// include for Vortex widths
+`include "../include/VX_define.vh"
+
+module Vortex_mem_slave #(
+)(
+    /////////////////
+    // Sequential: //
+    /////////////////
+    input clk, reset,
+
+    ///////////////////////
+    // Memory Interface: //
+    ///////////////////////
+
+    // Memory Request:
+    // vortex outputs
+    input logic                             mem_req_valid,
+    input logic                             mem_req_rw,
+    input logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen, // 64 (512 / 8)
+    input logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,   // 26
+    input logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,   // 512
+    input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,    // 56 (55 for SM disabled)
+    // vortex inputs
+    output logic                            mem_req_ready,
+
+    // Memory response:
+    // vortex inputs
+    output logic                            mem_rsp_valid,        
+    output logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data,   // 512
+    output logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag,    // 56 (55 for SM disabled)
+    // vortex outputs
+    input logic                             mem_rsp_ready,
+
+    // Status:
+    // vortex outputs
+    input logic                             busy,
+
+    //////////////////////////////////
+    // Generic Bus Interface (AHB): //
+    //////////////////////////////////
+
+    generic_bus_if.generic_bus              gbif
+);
+    // internal signals:
+
+    // bad address signals
+    logic Vortex_bad_address;
+    logic AHB_bad_address;
+
+    // reg file signals (bytewise, packed)
+    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] reg_file;
+    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] next_reg_file;
+    logic [2**14-1:0][7:0] reg_file;
+    logic [2**14-1:0][7:0] next_reg_file;
+
+    // reg file instance
+    always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
+        if (reset)
+        begin
+< reset vals here >
+        end
+        else
+        begin
+            reg_file <= next_reg_file;
+        end
+    end
+
+    // combinational logic for memory interface
+    always_comb begin : OTHER_MEM_COMB_LOGIC
+
+        //////////////////////
+        // default outputs: //
+        //////////////////////
+
+        // hold mem
+        next_reg_file = reg_file;
+
+        // Vortex outputs
+        mem_rsp_data = 512'd0;
+        Vortex_bad_address = 1'b0;
+
+        // AHB outputs
+        AHB_bad_address = 1'b0;
+        gbif.busy = 1'b0;
+
+        //////////////////
+        // bad address: //
+        //////////////////
+
+        // Vortex bad address
+        if (mem_req_addr[25:8] != 18'b100000000000000000)
+            Vortex_bad_address = 1'b1;
+        else
+            Vortex_bad_address = 1'b0;
+
+        // AHB bad address
+        if (gbif.addr[31:14] != 18'b101100000000000000)
+            AHB_bad_address = 1'b1;
+        else
+            AHB_bad_address = 1'b0;
+
+        /////////////////
+        // read logic: //
+        /////////////////
+
+        // Vortex read logic (this part is automated by load_Vortex_mem_slave.py)
+< Vortex read logic here >
+
+        // AHB read logic
+        gbif.rdata[7:0] = reg_file[{gbif.addr[13:2], 2'd0}];
+        gbif.rdata[15:8] = reg_file[{gbif.addr[13:2], 2'd1}];
+        gbif.rdata[23:16] = reg_file[{gbif.addr[13:2], 2'd2}];
+        gbif.rdata[31:24] = reg_file[{gbif.addr[13:2], 2'd3}];
+
+        //////////////////////////////////////////
+        // Vortex write logic (first priority): //
+        //////////////////////////////////////////
+
+        // check for valid, write, and address in range
+        if (mem_req_valid & mem_req_rw & ~Vortex_bad_address)
+        begin
+            // this part is automated by load_Vortex_mem_slave.py:
+< Vortex write logic here >
+
+            // ahb busy
+            gbif.busy = 1'b1;
+        end
+
+        ////////////////////////////////////////
+        // AHB write logic (second priority): //
+        ////////////////////////////////////////
+
+        // if Vortex not writing, check for write and address in range
+        else if (gbif.wen & ~AHB_bad_address)
+        begin
+            // assumption: follow word address
+            if (gbif.byte_en[0]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[7:0];
+            if (gbif.byte_en[1]) next_reg_file[{gbif.addr[13:2], 2'd1}] = gbif.wdata[15:8];
+            if (gbif.byte_en[2]) next_reg_file[{gbif.addr[13:2], 2'd2}] = gbif.wdata[23:16];
+            if (gbif.byte_en[3]) next_reg_file[{gbif.addr[13:2], 2'd3}] = gbif.wdata[31:24];
+        end
+
+        ////////////////////////////////
+        // other combinational logic: //
+        ////////////////////////////////
+
+        // always ready for request
+        mem_req_ready = 1'b1;           
+
+        // read ready immediately
+        mem_rsp_valid = mem_req_valid;  
+            // update to buffer to later clock cycle
+                // along with data read value
+
+        // match req immediately
+        mem_rsp_tag = mem_req_tag;
+            // update to buffer to later clock cycle
+                // along with data read value
+    end
+
+    // don't know what to do with: 
+        // Vortex busy
+
+endmodule
+

@@ -50,7 +50,7 @@ module VX_vortex_to_local_mem (
         .mem_rsp_tag    (mem_rsp_tag),
         .mem_rsp_ready  (mem_rsp_ready),
 
-        .busy           (busy),
+        .busy           (busy)
 
         //.tb_addr_out_of_bounds (tb_addr_out_of_bounds)
 	);
