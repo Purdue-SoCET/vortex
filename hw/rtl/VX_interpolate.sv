@@ -54,6 +54,8 @@ module VX_interpolate #(
 		inter_rsp_if.PC inter_req_if.uuid;
 		inter_rsp_if.rd = inter_req_if.uuid; 
 		inter_rsp_if.wb = inter_req_if.uuid;
+		
+		inter_rsp_if.rsp_ready = 1;
 	end
    end
 
