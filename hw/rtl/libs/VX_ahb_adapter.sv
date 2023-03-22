@@ -73,7 +73,7 @@ module VX_ahb_adapter #(
     logic [31:0] full_addr;
 
     logic [511:0] nxt_data, data;
-    logic nxt_rw, rw, clear;
+    logic nxt_rw, rw, clear, count_en;
     logic [31:0] nxt_addr, addr;
     
     always_ff @(posedge clk, negedge reset) begin : STATE_TRANSITIONS
