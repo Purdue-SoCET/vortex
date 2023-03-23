@@ -41,30 +41,31 @@ module VX_ahb_adapter #(
     localparam size = $clog2(VX_DATA_WIDTH/8);
     localparam num_cycles = (512/VX_DATA_WIDTH);
 
-    typedef enum logic [1:0] {IDLE, DATA, COMPLETE, ERROR} states;
+    typedef enum logic [2:0] {IDLE, DATA, START, COMPLETE, ERROR} states;
 
     states state, nxt_state;
 
-    typedef struct packed {
-        logic [31:0] data1;
-        logic [31:0] data2;
-        logic [31:0] data3;
-        logic [31:0] data4;
-        logic [31:0] data5;
-        logic [31:0] data6;
-        logic [31:0] data7;
-        logic [31:0] data8;
-        logic [31:0] data9;
-        logic [31:0] data10;
-        logic [31:0] data11;
-        logic [31:0] data12;
-        logic [31:0] data13;
-        logic [31:0] data14;
-        logic [31:0] data15;
-        logic [31:0] data16;
-    } data_buff;
+    // typedef struct packed {
+    //     logic [31:0] data1;
+    //     logic [31:0] data2;
+    //     logic [31:0] data3;
+    //     logic [31:0] data4;
+    //     logic [31:0] data5;
+    //     logic [31:0] data6;
+    //     logic [31:0] data7;
+    //     logic [31:0] data8;
+    //     logic [31:0] data9;
+    //     logic [31:0] data10;
+    //     logic [31:0] data11;
+    //     logic [31:0] data12;
+    //     logic [31:0] data13;
+    //     logic [31:0] data14;
+    //     logic [31:0] data15;
+    //     logic [31:0] data16;
+    // } data_buff;
     
-    data_buff data_read, nxt_data_read; 
+    logic [15:0] [31:0] data_read;
+    logic [15:0] [31:0] nxt_data_read;
 
     logic [31:0] full_addr;
 
@@ -96,7 +97,9 @@ module VX_ahb_adapter #(
         
         case(state)
 
-            IDLE: nxt_state = (req.valid) ? DATA : IDLE;
+            IDLE: nxt_state = (req.valid) ? START : IDLE;
+
+            START: nxt_state = DATA;
 
             DATA: begin
                 if ((ahb.HREADY == 1) && (count == 4'd15)) begin
@@ -142,16 +145,20 @@ module VX_ahb_adapter #(
             IDLE: begin
                 req.ready = 1;
                 if (req.valid == 1) begin
-                    ahb.HSEL = 1;
-                    ahb.HSIZE = 3'b010;
-                    ahb.HTRANS = 2'b10;
-                    ahb.HWRITE = req.rw;
-                    ahb.HADDR = full_addr;
                     nxt_data = req.data;
                     nxt_addr = full_addr;
                     nxt_rw = req.rw;
                     clear = 1;
                 end
+            end
+
+            START: begin
+                ahb.HSEL = 1;
+                ahb.HSIZE = 3'b010;
+                ahb.HTRANS = 2'b10;
+                ahb.HWRITE = rw;
+                ahb.HADDR = addr;
+                nxt_addr = addr + 4;
             end
 
             DATA: begin 
@@ -161,71 +168,71 @@ module VX_ahb_adapter #(
                     ahb.HSIZE = 3'b010;
                     ahb.HTRANS = 2'b10;
                     ahb.HWRITE = rw;
-                    ahb.HADDR = addr + 4;
+                    ahb.HADDR = addr;
                     nxt_addr = addr + 4;
                     case (count)
                         4'd0: begin
-                            nxt_data_read.data1 = ahb.HRDATA;
+                            nxt_data_read[0] = ahb.HRDATA;
                             ahb.HWDATA = data[31:0];
                         end
                         4'd1: begin
-                            nxt_data_read.data2 = ahb.HRDATA;
+                            nxt_data_read[1] = ahb.HRDATA;
                             ahb.HWDATA = data[63:32];
                         end
                         4'd2: begin
-                            nxt_data_read.data3 = ahb.HRDATA;
+                            nxt_data_read[2] = ahb.HRDATA;
                             ahb.HWDATA = data[95:64];
                         end
                         4'd3: begin
-                            nxt_data_read.data4 = ahb.HRDATA;
+                            nxt_data_read[3] = ahb.HRDATA;
                             ahb.HWDATA = data[127:96];
                         end
                         4'd4: begin
-                            nxt_data_read.data5 = ahb.HRDATA;
+                            nxt_data_read[4] = ahb.HRDATA;
                             ahb.HWDATA = data[159:128];
                         end
                         4'd5: begin
-                            nxt_data_read.data6 = ahb.HRDATA;
+                            nxt_data_read[5] = ahb.HRDATA;
                             ahb.HWDATA = data[191:160];
                         end
                         4'd6: begin
-                            nxt_data_read.data7 = ahb.HRDATA;
+                            nxt_data_read[6] = ahb.HRDATA;
                             ahb.HWDATA = data[223:196];
                         end
                         4'd7: begin
-                            nxt_data_read.data8 = ahb.HRDATA;
+                            nxt_data_read[7] = ahb.HRDATA;
                             ahb.HWDATA = data[255:224];
                         end
                         4'd8: begin
-                            nxt_data_read.data9 = ahb.HRDATA;
+                            nxt_data_read[8] = ahb.HRDATA;
                             ahb.HWDATA = data[287:256];
                         end
                         4'd9: begin
-                            nxt_data_read.data10 = ahb.HRDATA;
+                            nxt_data_read[9] = ahb.HRDATA;
                             ahb.HWDATA = data[319:288];
                         end
                         4'd10: begin
-                            nxt_data_read.data11 = ahb.HRDATA;
+                            nxt_data_read[10] = ahb.HRDATA;
                             ahb.HWDATA = data[351:320];
                         end
                         4'd11: begin
-                            nxt_data_read.data12 = ahb.HRDATA;
+                            nxt_data_read[11] = ahb.HRDATA;
                             ahb.HWDATA = data[383:352];
                         end
                         4'd12: begin
-                            nxt_data_read.data13 = ahb.HRDATA;
+                            nxt_data_read[12] = ahb.HRDATA;
                             ahb.HWDATA = data[415:384];
                         end
                         4'd13: begin
-                            nxt_data_read.data14 = ahb.HRDATA;
+                            nxt_data_read[13] = ahb.HRDATA;
                             ahb.HWDATA = data[447:416];
                         end
                         4'd14: begin
-                            nxt_data_read.data15 = ahb.HRDATA;
+                            nxt_data_read[14] = ahb.HRDATA;
                             ahb.HWDATA = data[479:448];
                         end
                         4'd15: begin
-                            nxt_data_read.data16 = ahb.HRDATA;
+                            nxt_data_read[15] = ahb.HRDATA;
                             ahb.HWDATA = data[511:480];
                         end
                     endcase
@@ -237,7 +244,7 @@ module VX_ahb_adapter #(
                     ahb.HSIZE = 3'b010;
                     ahb.HTRANS = 2'b10;
                     ahb.HWRITE = rw;
-                    ahb.HADDR = addr + 4;
+                    ahb.HADDR = addr;
                     case (count)
                         4'd0: ahb.HWDATA = data[31:0];
                         4'd1: ahb.HWDATA = data[63:32];
@@ -265,7 +272,7 @@ module VX_ahb_adapter #(
         endcase
     end
 
-    assign rsp.data = (data_read);
+    assign rsp.data = data_read;
 
     counter
     SIXTEEN(
