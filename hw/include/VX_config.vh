@@ -26,8 +26,8 @@
 `endif
 
 `ifndef L2_ENABLE
-// `define L2_ENABLE 0
-`define L2_ENABLE 1
+`define L2_ENABLE 0
+// `define L2_ENABLE 1
 `endif
 
 `ifndef L3_ENABLE
