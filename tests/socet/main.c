@@ -21,15 +21,15 @@ int kernel_function(context_t cxt, void * arg){
 int main(){
 	//set up the context here
 	context_t kernel_context;
-	kernel_context.num_groups[0] = 4;
-	kernel_context.global_offset[0] = 4;//gid
-	kernel_context.local_size[0] = 4;//lid
+	kernel_context.num_groups[0] = 4; //number of work groups (each workgroup maps to a thread block)
+	kernel_context.global_offset[0] = 4 * 4; //used to calculate the global ID of a work-item
+	kernel_context.local_size[0] = 4;//lid local id
 	kernel_context.printf_buffer = NULL;
 	kernel_context.printf_buffer_position = NULL;
 	kernel_context.printf_buffer_capacity = 0;
 	kernel_context.work_dim = 1;
-        //gid = get_global_id( 0 );
-        //numItems = get_local_size( 0 );
+        //gid = get_global_id( 0 ); get_global_id returned the index into the work for a given work item, each work item has different index
+        //numItems = get_local_size( 0 ); //number of local workitems per block
         //tnum = get_local_id( 0 ); // thread number
         //wgNum = get_group_id( 0 ); //work group number
 	//kernel arg
