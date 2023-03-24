@@ -28,7 +28,10 @@ int main(){
 	kernel_context.printf_buffer_position = NULL;
 	kernel_context.printf_buffer_capacity = 0;
 	kernel_context.work_dim = 1;
-	
+        //gid = get_global_id( 0 );
+        //numItems = get_local_size( 0 );
+        //tnum = get_local_id( 0 ); // thread number
+        //wgNum = get_group_id( 0 ); //work group number
 	//kernel arg
 	int global_buffer[64];
 	for (int i = 0; i < 64; i++){
