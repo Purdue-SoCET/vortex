@@ -21,9 +21,9 @@ int kernel_function(context_t cxt, void * arg){
 int main(){
 	//set up the context here
 	context_t kernel_context;
-	kernel_context.num_groups[0] = 4; //number of work groups (each workgroup maps to a thread block)
-	kernel_context.global_offset[0] = 4 * 4; //used to calculate the global ID of a work-item
-	kernel_context.local_size[0] = 4;//lid local id
+	kernel_context.num_groups[0] = 1; //number of work groups (each workgroup maps to a thread block)
+	kernel_context.global_offset[0] = 0; //used to calculate the offset + global ID of a work-item
+	kernel_context.local_size[0] = 16;//lid local id
 	kernel_context.printf_buffer = NULL;
 	kernel_context.printf_buffer_position = NULL;
 	kernel_context.printf_buffer_capacity = 0;
