@@ -8,8 +8,10 @@ int kernel_function(context_t cxt, void * arg){
 	int tid = vx_thread_gid(); //thread id of current thread
 	int sum = 0;
 	int div_test = 0;
-	//no locks in vortex 
-	sum += ((int *)arg)[tid];
+	//no locks in vortex
+	int * currval = ((int *)arg)[tid];
+	sum += *currval;
+	*currval += 1; //increments each value in the global array by 1
 	__if (sum > 0)
 		div_test = 0;
 	__else
@@ -33,8 +35,8 @@ int main(){
         //tnum = get_local_id( 0 ); // thread number
         //wgNum = get_group_id( 0 ); //work group number
 	//kernel arg
-	int global_buffer[64];
-	for (int i = 0; i < 64; i++){
+	int global_buffer[16];
+	for (int i = 0; i < 16; i++){
 		global_buffer[i] = i;
 	}
 	
