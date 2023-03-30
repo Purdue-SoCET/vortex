@@ -197,7 +197,7 @@ module VX_ahb_adapter #(
                         end
                         4'd6: begin
                             nxt_data_read[6] = ahb.HRDATA;
-                            ahb.HWDATA = data[223:196];
+                            ahb.HWDATA = data[223:192];
                         end
                         4'd7: begin
                             nxt_data_read[7] = ahb.HRDATA;
@@ -252,7 +252,7 @@ module VX_ahb_adapter #(
                         4'd3: ahb.HWDATA = data[127:96];
                         4'd4: ahb.HWDATA = data[159:128];
                         4'd5: ahb.HWDATA = data[191:160];
-                        4'd6: ahb.HWDATA = data[223:196];
+                        4'd6: ahb.HWDATA = data[223:192];
                         4'd7: ahb.HWDATA = data[255:224];
                         4'd8: ahb.HWDATA = data[287:256];
                         4'd9: ahb.HWDATA = data[319:288];
