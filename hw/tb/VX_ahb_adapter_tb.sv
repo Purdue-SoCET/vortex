@@ -79,6 +79,16 @@ program test(
         ahbif.HREADYOUT  = '1;
         ahbif.HRESP   = '0;
         ahbif.HRDATA  = '0;
+
+        expected_HSEL = '0;
+        expected_HWRITE = '0;
+        expected_HSIZE = '0;
+        expected_HADDR = '0;
+        expected_HWDATA = '0;
+        expected_HWSTRB = '1;
+        expected_req_ready = '1;
+        expected_rsp_valid = '0;
+        expected_rsp_data = '0;
     endtask
 
     task check_vx_outputs(input bit check_data_signals = 0);
@@ -183,20 +193,21 @@ program test(
     // in case of a read by Vortex. Should be called after the posedge
     // following the read request, and before the negedge following that.
     task check_receive_data(
-        input logic [`VX_MEM_ADDR_WIDTH-1:0] base_addr,
+        input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
+        input logic [`VX_MEM_DATA_WIDTH-1:0] data,
         input integer transactions
     );
         expected_HSEL = 1'b1;
         expected_HWRITE = 1'b0;
         expected_HSIZE = $clog2(AHB_DATA_WIDTH/8);
-        expected_HADDR = base_addr << (AHB_ADDR_WIDTH - `VX_MEM_ADDR_WIDTH);
+        expected_HADDR = addr << (AHB_ADDR_WIDTH - `VX_MEM_ADDR_WIDTH);
 
         @(negedge CLK);
         check_ahb_outputs();
 
         for (integer i = 0; i < transactions; ++i) begin
             @(posedge CLK);
-            ahbif.HRDATA = ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
+            ahbif.HRDATA = data[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
             expected_HADDR += AHB_DATA_WIDTH/8;
             if (i < transactions - 1) begin
                 @(negedge CLK);
@@ -207,21 +218,25 @@ program test(
         @(negedge CLK);
     endtask
 
+    // Task to stream data to the AHB buffer from the AHB adapter
+    // in case of a write by Vortex. Should be called after the posedge
+    // following the write request, and before the negedge following that.
     task check_send_data(
-        input logic [`VX_MEM_ADDR_WIDTH-1:0] base_addr,
+        input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
+        input logic [`VX_MEM_DATA_WIDTH-1:0] data,
         input integer transactions
     );
         expected_HSEL = 1'b1;
         expected_HWRITE = 1'b1;
         expected_HSIZE = $clog2(AHB_DATA_WIDTH/8);
-        expected_HADDR = base_addr << (AHB_ADDR_WIDTH - `VX_MEM_ADDR_WIDTH);
+        expected_HADDR = addr << (AHB_ADDR_WIDTH - `VX_MEM_ADDR_WIDTH);
 
         @(negedge CLK);
         check_ahb_outputs();
 
         for (integer i = 0; i < transactions; ++i) begin
             @(posedge CLK);
-            expected_HWDATA = ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
+            expected_HWDATA = data[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
             expected_HADDR += AHB_DATA_WIDTH/8;
             if (i < transactions - 1) begin
                 @(negedge CLK);
@@ -232,16 +247,92 @@ program test(
         @(negedge CLK);
     endtask
 
-    initial begin
+    task ahb_transaction(
+        input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
+        input logic [`VX_MEM_DATA_WIDTH-1:0] data,
+        input logic write,
+        input bit nodelay = 0
+    );
+        // Set up request at the Vortex side
+        mreqif.valid = 1'b1;
+        mreqif.rw = write;
+        mreqif.byteen = '1;
+        mreqif.addr = addr;
+        mrspif.ready = 1'b0;
+        if (write) begin
+            mreqif.data = data;
+        end
+
+        @(posedge CLK);
+        mreqif.valid = 1'b0;
+
+        // req_ready should go low in the next cycle to prevent another
+        // transaction from being queued
+        #(0.25*PERIOD);
+        expected_req_ready = 1'b0;
+        check_vx_outputs();
+
+        // Stream the AHB transactions
+        if (write) begin
+            check_send_data(addr, data, TRANS_PER_BLOCK);
+        end else begin
+            check_receive_data(addr, data, TRANS_PER_BLOCK);
+        end
+
+        // Check that the value correctly gets passed to Vortex
+        @(negedge CLK);
+        expected_req_ready = '0;
+        expected_rsp_valid = '1;
+        if (!write) begin
+            expected_rsp_data = ahb_buffer;
+        end
+        check_vx_outputs(!write);
+
+        // Check that the AHB signals get deasserted
         expected_HSEL = '0;
         expected_HWRITE = '0;
         expected_HSIZE = '0;
         expected_HADDR = '0;
         expected_HWDATA = '0;
         expected_HWSTRB = '1;
+        check_ahb_outputs();
+
+        // The Vortex side outputs should be held until acknowledged
+        if (!nodelay) begin
+            repeat(2) @(negedge CLK);
+            check_vx_outputs(!write);
+        end
+
+        mrspif.ready = 1'b1;
+
+        // After acknowledgement, should go back to ready state
+        @(negedge CLK);
         expected_req_ready = '1;
         expected_rsp_valid = '0;
-        expected_rsp_data = '0;
+        check_vx_outputs();
+    endtask
+
+    task ahb_read(
+        input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
+        input logic [`VX_MEM_DATA_WIDTH-1:0] data,
+        input bit nodelay = 0
+    );
+        ahb_transaction(addr, data, 0, nodelay);
+    endtask
+    
+    task ahb_write(
+        input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
+        input logic [`VX_MEM_DATA_WIDTH-1:0] data,
+        input bit nodelay = 0
+    );
+        ahb_transaction(addr, data, 1, nodelay);
+    endtask
+
+    initial begin
+        // Generate the data
+        for (int i=0; i<`VX_MEM_DATA_WIDTH/32; ++i) begin
+            ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH] = $urandom();
+        end
 
         ////////////////////////////////////////////////////////////////////////
         // TEST CASE: Power-on reset
@@ -250,7 +341,7 @@ program test(
         reset_inputs();
         test_num += 1;
         test_case = "Power-on reset";
-        $display("Running test %3.d: %s", test_num, test_case);
+        $display("Running test %2.d: %s", test_num, test_case);
 
         nRST = 1'b1;
         @(negedge CLK);
@@ -267,48 +358,10 @@ program test(
         reset_inputs();
         test_num += 1;
         test_case = "Standalone read";
-        $display("Running test %3.d: %s", test_num, test_case);
+        $display("Running test %2.d: %s", test_num, test_case);
 
-        // Set up request at the Vortex side
-        mreqif.valid = 1'b1;
-        mreqif.rw = 1'b0;
-        mreqif.byteen = '1;
-        mreqif.addr = 26'h2345678;
-        mrspif.ready = 1'b0;
-
-        @(posedge CLK);
-        mreqif.valid = 1'b0;
-
-        // req_ready should go low in the next cycle to prevent another
-        // transaction from being queued
-        #(0.25*PERIOD);
-        expected_req_ready = 1'b0;
-        check_vx_outputs();
-
-        // Stream the AHB transactions
-        for (int i=0; i<`VX_MEM_DATA_WIDTH/32; ++i) begin
-            ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH] = $urandom();
-        end
-        check_receive_data(mreqif.addr, TRANS_PER_BLOCK);
-
-        // Check that the value correctly gets passed to Vortex
-        @(negedge CLK);
-        expected_req_ready = '0;
-        expected_rsp_valid = '1;
-        expected_rsp_data = ahb_buffer;
-        check_vx_outputs(1);
-
-        // The Vortex side outputs should be held until acknowledged
-        repeat(2) @(negedge CLK);
-        check_vx_outputs(1);
-        mrspif.ready = 1'b1;
-
-        // After acknowledgement, should go back to ready state
-        @(negedge CLK);
-        expected_req_ready = '1;
-        expected_rsp_valid = '0;
-        check_vx_outputs();
-
+        ahb_read(26'h2345678, ahb_buffer);
+        
         ////////////////////////////////////////////////////////////////////////
         // TEST CASE: Standalone write
         ////////////////////////////////////////////////////////////////////////
@@ -316,49 +369,25 @@ program test(
         reset_inputs();
         test_num += 1;
         test_case = "Standalone write";
-        $display("Running test %3.d: %s", test_num, test_case);
+        $display("Running test %2.d: %s", test_num, test_case);
 
-        // Generate the data to send
-        for (int i=0; i<`VX_MEM_DATA_WIDTH/32; ++i) begin
-            ahb_buffer[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH] = $urandom();
-        end
+        ahb_write(26'h4000000, ahb_buffer);
 
-        // Set up request at the Vortex side
-        mreqif.valid = 1'b1;
-        mreqif.rw = 1'b1;
-        mreqif.byteen = '1;
-        mreqif.addr = 26'h4000000;
-        mreqif.data = ahb_buffer;
-        mrspif.ready = 1'b0;
+        ////////////////////////////////////////////////////////////////////////
+        // TEST CASE: Back to back regular transactions
+        ////////////////////////////////////////////////////////////////////////
+        repeat(3) @(negedge CLK);
+        reset_inputs();
+        test_num += 1;
+        test_case = "Back to back regular transactions";
+        $display("Running test %2.d: %s", test_num, test_case);
 
-        @(posedge CLK);
-        mreqif.valid = 1'b0;
-
-        // req_ready should go low in the next cycle to prevent another
-        // transaction from being queued
-        #(0.25*PERIOD);
-        expected_req_ready = 1'b0;
-        check_vx_outputs();
-
-        // Stream the AHB transactions
-        check_send_data(mreqif.addr, TRANS_PER_BLOCK);
-
-        // Check that the value correctly gets passed to Vortex
-        @(negedge CLK);
-        expected_req_ready = '0;
-        expected_rsp_valid = '1;
-        check_vx_outputs();
-
-        // The Vortex side outputs should be held until acknowledged
-        repeat(2) @(negedge CLK);
-        check_vx_outputs();
-        mrspif.ready = 1'b1;
-
-        // After acknowledgement, should go back to ready state
-        @(negedge CLK);
-        expected_req_ready = '1;
-        expected_rsp_valid = '0;
-        check_vx_outputs();
+        ahb_read(26'h1200000, ahb_buffer, 1);
+        ahb_read(26'h1200001, ahb_buffer, 1);
+        ahb_write(26'h6000000, ahb_buffer, 1);
+        ahb_read(26'h1200002, ahb_buffer, 1);
+        ahb_write(26'h6000001, ahb_buffer, 1);
+        ahb_write(26'h6000002, ahb_buffer, 1);
 
         repeat(3) @(negedge CLK);
         if (fails) begin
