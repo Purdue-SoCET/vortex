@@ -14,12 +14,6 @@ typedef struct _argument_t {
 void kernel_function(context_t cxt, void * arg){
 	int tid = vx_thread_gid(); //thread id of current thread
 	arg->vector_3[tid] = ((argument_t *) arg)->vector_1[tid] + ((argument_t *) arg)->vector_2[id];
-	*currval += 1; //increments each value in the global array by 1
-	__if (arg->vector_3[tid] > 255)
-		arg->vector_3[tid] = 255;
-	__else
-		//
-	__endif
 	return;
 }
 //global memory
