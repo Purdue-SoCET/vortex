@@ -34,7 +34,7 @@ Description: Header file for function definition intended for Vortex tracing in 
             if (j != (m-1)) `SV_TRACE(", ", fp);    \
             `SV_TRACE($sformatf("0x%0h", a[i][j]), fp);        \
         end                                     \
-        `SV_TRACE("}", fp);                         \
+        `SV_TRACE("}", fp);                         
     end                                         
 
 `endif
