@@ -32,7 +32,7 @@ ADD_INCL += $(INCL)
 ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh
 
 #Macros
-MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE
+MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN #+define+SV_TRACE_CORE_DCACHE#+define+SV_TRACE_CORE_PIPELINE
 
 ### Directories 
 # Vortex
