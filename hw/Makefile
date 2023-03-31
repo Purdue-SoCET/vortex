@@ -25,14 +25,14 @@ VX_TB := VX_local_mem_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
 
 WAVE_DIR := $(TB_DIR)/scripts
-WAVE:= $(WAVE_DIR)/VX_top_level.do
+WAVE:= $(WAVE_DIR)/VX_i_d_caches.do
 
 # Additional files 
 ADD_INCL += $(INCL)
 ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh
 
 #Macros
-MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE #+define+SV_TRACE_CORE_DCACHE
+MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE +define+SV_TRACE_CORE_DCACHE +define+SV_TRACE_CACHE_DATA +define+EXT_TEX_ENABLE
 
 ### Directories 
 # Vortex
@@ -90,6 +90,7 @@ RTL_FILES += $(wildcard $(LIBS_DIR)/*.sv)
 RTL_FILES += $(wildcard $(TEXT_UNIT_DIR)/*.sv)
 
 RTL_FILES += $(wildcard $(RTL_DIR)/*.sv)
+RTL_FILES += $(wildcard $(TEX_UNIT_DIR)/*.sv)
 
 
 WORKDIR := work
