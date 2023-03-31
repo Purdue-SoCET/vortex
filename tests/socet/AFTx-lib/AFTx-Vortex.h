@@ -2,32 +2,27 @@
 //AFTx Vortex program interfacing library
 //ADDR: start register 0xFFFF
 //ADDR: status register 0XFFFFF
-#define START_BASE 0xFFFF
-#define STATUS_BASE 0xFFFFF
-#define LOCAL_SRAM_BASE 0xFFFFFF
-#define LOCAL_SRAM_SIZE 0xFFF
-
-uint32_t * start_reg = (uint32_t *) START_BASE;
-uint32_t * status_reg = (uint32_t *) STATUS_BASE;
-uint32_t * sram_base_reg = (uint32_t *) LOCAL_SRAM_BASE;
+#include <stdint.h>
+#include "pal.h"
 
 //start vortex
-uint32_t vx_start(){
-	*start_reg = 1;
-	return 0;
+void vx_start(){
+	((VortexRegBlk *)vortex)->start = 0x1;
+	return;
 }
 
 //status polling 
-uint32_t vx_status(){
-	return *status_reg;
+void vx_status(){
+	while (!((VortexRegBlk *)vortex)->status);
+	return;
 }
 
 //write hex to local sram
-uint32_t vx_write(uint32_t * data, int size){
-	if (size > LOCAL_SRAM_SIZE) return -1;
+int vx_copy(uint32_t * src_data, uint32_t * dest_data, int size){
 	for (int i = 0; i < size; i++){
-		*((uint8_t)sram_base_reg + i) = *((uint8_t)data + i);
+		*((uint8_t)dest_data + i) = *((uint8_t)src_data + i);
 	}
+	return;
 }
 
 
