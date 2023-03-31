@@ -36,6 +36,10 @@ VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt +define+SYNTHESIS #+define+SYNTHESI
 # VLOGOPTS_DPI_CPP := -work $(WORKDIR) -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors"
 
 # TARGETS:
+%.load: load_Vortex_mem_slave.py
+		python3 load_Vortex_mem_slave.py hex_files/$*
+
+
 compile_local_mem: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_DEF)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_RTL_FILES)
