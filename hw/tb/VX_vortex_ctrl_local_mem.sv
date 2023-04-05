@@ -1,8 +1,41 @@
 `include "../include/VX_define.vh"
-//Author: Raghul Prakash
+//Author: Raghul Prakash, socet33, prakasr
 //VX local ram, ctrl and vortex instantiated.
 
-module VX_vortex_to_local_mem #()(
+`ifndef GENERIC_BUS_IF_VH
+`define GENERIC_BUS_IF_VH
+
+
+
+// typedef logic [WORD_SIZE-1:0] word_t;
+typedef logic [32-1:0] word_t;
+
+interface generic_bus_if ();
+    // import rv32i_types_pkg::*;
+
+    // logic [RAM_ADDR_SIZE-1:0] addr;
+    logic [32-1:0] addr;                // RAM_ADDR_SIZE = 32
+    word_t wdata;
+    word_t rdata;
+    logic ren,wen;
+    logic busy;
+    logic [3:0] byte_en;
+
+    modport generic_bus (
+        input addr, ren, wen, wdata, byte_en,
+        output rdata, busy
+    );
+
+    modport cpu (
+        input rdata, busy,
+        output addr, ren, wen, wdata, byte_en
+    );
+
+endinterface
+
+`endif //GENERIC_BUS_IF_VH
+
+module VX_vortex_ctrl_local_mem #()(
     // seq
     input clk, reset
 )
@@ -33,7 +66,7 @@ module VX_vortex_to_local_mem #()(
     logic                            tb_addr_out_of_bounds
 
     //vortex control slave
-	Vortex_ctrl_slave vortex_ctrl_slave(clk, reset, busy, start, gbif);
+    Vortex_ctrl_slave vortex_ctrl_slave(clk, reset, busy, start, gbif);
 
     //vortex top
     VX_vortex Vortex(
