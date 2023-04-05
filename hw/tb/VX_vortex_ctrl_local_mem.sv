@@ -116,7 +116,7 @@ module VX_vortex_ctrl_local_mem #()(
 
         .busy           (busy),
 
-	.tb_addr_out_of_bounds (tb_addr_out_of_bounds).
+	    .tb_addr_out_of_bounds (tb_addr_out_of_bounds),
 	.gbif(gbif)
 	);
 
