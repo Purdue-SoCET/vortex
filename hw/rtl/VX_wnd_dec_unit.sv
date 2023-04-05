@@ -39,7 +39,8 @@ always_comb begin
         if(CWP_buffer[WID] >= 0) begin
             CWP_buffer_next[WID] = CWP[WID] - O;
         end
-    end
+    end 
+    // else if(trap) //
 
 end
 
