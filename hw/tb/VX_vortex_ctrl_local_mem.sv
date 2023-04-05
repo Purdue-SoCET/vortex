@@ -37,7 +37,12 @@ endinterface
 
 module VX_vortex_ctrl_local_mem #()(
     // seq
-    input clk, reset
+    input clk, reset, 
+    //////////////////////////////////
+    // Generic Bus Interface (AHB): //
+    //////////////////////////////////
+
+    generic_bus_if.generic_bus              gbif
 )
     // Memory Request:
     // vortex outputs
