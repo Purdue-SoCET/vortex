@@ -32,6 +32,12 @@ module VX_gpr_stage #(
     assign raddr1 = {gpr_req_if.wid, gpr_req_if.rs1};
     assign raddr2 = {gpr_req_if.wid, gpr_req_if.rs2};
 
+    VX_wnd_dec_unit #(
+
+    ) (
+        
+    )
+
     for (genvar i = 0; i < `NUM_THREADS; ++i) begin
         VX_dp_ram #(
             .DATAW       (32),
