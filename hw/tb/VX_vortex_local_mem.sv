@@ -1,5 +1,6 @@
 `include "../include/VX_define.vh"
-//VX local ram and vortex instantiated, synthesizable.
+//Author: Raghul Prakash
+//VX local ram, ctrl and vortex instantiated.
 
 module VX_vortex_to_local_mem #()(
     // seq
@@ -31,8 +32,10 @@ module VX_vortex_to_local_mem #()(
     // tb:
     logic                            tb_addr_out_of_bounds
 
+    //vortex control slave
+	Vortex_ctrl_slave vortex_ctrl_slave(clk, reset, busy, start, gbif);
 
-    //vortex
+    //vortex top
     VX_vortex Vortex(
         .clk            (clk),
         .reset          (reset),
