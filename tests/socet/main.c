@@ -13,7 +13,7 @@ typedef struct _argument_t {
 //kernel function (vector math)
 void kernel_function(context_t cxt, void * arg){
 	int tid = vx_thread_gid(); //thread id of current thread
-	arg->vector_3[tid] = ((argument_t *) arg)->vector_1[tid] + ((argument_t *) arg)->vector_2[id];
+	((argument_t *) arg)->vector_3[tid] = ((argument_t *) arg)->vector_1[tid] + ((argument_t *) arg)->vector_2[tid];
 	return;
 }
 //global memory

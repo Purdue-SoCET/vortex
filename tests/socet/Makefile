@@ -6,7 +6,7 @@ else
 RISCV_TOOLCHAIN_PATH = ${DESTDIR}/riscv64-gnu-toolchain
 endif
 
-RISCV_PREFIX ?= ../../riscv-gnu-toolchain/bin/riscv$(XLEN)-unknown-elf-
+RISCV_PREFIX ?= ./riscv-tools/bin/riscv64-unknown-elf-
 
 CC = $(RISCV_PREFIX)gcc
 AR = $(RISCV_PREFIX)gcc-ar
