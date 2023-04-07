@@ -24,8 +24,8 @@ import sys
 # consts:
 
 # 128 Kb
-REG_FILE_BYTE_SIZE = 14
-REG_FILE_BYTE_SIZE = 2**14
+LOCAL_MEM_NUM_BITS = 14
+LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
 
 VX_MEM_BYTEEN_WIDTH = 64
 VX_MEM_ADDR_WIDTH = 26
@@ -82,6 +82,15 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     outputs:
         Vortex_mem_slave_sv_lines: lines which make up source file Vortex_mem_slave.sv
     """
+
+    ###########################
+    # make reg file instance: #
+    ###########################
+
+    # set LOCAL_MEM_SIZE parameter line
+    local_mem_size_lines = [
+        f"\tparameter LOCAL_MEM_SIZE = {LOCAL_MEM_NUM_BITS};\n"
+    ]
 
     ###########################
     # make reg file instance: #
@@ -161,12 +170,12 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
                 quit()
 
         # check for too many bytes
-        if (last_byte_num > REG_FILE_BYTE_SIZE):
-            print(f"ERROR: too many bytes to fit in {REG_FILE_BYTE_SIZE} byte reg file")
+        if (last_byte_num > LOCAL_MEM_SIZE):
+            print(f"ERROR: too many bytes to fit in {LOCAL_MEM_SIZE} byte reg file")
             quit()
 
         # check for any bytes to fill in after lines
-        while (last_byte_num < REG_FILE_BYTE_SIZE):
+        while (last_byte_num < LOCAL_MEM_SIZE):
             reg_file_instance_lines += [
                 f"\t\t\treg_file[{last_byte_num}] <= 8'h00;",
             ]
@@ -213,18 +222,26 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     ##########################
 
     # get indices in shell file
-    reg_file_instance_index = Vortex_mem_slave_shell_lines.index("< reset vals here >\n")
-    Vortex_read_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex read logic here >\n")
-    Vortex_write_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex write logic here >\n")
+    try:
+        local_mem_size_index = Vortex_mem_slave_shell_lines.index("< LOCAL_MEM_SIZE val here >\n")
+        reg_file_instance_index = Vortex_mem_slave_shell_lines.index("< reset vals here >\n")
+        Vortex_read_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex read logic here >\n")
+        Vortex_write_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex write logic here >\n")
+
+    except:
+        print("couldn't find placeholder lines in shell text file")
+        quit()
 
     # add up shell pieces and instance piece
-    reg_file_sv_lines = Vortex_mem_slave_shell_lines[:reg_file_instance_index]
+    reg_file_sv_lines = Vortex_mem_slave_shell_lines[:local_mem_size_index]
+    reg_file_sv_lines += local_mem_size_lines
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[local_mem_size_index + 1:reg_file_instance_index]
     reg_file_sv_lines += reg_file_instance_lines
-    reg_file_sv_lines += Vortex_mem_slave_shell_lines[reg_file_instance_index +1:Vortex_read_logic_index]
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[reg_file_instance_index + 1:Vortex_read_logic_index]
     reg_file_sv_lines += Vortex_read_logic_lines
-    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_read_logic_index +1:Vortex_write_logic_index]
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_read_logic_index + 1:Vortex_write_logic_index]
     reg_file_sv_lines += Vortex_write_logic_lines
-    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_write_logic_index +1:]
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[Vortex_write_logic_index + 1:]
 
     # return completed lines of file
     return reg_file_sv_lines
@@ -304,9 +321,19 @@ if __name__ == "__main__":
     if ("-zero" in sys.argv):
         LOAD_ZEROS = True
 
+    if ("-size" in sys.argv):
+        size_index = sys.argv.index("-size") + 1
+        LOCAL_MEM_NUM_BITS = int(sys.argv[size_index])
+        LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
+
     elif (not sys.argv[1].endswith(".hex")):
         print("input must be intel hex file")
         quit()
+
+    if DO_PRINTS:
+        print(f"DO_PRINTS = {DO_PRINTS}")
+        print(f"LOAD_ZEROS = {LOAD_ZEROS}")
+        print(f"LOCAL_MEM_NUM_BITS = {LOCAL_MEM_NUM_BITS}")
 
     # run .sv source builder
     intelhex_to_Vortex_mem_slave_sv(sys.argv[1], "Vortex_mem_slave.sv")

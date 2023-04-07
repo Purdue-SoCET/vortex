@@ -57,7 +57,7 @@ module Vortex_mem_slave_tb ();
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // AHB generic bus interface:
 
-    generic_bus_if                      gbif(); 
+    bus_protocol_if bpif(); 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // test program:
@@ -81,7 +81,7 @@ module Vortex_mem_slave_tb ();
 
         .busy           (busy),
 
-        .gbif           (gbif)
+        .bpif           (bpif)
 	);
 	
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ module Vortex_mem_slave_tb ();
 
         .busy           (busy),
 
-        .gbif           (gbif)
+        .bpif           (bpif)
     );
     
 endmodule
@@ -135,7 +135,7 @@ program test
     output logic                            busy,
 
     // AHB generic bus protocol
-    generic_bus_if.cpu                      gbif
+    bus_protocol_if                         bpif
 );
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// test signals:
@@ -163,8 +163,9 @@ program test
     logic [`VX_MEM_TAG_WIDTH-1:0]   expected_mem_rsp_tag;
 
     // AHB generic bus protocol:
-    word_t expected_rdata;
-    logic expected_busy;
+    logic [31:0] expected_rdata;
+    logic expected_error;
+    logic expected_request_stall;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
 	// tasks:
@@ -180,8 +181,9 @@ program test
             mem_rsp_valid === expected_mem_rsp_valid &
             mem_rsp_data === expected_mem_rsp_data &
             mem_rsp_tag === expected_mem_rsp_tag & 
-            gbif.rdata === expected_rdata & 
-            gbif.busy === expected_busy
+            bpif.rdata === expected_rdata & 
+            bpif.error === expected_error & 
+            bpif.request_stall === expected_request_stall
             )
 		begin
 			$display("Correct outputs");
@@ -228,41 +230,36 @@ program test
             end
 
             // check for specific errors:
-            if (gbif.rdata !== expected_rdata)
+            if (bpif.rdata !== expected_rdata)
             begin
                 num_errors++;
-                $display("\tgbif.rdata:");
+                $display("\tbpif.rdata:");
                 $display("\texpected: 0x%h\n\t  output: 0x%h", 
-                expected_rdata, gbif.rdata);
+                expected_rdata, bpif.rdata);
             end
 
             // check for specific errors:
-            if (gbif.busy !== expected_busy)
+            if (bpif.error !== expected_error)
             begin
                 num_errors++;
-                $display("\tgbif.busy:");
+                $display("\tbpif.error:");
                 $display("\texpected: 0x%h\n\t  output: 0x%h", 
-                expected_busy, gbif.busy);
+                expected_error, bpif.error);
+            end
+
+            // check for specific errors:
+            if (bpif.request_stall !== expected_request_stall)
+            begin
+                num_errors++;
+                $display("\tbpif.request_stall:");
+                $display("\texpected: 0x%h\n\t  output: 0x%h", 
+                expected_request_stall, bpif.request_stall);
             end
         end
 
         #(0.01);
         testing = 1'b0;
         error = 1'b0;
-    end
-    endtask
-
-    task load_memory ();
-        string mem_load_file;
-    begin
-        // read in file with instructions and data into fake mem
-    end
-    endtask
-
-    task dump_memory ();
-        string mem_dump_file;
-    begin
-        // write out fake mem contents to file
     end
     endtask
 
@@ -307,11 +304,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
 
             reset = 1'b1;
             
@@ -348,20 +345,12 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b1;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
         $display("");
-
-        // /////////////////////////////
-        // // wait for mem_req_ready: //
-        // /////////////////////////////
-
-        // test_string = "wait for mem_req_ready";
-        // $display("<< wait for mem_req_ready >>");
-        // $display("");
-        // @(posedge mem_req_ready);
 
         //////////////////////////
 		// Vortex read testing: //
@@ -385,11 +374,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -416,7 +405,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -435,11 +425,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -466,7 +456,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -485,11 +476,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -516,7 +507,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -535,11 +527,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -566,7 +558,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -585,11 +578,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -616,7 +609,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -635,11 +629,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -666,7 +660,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -709,11 +704,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -740,7 +735,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b1;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b1;
             
             check_outputs();
 		end
@@ -759,11 +755,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -790,7 +786,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -824,11 +821,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -855,7 +852,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b1;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b1;
             
             check_outputs();
 		end
@@ -874,11 +872,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'h00000000;   // not in range
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'h00000000;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'h00000000;   // not in range
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'h00000000;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -905,7 +903,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -932,11 +931,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0000000;   // instruction 0
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB0000000;   // instruction 0
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -963,7 +962,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -988,11 +988,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB000003c;   // instruction 15
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB000003c;   // instruction 15
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -1019,7 +1019,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h00001F17;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1044,11 +1045,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0001004;   // second word in first data segment
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB0001004;   // second word in first data segment
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -1075,7 +1076,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h00000000;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1100,11 +1102,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB00013c7;   // random word in first data segment
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB00013c7;   // random word in first data segment
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -1131,7 +1133,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h00000000;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1156,11 +1159,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0002024;   // word 9 in second data segment
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB0002024;   // word 9 in second data segment
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -1187,7 +1190,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'hC0934C66;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1212,11 +1216,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0002109;   // word 0x108 in second data segment
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b0000;
+            bpif.addr = 32'hB0002109;   // word 0x108 in second data segment
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b0000;
             
             #(PERIOD / 4);
 
@@ -1243,7 +1247,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'hE2308C3A;
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1276,11 +1281,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0001014;   // word 5
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b1;
-            gbif.wdata = 32'habcd5678;
-            gbif.byte_en = 4'b1111;
+            bpif.addr = 32'hB0001014;   // word 5
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b1;
+            bpif.wdata = 32'habcd5678;
+            bpif.strobe = 4'b1111;
             
             #(PERIOD / 4);
 
@@ -1307,7 +1312,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h01234567;  // old data value
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -1326,11 +1332,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0001014;   // word 5
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b1111;
+            bpif.addr = 32'hB0001014;   // word 5
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b1111;
             
             #(PERIOD / 4);
 
@@ -1357,7 +1363,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'habcd5678;  // write val
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1382,11 +1389,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0001036;   // word 0x1034
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b1;
-            gbif.wdata = 32'habcdabcd;
-            gbif.byte_en = 4'b0110;
+            bpif.addr = 32'hB0001036;   // word 0x1034
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b1;
+            bpif.wdata = 32'habcdabcd;
+            bpif.strobe = 4'b0110;
             
             #(PERIOD / 4);
 
@@ -1413,7 +1420,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h01234567;  // old data value
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -1432,11 +1440,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0001036;   // word 0x1034
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b1111;
+            bpif.addr = 32'hB0001036;   // word 0x1034
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b1111;
             
             #(PERIOD / 4);
 
@@ -1463,7 +1471,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h01cdab67;  // write val (on top of old val)
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
@@ -1488,11 +1497,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0003333;   // word 0x3330
-            gbif.ren = 1'b0;
-            gbif.wen = 1'b1;
-            gbif.wdata = 32'h0a1b2c3d;
-            gbif.byte_en = 4'b1010;
+            bpif.addr = 32'hB0003333;   // word 0x3330
+            bpif.ren = 1'b0;
+            bpif.wen = 1'b1;
+            bpif.wdata = 32'h0a1b2c3d;
+            bpif.strobe = 4'b1010;
             
             #(PERIOD / 4);
 
@@ -1519,7 +1528,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h00000000;  // old data value
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 		end
@@ -1538,11 +1548,11 @@ program test
             mem_rsp_ready = 1'b0;
             busy = 1'b0;
 
-            gbif.addr = 32'hB0003333;   // word 0x3330
-            gbif.ren = 1'b1;
-            gbif.wen = 1'b0;
-            gbif.wdata = 32'hdeadbeef;
-            gbif.byte_en = 4'b1111;
+            bpif.addr = 32'hB0003333;   // word 0x3330
+            bpif.ren = 1'b1;
+            bpif.wen = 1'b0;
+            bpif.wdata = 32'hdeadbeef;
+            bpif.strobe = 4'b1111;
             
             #(PERIOD / 4);
 
@@ -1569,7 +1579,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0a002c00;  // write val
-            expected_busy = 1'b0;
+            expected_error = 1'b0;
+            expected_request_stall = 1'b0;
             
             check_outputs();
 
