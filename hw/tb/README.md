@@ -9,6 +9,7 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
 - flags:  
   - ``-zero``: reset all registers to 0 instead of corresponding hex file values
   - ``-p``: print debugging info
+  - ``-size <# bits to represent size, 2^n>``: change the size of the local mem
 
 # Loading local_mem.sv with corresponding hex file data
 
