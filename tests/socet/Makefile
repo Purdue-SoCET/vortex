@@ -6,7 +6,7 @@ else
 RISCV_TOOLCHAIN_PATH = ${DESTDIR}/riscv64-gnu-toolchain
 endif
 
-RISCV_PREFIX ?= ../../riscv-gnu-toolchain/bin/riscv$(XLEN)-unknown-elf-
+RISCV_PREFIX ?= ./riscv-tools/bin/riscv64-unknown-elf-
 
 CC = $(RISCV_PREFIX)gcc
 AR = $(RISCV_PREFIX)gcc-ar
@@ -26,7 +26,7 @@ CFLAGS += -Iinclude
 LDFLAGS += -lm -Wl,-Bstatic,-T,./linker/vx_link$(XLEN).ld -fno-use-linker-plugin 
 PROJECT = simple
 
-SRCS = main.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
+SRCS = main_tex.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
 
 
 all: $(PROJECT).elf $(PROJECT).bin $(PROJECT).dump $(PROJECT).hex
