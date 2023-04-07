@@ -14,9 +14,10 @@ typedef struct _argument_t {
 void kernel_function(context_t cxt, void * arg){
 	int tid = vx_thread_gid(); //thread id of current thread
   //critical section start
-  vx_tmc(-1 & ~(1 << tid));
+  vx_tmc(~(1 << tid));
 	      //do critical section
-        
+              ((argument_t *) arg)->vector_1[0] += 1;
+	      //
   vx_tmc(0);
   //critical section end
 	return;
