@@ -73,7 +73,7 @@ module VX_local_mem_tb;
     logic                               tb_busy;
 
     // Generic Bus Protocol Interface
-    generic_bus_if                      gbif(); 
+    bus_protocol_if                      bpif(); 
 
     Vortex DUT(.clk(clk),
                .reset(reset), 
@@ -123,7 +123,7 @@ module VX_local_mem_tb;
                   .mem_rsp_tag(mem_rsp_tag), 
                   .mem_rsp_ready(mem_rsp_ready), 
                   .busy(busy), 
-                  .gbif(gbif)
+                  .bpif(bpif)
     ); 
 
     // assign tb_mem_rsp_ready = mem_rsp_ready; 
@@ -199,27 +199,27 @@ module VX_local_mem_tb;
 
             // syif.addr = i << 2;
             // syif.REN = 1;
-            gbif.addr = i << 2;
-            gbif.ren = 1'b1;
+            bpif.addr = i << 2;
+            bpif.ren = 1'b1;
 
             repeat (4) @(posedge clk);
             // if (syif.load === 0)
-            if (gbif.rdata === '0)
+            if (bpif.rdata === '0)
                 continue;
             // values = {8'h04,16'(i),8'h00,syif.load};
-            values = {8'h04, 16'(i), 8'h00, gbif.rdata};
+            values = {8'h04, 16'(i), 8'h00, bpif.rdata};
             foreach (values[j])
                 chksum += values[j];
             chksum = 16'h100 - chksum;
             // ihex = $sformatf(":04%h00%h%h",16'(i),syif.load,8'(chksum));
-            ihex = $sformatf(":04%h00%h%h", 16'(i), gbif.rdata, 8'(chksum));
+            ihex = $sformatf(":04%h00%h%h", 16'(i), bpif.rdata, 8'(chksum));
             $fdisplay(memfd,"%s",ihex.toupper());
         end //for
         if (memfd)
         begin
             // syif.tbCTRL = 0;
             // syif.REN = 0;
-            gbif.ren = 1'b0;
+            bpif.ren = 1'b0;
             $fdisplay(memfd,":00000001FF");
             $fclose(memfd);
             $display("Finished memory dump.");
