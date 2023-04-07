@@ -8,7 +8,7 @@ module VX_ahb_adapter #(
     parameter AHB_ADDR_WIDTH   = 32,
     //parameter AHB_TID_WIDTH    = VX_TAG_WIDTH,
     parameter VX_BYTEEN_WIDTH  = (VX_DATA_WIDTH / 8),
-    parameter AHB_STROBE_WIDTH = (AHB_DATA_WIDTH / 8)
+    parameter AHB_STROBE_WIDTH = 4
 ) (
     input  wire                         clk,
     input  wire                         reset,
@@ -28,11 +28,9 @@ module VX_ahb_adapter #(
     // output wire [VX_TAG_WIDTH-1:0]      rsp.mem_rsp_tag, //IGNORE, useful for AXI
     // output wire                         req.mem_req_ready,
 
-
     ahb_if.manager ahb,
     VX_mem_req_if.slave req,
     VX_mem_rsp_if.master rsp
-    
     
     //to do: add burst
 );
@@ -44,34 +42,18 @@ module VX_ahb_adapter #(
     typedef enum logic [2:0] {IDLE, DATA, START, COMPLETE, ERROR} states;
 
     states state, nxt_state;
-
-    // typedef struct packed {
-    //     logic [31:0] data1;
-    //     logic [31:0] data2;
-    //     logic [31:0] data3;
-    //     logic [31:0] data4;
-    //     logic [31:0] data5;
-    //     logic [31:0] data6;
-    //     logic [31:0] data7;
-    //     logic [31:0] data8;
-    //     logic [31:0] data9;
-    //     logic [31:0] data10;
-    //     logic [31:0] data11;
-    //     logic [31:0] data12;
-    //     logic [31:0] data13;
-    //     logic [31:0] data14;
-    //     logic [31:0] data15;
-    //     logic [31:0] data16;
-    // } data_buff;
     
     logic [15:0] [31:0] data_read;
     logic [15:0] [31:0] nxt_data_read;
 
+
     logic [31:0] full_addr;
 
     logic [511:0] nxt_data, data;
+    logic [7:0] nxt_tag, tag;
     logic nxt_rw, rw, clear, count_en;
     logic [31:0] nxt_addr, addr;
+    logic [63:0] nxt_byteen, byteen;
     
     always_ff @(posedge clk, negedge reset) begin : STATE_TRANSITIONS
         if (!reset) begin
@@ -80,13 +62,17 @@ module VX_ahb_adapter #(
             addr <= '0;
             rw <= '0;
             data_read <= '0;
+            tag <= '0;
+            byteen <= '0;
         end
         else begin
             data_read <= nxt_data_read;
             state <= nxt_state;
             data <= nxt_data;
             addr <= nxt_addr;
+            tag <= nxt_tag;
             rw <= nxt_rw;
+            byteen <= nxt_byteen;
         end
     end
 
@@ -132,14 +118,18 @@ module VX_ahb_adapter #(
         ahb.HWRITE = 0;
         ahb.HADDR = '0;
         ahb.HWDATA = '0;
+        ahb.HWSTRB = '0;
         nxt_addr = addr;
         nxt_rw = rw;
         nxt_data = data;
         nxt_data_read = data_read;
+        nxt_byteen = byteen;
+        nxt_tag = tag;
         count_en = 0;
         clear = 0;
         rsp.valid = 0;
         req.ready = 0;
+        rsp.tag = '0;
 
         case(state)
             IDLE: begin
@@ -148,6 +138,8 @@ module VX_ahb_adapter #(
                     nxt_data = req.data;
                     nxt_addr = full_addr;
                     nxt_rw = req.rw;
+                    nxt_tag = req.tag;
+                    nxt_byteen = req.byteen;
                     clear = 1;
                 end
             end
@@ -174,66 +166,82 @@ module VX_ahb_adapter #(
                         4'd0: begin
                             nxt_data_read[0] = ahb.HRDATA;
                             ahb.HWDATA = data[31:0];
+                            ahb.HWSTRB = byteen[3:0];
                         end
                         4'd1: begin
                             nxt_data_read[1] = ahb.HRDATA;
                             ahb.HWDATA = data[63:32];
+                            ahb.HWSTRB = byteen[7:4];
                         end
                         4'd2: begin
                             nxt_data_read[2] = ahb.HRDATA;
                             ahb.HWDATA = data[95:64];
+                            ahb.HWSTRB = byteen[11:8];
                         end
                         4'd3: begin
                             nxt_data_read[3] = ahb.HRDATA;
                             ahb.HWDATA = data[127:96];
+                            ahb.HWSTRB = byteen[15:12];
                         end
                         4'd4: begin
                             nxt_data_read[4] = ahb.HRDATA;
                             ahb.HWDATA = data[159:128];
+                            ahb.HWSTRB = byteen[19:16];
                         end
                         4'd5: begin
                             nxt_data_read[5] = ahb.HRDATA;
                             ahb.HWDATA = data[191:160];
+                            ahb.HWSTRB = byteen[23:20];
                         end
                         4'd6: begin
                             nxt_data_read[6] = ahb.HRDATA;
                             ahb.HWDATA = data[223:192];
+                            ahb.HWSTRB = byteen[27:24];
                         end
                         4'd7: begin
                             nxt_data_read[7] = ahb.HRDATA;
                             ahb.HWDATA = data[255:224];
+                            ahb.HWSTRB = byteen[31:28];
                         end
                         4'd8: begin
                             nxt_data_read[8] = ahb.HRDATA;
                             ahb.HWDATA = data[287:256];
+                            ahb.HWSTRB = byteen[35:32];
                         end
                         4'd9: begin
                             nxt_data_read[9] = ahb.HRDATA;
                             ahb.HWDATA = data[319:288];
+                            ahb.HWSTRB = byteen[39:36];
                         end
                         4'd10: begin
                             nxt_data_read[10] = ahb.HRDATA;
                             ahb.HWDATA = data[351:320];
+                            ahb.HWSTRB = byteen[43:40];
                         end
                         4'd11: begin
                             nxt_data_read[11] = ahb.HRDATA;
                             ahb.HWDATA = data[383:352];
+                            ahb.HWSTRB = byteen[47:44];
                         end
                         4'd12: begin
                             nxt_data_read[12] = ahb.HRDATA;
                             ahb.HWDATA = data[415:384];
+                            ahb.HWSTRB = byteen[51:48];
                         end
                         4'd13: begin
                             nxt_data_read[13] = ahb.HRDATA;
                             ahb.HWDATA = data[447:416];
+                            ahb.HWSTRB = byteen[55:52];
                         end
                         4'd14: begin
                             nxt_data_read[14] = ahb.HRDATA;
                             ahb.HWDATA = data[479:448];
+                            ahb.HWSTRB = byteen[59:56];
                         end
                         4'd15: begin
                             nxt_data_read[15] = ahb.HRDATA;
                             ahb.HWDATA = data[511:480];
+                            ahb.HWSTRB = byteen[63:60];
                         end
                     endcase
                 end
@@ -246,28 +254,77 @@ module VX_ahb_adapter #(
                     ahb.HWRITE = rw;
                     ahb.HADDR = addr;
                     case (count)
-                        4'd0: ahb.HWDATA = data[31:0];
-                        4'd1: ahb.HWDATA = data[63:32];
-                        4'd2: ahb.HWDATA = data[95:64];
-                        4'd3: ahb.HWDATA = data[127:96];
-                        4'd4: ahb.HWDATA = data[159:128];
-                        4'd5: ahb.HWDATA = data[191:160];
-                        4'd6: ahb.HWDATA = data[223:192];
-                        4'd7: ahb.HWDATA = data[255:224];
-                        4'd8: ahb.HWDATA = data[287:256];
-                        4'd9: ahb.HWDATA = data[319:288];
-                        4'd10: ahb.HWDATA = data[351:320];
-                        4'd11: ahb.HWDATA = data[383:352];
-                        4'd12: ahb.HWDATA = data[415:384];
-                        4'd13: ahb.HWDATA = data[447:416];
-                        4'd14: ahb.HWDATA = data[479:448];
-                        4'd15: ahb.HWDATA = data[511:480];
+                        4'd0: begin
+                            ahb.HWDATA = data[31:0];
+                            ahb.HWSTRB = byteen[3:0];
+                        end
+                        4'd1: begin
+                            ahb.HWDATA = data[63:32];
+                            ahb.HWSTRB = byteen[7:4];
+                        end
+                        4'd2: begin
+                            ahb.HWDATA = data[95:64];
+                            ahb.HWSTRB = byteen[11:8];
+                        end
+                        4'd3: begin
+                            ahb.HWDATA = data[127:96];
+                            ahb.HWSTRB = byteen[15:12];
+                        end
+                        4'd4: begin
+                            ahb.HWDATA = data[159:128];
+                            ahb.HWSTRB = byteen[19:16];
+                        end
+                        4'd5: begin
+                            ahb.HWDATA = data[191:160];
+                            ahb.HWSTRB = byteen[23:20];
+                        end
+                        4'd6: begin
+                            ahb.HWDATA = data[223:192];
+                            ahb.HWSTRB = byteen[27:24];
+                        end
+                        4'd7: begin
+                            ahb.HWDATA = data[255:224];
+                            ahb.HWSTRB = byteen[31:28];
+                        end
+                        4'd8: begin
+                            ahb.HWDATA = data[287:256];
+                            ahb.HWSTRB = byteen[35:32];
+                        end
+                        4'd9: begin
+                            ahb.HWDATA = data[319:288];
+                            ahb.HWSTRB = byteen[39:36];
+                        end
+                        4'd10: begin
+                            ahb.HWDATA = data[351:320];
+                            ahb.HWSTRB = byteen[43:40];
+                        end
+                        4'd11: begin 
+                            ahb.HWDATA = data[383:352];
+                            ahb.HWSTRB = byteen[47:44];
+                        end
+                        4'd12: begin
+                            ahb.HWDATA = data[415:384];
+                            ahb.HWSTRB = byteen[51:48];
+                        end
+                        4'd13: begin
+                            ahb.HWDATA = data[447:416];
+                            ahb.HWSTRB = byteen[55:52];
+                        end
+                        4'd14: begin
+                            ahb.HWDATA = data[479:448];
+                            ahb.HWSTRB = byteen[59:56];
+                        end
+                        4'd15: begin
+                            ahb.HWDATA = data[511:480];
+                            ahb.HWSTRB = byteen[63:60];
+                        end
                     endcase
                 end
             end
 
             COMPLETE: begin
                 rsp.valid = 1;
+                rsp.tag = tag;
             end  
         endcase
     end
