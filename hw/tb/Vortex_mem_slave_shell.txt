@@ -53,19 +53,43 @@ module Vortex_mem_slave #(
     // Generic Bus Interface (AHB): //
     //////////////////////////////////
 
-    generic_bus_if.generic_bus              gbif
+    bus_protocol_if.peripheral_vital        bpif
+        // // Vital signals
+        // logic wen; // request is a data write
+        // logic ren; // request is a data read
+        // logic request_stall; // High when protocol should insert wait states in transaction
+        // logic [ADDR_WIDTH-1 : 0] addr; // *offset* address of request TODO: Is this good for general use?
+        // logic error; // Indicate error condition to bus
+        // logic [(DATA_WIDTH/8)-1 : 0] strobe; // byte enable for writes
+        // logic [DATA_WIDTH-1 : 0] wdata, rdata; // data lines -- from perspective of bus master. rdata should be data read from peripheral.
+
+        // modport peripheral_vital (
+        //     input wen, ren, addr, wdata, strobe,
+        //     output rdata, error, request_stall
+        // );
 );
-    // internal signals:
+    /////////////////
+    // parameters: //
+    /////////////////
+
+    parameter VORTEX_START_PC_ADDR = 32'h80000000;
+    parameter VORTEX_LOCAL_MEM_AHB_BASE_ADDR = 32'hB0000000;
+    // parameter LOCAL_MEM_SIZE = 12;
+< LOCAL_MEM_SIZE val here >
+
+    ///////////////////////
+    // internal signals: //
+    ///////////////////////
 
     // bad address signals
     logic Vortex_bad_address;
     logic AHB_bad_address;
 
     // reg file signals (bytewise, packed)
-    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] reg_file;
-    // logic [REG_FILE_BYTE_SIZE-1:0][7:0] next_reg_file;
-    logic [2**14-1:0][7:0] reg_file;
-    logic [2**14-1:0][7:0] next_reg_file;
+    // logic [2**14-1:0][7:0] reg_file;
+    // logic [2**14-1:0][7:0] next_reg_file;
+    logic [2**LOCAL_MEM_SIZE-1:0][7:0] reg_file;
+    logic [2**LOCAL_MEM_SIZE-1:0][7:0] next_reg_file;
 
     // reg file instance
     always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
@@ -91,27 +115,38 @@ module Vortex_mem_slave #(
 
         // Vortex outputs
         mem_rsp_data = 512'd0;
-        Vortex_bad_address = 1'b0;
 
         // AHB outputs
-        AHB_bad_address = 1'b0;
-        gbif.busy = 1'b0;
+        bpif.error = 1'b0;
+        bpif.request_stall = 1'b0;
 
         //////////////////
         // bad address: //
         //////////////////
 
         // Vortex bad address
-        if (mem_req_addr[25:8] != 18'b100000000000000000)
+        // if (mem_req_addr[25:8] != 18'b100000000000000000)
+        if (mem_req_addr[32-6-1:LOCAL_MEM_SIZE-6] != VORTEX_START_PC_ADDR[32-1:LOCAL_MEM_SIZE])
+        begin
             Vortex_bad_address = 1'b1;
+        end
         else
+        begin
             Vortex_bad_address = 1'b0;
+        end
 
         // AHB bad address
-        if (gbif.addr[31:14] != 18'b101100000000000000)
+        // if (gbif.addr[31:14] != 18'b101100000000000000)
+        if (bpif.addr[32-1:LOCAL_MEM_SIZE] != VORTEX_LOCAL_MEM_AHB_BASE_ADDR[32-1:LOCAL_MEM_SIZE])
+        begin
             AHB_bad_address = 1'b1;
+            bpif.error = 1'b1;
+        end
         else
+        begin
             AHB_bad_address = 1'b0;
+            bpif.error = 1'b0;
+        end
 
         /////////////////
         // read logic: //
@@ -121,10 +156,10 @@ module Vortex_mem_slave #(
 < Vortex read logic here >
 
         // AHB read logic
-        gbif.rdata[7:0] = reg_file[{gbif.addr[13:2], 2'd0}];
-        gbif.rdata[15:8] = reg_file[{gbif.addr[13:2], 2'd1}];
-        gbif.rdata[23:16] = reg_file[{gbif.addr[13:2], 2'd2}];
-        gbif.rdata[31:24] = reg_file[{gbif.addr[13:2], 2'd3}];
+        bpif.rdata[7:0] = reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd0}];
+        bpif.rdata[15:8] = reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd1}];
+        bpif.rdata[23:16] = reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd2}];
+        bpif.rdata[31:24] = reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd3}];
 
         //////////////////////////////////////////
         // Vortex write logic (first priority): //
@@ -137,7 +172,7 @@ module Vortex_mem_slave #(
 < Vortex write logic here >
 
             // ahb busy
-            gbif.busy = 1'b1;
+            bpif.request_stall = 1'b1;
         end
 
         ////////////////////////////////////////
@@ -145,13 +180,13 @@ module Vortex_mem_slave #(
         ////////////////////////////////////////
 
         // if Vortex not writing, check for write and address in range
-        else if (gbif.wen & ~AHB_bad_address)
+        else if (bpif.wen & ~AHB_bad_address)
         begin
             // assumption: follow word address
-            if (gbif.byte_en[0]) next_reg_file[{gbif.addr[13:2], 2'd0}] = gbif.wdata[7:0];
-            if (gbif.byte_en[1]) next_reg_file[{gbif.addr[13:2], 2'd1}] = gbif.wdata[15:8];
-            if (gbif.byte_en[2]) next_reg_file[{gbif.addr[13:2], 2'd2}] = gbif.wdata[23:16];
-            if (gbif.byte_en[3]) next_reg_file[{gbif.addr[13:2], 2'd3}] = gbif.wdata[31:24];
+            if (bpif.strobe[0]) next_reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd0}] = bpif.wdata[7:0];
+            if (bpif.strobe[1]) next_reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd1}] = bpif.wdata[15:8];
+            if (bpif.strobe[2]) next_reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd2}] = bpif.wdata[23:16];
+            if (bpif.strobe[3]) next_reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd3}] = bpif.wdata[31:24];
         end
 
         ////////////////////////////////
