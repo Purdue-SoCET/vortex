@@ -33,7 +33,10 @@ module VX_gpr_stage #(
     assign raddr2 = {gpr_req_if.wid, gpr_req_if.rs2};
 
     VX_wnd_dec_unit #(
-
+        // declare W to be `NUM_WARPS
+        // declare R to be a static size of window (for now 5 bits)
+        // declare O is input output 
+        // declare N 
     ) (
         
     )

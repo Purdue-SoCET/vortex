@@ -23,7 +23,17 @@ module VX_wnd_dec_unit
     output logic [N-W-1:0] rs1_o, rs2_o, rd_o
 );
 
-logic [2^W-1:0][N-W-1:0] CWP_buffer, CWP_buffer_next;
+logic [2^W-1:0][N-W-1:0] CWP_buffer, CWP_buffer_next; //change to array of structs
+
+typedef struct packed (
+    //input reg
+    //local reg
+    //output reg
+); CWP
+
+CWP [2^W-1:0] CWP_buff, CWP_buffer_next;
+
+//spill and fill handled by OS (probably lol)
 
 always_comb begin
     CWP_buffer_next = CWP_buffer
