@@ -23,3 +23,22 @@ make all or make all_gui
 
 ```
   
+  
+# Using Trace File Scraper
+
+Generate trace file from gold model C++ simulation by running rtlsim on local machine or virtual machine. See Vortex Software:  
+https://wiki.itap.purdue.edu/display/ecedesign/Vortex+Software
+
+Generate trace file from questa version by running:
+```
+make all
+```
+
+Use trace file scraper to compare rtlsim file and questa file:
+```
+python3 scrape_traces.py <rtlsim trace file> <questa trace file>
+```
+This script gives info about the difference between the two traces and generates simplified trace files which you can visually compare with tkdiff:
+```
+tkdiff <rtlsim trace file>.scrape.log <questa trace file>.scrape.log
+```
