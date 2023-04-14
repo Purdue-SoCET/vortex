@@ -11,6 +11,8 @@
 
         flags:
             -p = print debugging info
+            -zero = reset value all 0's
+            -size = 2^size register array
 
     general script flow:
         - parse intelhex file, putting either designated hex file value or 0 into reg file for each byte
@@ -306,7 +308,8 @@ def intelhex_to_Vortex_mem_slave_sv(hex_file_name, Vortex_mem_slave_sv_name):
 
 
 ###########################################################################################################
-# main
+# main:
+
 if __name__ == "__main__":
 
     # check for 1 commandline argument with python load_local_mem.py
