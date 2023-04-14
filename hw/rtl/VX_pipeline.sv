@@ -8,6 +8,7 @@ module VX_pipeline #(
     // Clock
     input wire                              clk,
     input wire                              reset,
+    input wire                              startup_addr,
 
     // Dcache core request
     output wire [`NUM_THREADS-1:0]          dcache_req_valid,
@@ -149,6 +150,7 @@ module VX_pipeline #(
         `SCOPE_BIND_VX_pipeline_fetch
         .clk            (clk),
         .reset          (fetch_reset),
+        .startup_addr   (startup_addr),
         .icache_req_if  (icache_req_if),
         .icache_rsp_if  (icache_rsp_if), 
         .wstall_if      (wstall_if),
