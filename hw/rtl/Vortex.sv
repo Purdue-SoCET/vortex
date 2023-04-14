@@ -221,25 +221,28 @@ module Vortex (
     int fp; 
     initial begin 
         fp = $fopen("VX_top_trace.txt", "w");
-        if (fp) begin
-            $fdisplay(fp, "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-            $fdisplay(fp, "|  TIME (ps)  |  RW REQ / RESP  |    ADDR    |       TAG        |       BYTEEN       |                                                                DATA                                                                |"); 
-            $fdisplay(fp, "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
-        end 
+        // if (fp) begin
+            // $fdisplay(fp, "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+            // $fdisplay(fp, "|  TIME (ps)  |  RW REQ / RESP  |    ADDR    |       TAG        |       BYTEEN       |                                                                DATA                                                                |"); 
+            // $fdisplay(fp, "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        // end 
         forever begin
             @(posedge clk);  
             if (fp) begin 
                 if (mem_req_valid && mem_req_ready) begin
                     if (mem_req_rw) begin 
-                        $fdisplay(fp, "|%11d  |    WRITE REQ    |  %-8h  |  %-14h  |  %-16h  |  %-128h  |", $time, mem_req_addr, mem_req_tag, mem_req_byteen, mem_req_data);
+                        // $fdisplay(fp, "|%11d  |    WRITE REQ    |  %-8h  |  %-14h  |  %-16h  |  %-128h  |", $time, mem_req_addr, mem_req_tag, mem_req_byteen, mem_req_data);
+                        $fdisplay(fp, "%d: MEM Wr Req: addr=%0h, tag=%0h, byteen=%0h data=%0h\n", $time, `TO_FULL_ADDR(mem_req_addr), mem_req_tag, mem_req_byteen, mem_req_data);
                     end
                     else begin 
-                        $fdisplay(fp, "|%11d  |     READ REQ    |  %-8h  |  %-14h  |  %-16h  |  %62sN/A%63s  |", $time, mem_req_addr, mem_req_tag, mem_req_byteen, "", "");
+                        // $fdisplay(fp, "|%11d  |     READ REQ    |  %-8h  |  %-14h  |  %-16h  |  %62sN/A%63s  |", $time, mem_req_addr, mem_req_tag, mem_req_byteen, "", "");
+                        $fdisplay(fp, "%d: MEM Rd Req: addr=%0h, tag=%0h, byteen=%0h\n", $time, `TO_FULL_ADDR(mem_req_addr), mem_req_tag, mem_req_byteen);
                     end
                     //$fdisplay(fp, "----------------------------------------------------------------------------------");
                 end
                 if (mem_rsp_ready && mem_rsp_valid) begin 
-                    $fdisplay(fp, "|%11t  |       RESP      |     N/A    |  %-14h  |         N/A        |  %-128h  |", $time, mem_rsp_tag, mem_rsp_data);
+                    // $fdisplay(fp, "|%11t  |       RESP      |     N/A    |  %-14h  |         N/A        |  %-128h  |", $time, mem_rsp_tag, mem_rsp_data);
+                    $fdisplay(fp, "%d: MEM Rsp: tag=%0h, data=%0h\n", $time, mem_rsp_tag, mem_rsp_data);
                 end     
             end
         end 
