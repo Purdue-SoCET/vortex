@@ -57,7 +57,7 @@ program test(
     logic [2:0]                           expected_HSIZE;
     logic [AHB_ADDR_WIDTH-1:0]            expected_HADDR;
     logic [AHB_DATA_WIDTH-1:0]            expected_HWDATA;
-    logic [(`VX_MEM_DATA_WIDTH/8) - 1:0]  expected_HWSTRB;
+    logic [(AHB_DATA_WIDTH/8) - 1:0]      expected_HWSTRB;
 
     // Vortex side outputs
     logic                                 expected_req_ready;
@@ -195,13 +195,13 @@ program test(
                     fails += 1;
                 end
 
-            // tests += 1;
-            // assert (ahbif.HWSTRB == expected_HWSTRB)
-            //     else begin
-            //         $error("Expected HWSTRB = %4.b, got %4.b",
-            //                 expected_HWSTRB, ahbif.HWSTRB);
-            //         fails += 1;
-            //     end
+            tests += 1;
+            assert (ahbif.HWSTRB == expected_HWSTRB)
+                else begin
+                    $error("Expected HWSTRB = %4.b, got %4.b",
+                            expected_HWSTRB, ahbif.HWSTRB);
+                    fails += 1;
+                end
         end
     endtask
 
@@ -211,7 +211,8 @@ program test(
     task check_receive_data(
         input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
         input logic [`VX_MEM_DATA_WIDTH-1:0] data,
-        input integer stalls [0:TRANS_PER_BLOCK-1]
+        input integer stalls [0:TRANS_PER_BLOCK-1],
+        input logic [(`VX_MEM_DATA_WIDTH/8)-1:0] strb
     );
         expected_HSEL = 1'b1;
         expected_HWRITE = 1'b0;
@@ -224,6 +225,7 @@ program test(
         for (integer i = 0; i < TRANS_PER_BLOCK; ++i) begin
             @(posedge CLK);
             expected_HADDR += AHB_DATA_WIDTH/8;
+            expected_HWSTRB = strb[i*AHB_DATA_WIDTH/8 +: AHB_DATA_WIDTH/8];
             while (stalls[i] > 0) begin
                 ahbif.HREADYOUT = 1'b0;
                 @(negedge CLK);
@@ -248,7 +250,8 @@ program test(
     task check_send_data(
         input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
         input logic [`VX_MEM_DATA_WIDTH-1:0] data,
-        input integer stalls [0:TRANS_PER_BLOCK-1]
+        input integer stalls [0:TRANS_PER_BLOCK-1],
+        input logic [(`VX_MEM_DATA_WIDTH/8)-1:0] strb
     );
         expected_HSEL = 1'b1;
         expected_HWRITE = 1'b1;
@@ -261,6 +264,7 @@ program test(
         for (integer i = 0; i < TRANS_PER_BLOCK; ++i) begin
             @(posedge CLK);
             expected_HWDATA = data[i*AHB_DATA_WIDTH +: AHB_DATA_WIDTH];
+            expected_HWSTRB = strb[i*AHB_DATA_WIDTH/8 +: AHB_DATA_WIDTH/8];
             expected_HADDR += AHB_DATA_WIDTH/8;
             while (stalls[i] > 0) begin
                 ahbif.HREADYOUT = 1'b0;
@@ -284,12 +288,13 @@ program test(
         input logic [`VX_MEM_DATA_WIDTH-1:0] data,
         input logic write,
         input bit nodelay,
-        input integer stalls [0:TRANS_PER_BLOCK-1]
+        input integer stalls [0:TRANS_PER_BLOCK-1],
+        input logic [(`VX_MEM_DATA_WIDTH/8)-1:0] strb
     );
         // Set up request at the Vortex side
         mreqif.valid = 1'b1;
         mreqif.rw = write;
-        mreqif.byteen = '1;
+        mreqif.byteen = strb;
         mreqif.addr = addr;
         mrspif.ready = 1'b0;
         if (write) begin
@@ -307,9 +312,9 @@ program test(
 
         // Stream the AHB transactions
         if (write) begin
-            check_send_data(addr, data, stalls);
+            check_send_data(addr, data, stalls, strb);
         end else begin
-            check_receive_data(addr, data, stalls);
+            check_receive_data(addr, data, stalls, strb);
         end
 
         // Check that the value correctly gets passed to Vortex
@@ -349,18 +354,20 @@ program test(
         input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
         input logic [`VX_MEM_DATA_WIDTH-1:0] data,
         input bit nodelay = 0,
-        input integer stalls [0:TRANS_PER_BLOCK-1] = '{default: 0}
+        input integer stalls [0:TRANS_PER_BLOCK-1] = '{default: 0},
+        input logic [(`VX_MEM_DATA_WIDTH/8)-1:0] strb = '1
     );
-        ahb_transaction(addr, data, 0, nodelay, stalls);
+        ahb_transaction(addr, data, 0, nodelay, stalls, strb);
     endtask
     
     task ahb_write(
         input logic [`VX_MEM_ADDR_WIDTH-1:0] addr,
         input logic [`VX_MEM_DATA_WIDTH-1:0] data,
         input bit nodelay = 0,
-        input integer stalls [0:TRANS_PER_BLOCK-1] = '{default: 0}
+        input integer stalls [0:TRANS_PER_BLOCK-1] = '{default: 0},
+        input logic [(`VX_MEM_DATA_WIDTH/8)-1:0] strb = '1
     );
-        ahb_transaction(addr, data, 1, nodelay, stalls);
+        ahb_transaction(addr, data, 1, nodelay, stalls, strb);
     endtask
 
     initial begin
@@ -464,11 +471,49 @@ program test(
         ahb_write($urandom(), ahb_buffer, 1, rand_stalls()); reset_inputs();
         ahb_write($urandom(), ahb_buffer, 1, rand_stalls()); reset_inputs();
 
+        ////////////////////////////////////////////////////////////////////////
+        // TEST CASE: Standalone read with incomplete byteens
+        ////////////////////////////////////////////////////////////////////////
+        repeat(3) @(negedge CLK);
+        reset_inputs();
+        test_num += 1;
+        test_case = "Standalone read with incomplete byteens";
+        $display("Running test %2.d: %s", test_num, test_case);
+
+        ahb_read($urandom(), ahb_buffer, 0, rand_stalls(), 64'hBADCAFE0FEEDBEE5);
+        
+        ////////////////////////////////////////////////////////////////////////
+        // TEST CASE: Standalone write with incomplete byteens
+        ////////////////////////////////////////////////////////////////////////
+        repeat(3) @(negedge CLK);
+        reset_inputs();
+        test_num += 1;
+        test_case = "Standalone write with incomplete byteens";
+        $display("Running test %2.d: %s", test_num, test_case);
+
+        ahb_write($urandom(), ahb_buffer, 0, rand_stalls(), 64'hBADCAFE0FEEDBEE5);
+
+        ////////////////////////////////////////////////////////////////////////
+        // TEST CASE: Back to back transactions with incomplete byteens
+        ////////////////////////////////////////////////////////////////////////
+        repeat(3) @(negedge CLK);
+        reset_inputs();
+        test_num += 1;
+        test_case = "Back to back transactions with incomplete byteens";
+        $display("Running test %2.d: %s", test_num, test_case);
+
+        ahb_read($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+        ahb_read($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+        ahb_write($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+        ahb_read($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+        ahb_write($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+        ahb_write($urandom(), ahb_buffer, 1, rand_stalls(), {$urandom(), $urandom()}); reset_inputs();
+
         repeat(3) @(negedge CLK);
         if (fails) begin
-            $display("%0.d/%0.d TESTS FAILED", fails, tests);
+            $display("%0.d/%0.d CHECKS FAILED", fails, tests);
         end else begin
-            $display("ALL %0.d TESTS PASSED", tests);
+            $display("ALL %0.d CHECKS PASSED", tests);
         end
 
         $finish;
