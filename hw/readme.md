@@ -36,8 +36,11 @@ make all
 
 Use trace file scraper to compare rtlsim file and questa file:
 ```
-python3 scrape_traces.py <rtlsim trace file> <questa trace file>
+python3 scrape_traces.py <rtlsim trace file> <questa trace file> <optional flags>
 ```
+- flags:  
+  - ``-p``: print debugging info
+  - ``-out <output file name>: generate output file with name other than default, "trace_diff.log"``
 This script gives info about the difference between the two traces and generates simplified trace files which you can visually compare with tkdiff:
 ```
 tkdiff <rtlsim trace file>.scrape.log <questa trace file>.scrape.log
