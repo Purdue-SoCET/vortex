@@ -231,7 +231,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
         Vortex_write_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex write logic here >\n")
 
     except:
-        print("couldn't find placeholder lines in shell text file")
+        print("ERROR: couldn't find placeholder lines in shell text file")
         quit()
 
     # add up shell pieces and instance piece
@@ -303,7 +303,7 @@ def intelhex_to_Vortex_mem_slave_sv(hex_file_name, Vortex_mem_slave_sv_name):
         local_mem_sv_fp.close()
 
     except:
-        print("couldn't write .sv file")
+        print("ERROR: couldn't write .sv file")
         quit()
 
 
@@ -314,7 +314,7 @@ if __name__ == "__main__":
 
     # check for 1 commandline argument with python load_local_mem.py
     if (len(sys.argv) < 2):
-        print("required format:")
+        print("ERROR: need to follow required commandline format:")
         print("python3 load_Vortex_mem_slave.py <.hex file name>  <flags>")
         quit()
 
@@ -330,7 +330,7 @@ if __name__ == "__main__":
         LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
 
     elif (not sys.argv[1].endswith(".hex")):
-        print("input must be intel hex file")
+        print("ERROR: input must be intel hex file")
         quit()
 
     if DO_PRINTS:
