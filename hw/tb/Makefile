@@ -8,11 +8,15 @@ VORTEX_MEM_SLAVE_DEF := Vortex_mem_slave.vh
 VORTEX_MEM_SLAVE_RTL_FILES := Vortex_mem_slave.sv 
 VORTEX_MEM_SLAVE_TB := Vortex_mem_slave_tb.sv
 
+# VX_AHB_ADAPTER
+VX_AHB_ADAPTER_DEF := ../include/VX_ahb_adapter.vh
+VX_AHB_ADAPTER_RTL_FILES := ../rtl/libs/VX_ahb_adapter.sv ../rtl/interfaces/VX_mem_rsp_if.sv ../rtl/interfaces/VX_mem_req_if.sv ../rtl/libs/counter.sv
+VX_AHB_ADAPTER_TB := VX_ahb_adapter_tb.sv
+
 # DIR's
-INCL := 
-INCL := include
+INCL := ../include
 WORKDIR := work
-SCRDIR			= scripts
+SCRDIR := scripts
 
 # others hard defined
 SIMTIME := -all
@@ -25,6 +29,10 @@ LOCAL_MEM_SIMDO			= "view objects; $(LOCAL_MEM_WAVDO); run $(SIMTIME);" -onfinis
 VORTEX_MEM_SLAVE_DOFILE	= Vortex_mem_slave
 VORTEX_MEM_SLAVE_WAVDO	= do $(SCRDIR)/$(VORTEX_MEM_SLAVE_DOFILE).do
 VORTEX_MEM_SLAVE_SIMDO	= "view objects; $(VORTEX_MEM_SLAVE_WAVDO); run $(SIMTIME);" -onfinish stop
+
+VX_AHB_ADAPTER_DOFILE	= VX_ahb_adapter
+VX_AHB_ADAPTER_WAVDO	= do $(SCRDIR)/$(VX_AHB_ADAPTER_DOFILE).do
+VX_AHB_ADAPTER_SIMDO	= "view objects; $(VX_AHB_ADAPTER_WAVDO); run $(SIMTIME);" -onfinish stop
 
 # SIM_UI_OPT := -gui
 # SIM_UI_OPT := -c
@@ -71,6 +79,23 @@ Vortex_mem_slave.wav: compile_Vortex_mem_slave
 Vortex_mem_slave.sim: compile_Vortex_mem_slave
 		vsim $(VSIMOPTS) -c \
 		Vortex_mem_slave_tb \
+		-coverage \
+		-do "run $(SIMTIME);"
+
+compile_VX_ahb_adapter: $(WORKDIR)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_DEF)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_TB)
+
+VX_ahb_adapter.wav: compile_VX_ahb_adapter
+		vsim $(VSIMOPTS) -gui \
+		VX_ahb_adapter_tb \
+		-coverage -voptargs=+acc \
+		-do $(VX_AHB_ADAPTER_SIMDO)
+
+VX_ahb_adapter.sim: compile_VX_ahb_adapter
+		vsim $(VSIMOPTS) -c \
+		VX_ahb_adapter_tb \
 		-coverage \
 		-do "run $(SIMTIME);"
 
