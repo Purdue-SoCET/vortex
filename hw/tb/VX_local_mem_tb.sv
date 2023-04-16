@@ -1,13 +1,14 @@
 // Guillaume Hu - hu724@purdue.edu
 
 // `include "local_mem.vh"
-`include "include/VX_define.vh"
+`include "../include/VX_define.vh"
 `include "Vortex_mem_slave.vh"
 
 // `include "local_mem.vh"
 `include "Vortex_mem_slave.vh"
 // `include "VX_define.vh"
 
+`default_nettype none
 `timescale 1 ns / 1 ns
 
 module VX_local_mem_tb; 
@@ -72,8 +73,23 @@ module VX_local_mem_tb;
     // vortex outputs
     logic                               tb_busy;
 
+    logic HREADY, HRESP;
+    logic [31:0] HRDATA;
+    logic HWRITE;
+    logic [1:0] HTRANS;
+    logic [2:0] HBURST;
+    logic [2:0] HSIZE;
+    logic [31:0] HADDR;
+    logic [31:0] HWDATA;
+    logic [3:0] HWSTRB;
+    logic HSEL;
+
     // Generic Bus Protocol Interface
-    generic_bus_if                      gbif(); 
+    //generic_bus_if                      gbif(); 
+
+    bus_protocol_if bpif();
+    ahb_if ahb_if(); 
+
 
     Vortex DUT(.clk(clk),
                .reset(reset), 
@@ -90,6 +106,68 @@ module VX_local_mem_tb;
                .mem_rsp_ready(mem_rsp_ready), 
                .busy(busy)
                );
+
+        assign tb_mem_req_valid = mem_req_valid;
+        assign tb_mem_req_rw = mem_req_rw;
+        assign tb_mem_req_byteen = mem_req_byteen;
+        assign tb_mem_req_addr = mem_req_addr;
+        assign tb_mem_req_data = mem_req_data;
+        assign tb_mem_req_tag = mem_req_tag;
+        assign mem_req_ready = tb_mem_req_ready;
+        assign tb_mem_rsp_ready = mem_rsp_ready;
+
+
+        assign mem_rsp_valid = tb_mem_rsp_valid;
+        assign mem_rsp_data = tb_mem_rsp_data;
+        assign mem_rsp_tag = tb_mem_rsp_tag;
+        assign tb_busy = busy;
+
+    ahb_subordinate AHB_SLAVE (
+        ahb_if,
+        bpif
+    );
+
+    assign HRDATA = ahb_if.HRDATA;
+    assign HREADY = ahb_if.HREADYOUT;
+    assign HRESP = ahb_if.HRESP;
+    assign ahb_if.HSEL = HSEL;
+    assign ahb_if.HWRITE = HWRITE;
+    assign ahb_if.HTRANS = HTRANS;
+    assign ahb_if.HSIZE = HSIZE;
+    assign ahb_if.HADDR = HADDR;
+    assign ahb_if.HWDATA = HWDATA;
+    assign ahb_if.HWSTRB = HWSTRB;
+    
+    VX_ahb_adapter ahb_adapter (
+        .clk            (clk),
+        .reset          (reset),
+
+        .mem_req_valid  (tb_mem_req_valid),
+        .mem_req_rw     (tb_mem_req_rw),
+        .mem_req_byteen (tb_mem_req_byteen),
+        .mem_req_addr   (tb_mem_req_addr),
+        .mem_req_data   (tb_mem_req_data),
+        .mem_req_tag    (tb_mem_req_tag),
+        .mem_req_ready  (tb_mem_req_ready),
+
+        .mem_rsp_valid  (tb_mem_rsp_valid),
+        .mem_rsp_data   (tb_mem_rsp_data),
+        .mem_rsp_tag    (tb_mem_rsp_tag),
+        .mem_rsp_ready  (tb_mem_rsp_ready),
+
+        .HSEL (HSEL),
+        .HWRITE (HWRITE),
+        .HTRANS (HTRANS),
+        .HADDR (HADDR),
+        .HSIZE (HSIZE),
+        .HWDATA (HWDATA),
+        .HWSTRB (HWSTRB),
+        .HBURST (HBURST),
+
+        .HREADY (HREADY),
+        .HRESP (HRESP),
+        .HRDATA (HRDATA)
+    );
     //local_mem MEM(.*); 
 
     // local_mem MEM(.clk(clk), 
@@ -111,19 +189,19 @@ module VX_local_mem_tb;
 
     Vortex_mem_slave MEM(.clk(clk), 
                   .reset(reset), 
-                  .mem_req_valid(mem_req_valid), 
-                  .mem_req_rw(mem_req_rw), 
-                  .mem_req_byteen(mem_req_byteen),
-                  .mem_req_addr(mem_req_addr), 
-                  .mem_req_data(mem_req_data), 
-                  .mem_req_tag(mem_req_tag), 
-                  .mem_req_ready(mem_req_ready), 
-                  .mem_rsp_valid(mem_rsp_valid), 
-                  .mem_rsp_data(mem_rsp_data), 
-                  .mem_rsp_tag(mem_rsp_tag), 
-                  .mem_rsp_ready(mem_rsp_ready), 
-                  .busy(busy), 
-                  .gbif(gbif)
+                //   .mem_req_valid(tb_mem_req_valid), 
+                //   .mem_req_rw(tb_mem_req_rw), 
+                //   .mem_req_byteen(tb_mem_req_byteen),
+                //   .mem_req_addr(tb_mem_req_addr), 
+                //   .mem_req_data(tb_mem_req_data), 
+                //   .mem_req_tag(tb_mem_req_tag), 
+                //   .mem_req_ready(tb_mem_req_ready), 
+                //   .mem_rsp_valid(tb_mem_rsp_valid), 
+                //   .mem_rsp_data(tb_mem_rsp_data), 
+                //   .mem_rsp_tag(tb_mem_rsp_tag), 
+                //   .mem_rsp_ready(tb_mem_rsp_ready), 
+                  .busy(tb_busy), 
+                  .bpif(bpif)
     ); 
 
     // assign tb_mem_rsp_ready = mem_rsp_ready; 
