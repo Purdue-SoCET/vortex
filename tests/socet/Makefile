@@ -26,7 +26,7 @@ CFLAGS += -Iinclude
 LDFLAGS += -lm -Wl,-Bstatic,-T,./linker/vx_link$(XLEN).ld -fno-use-linker-plugin 
 PROJECT = simple
 
-SRCS = main_tex.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
+SRCS = main.c ./include/vx_start.S ./include/vx_syscalls.c ./include/vx_spawn.c ./include/vx_spawn.S ./include/vortex.cpp
 
 
 all: $(PROJECT).elf $(PROJECT).bin $(PROJECT).dump $(PROJECT).hex
