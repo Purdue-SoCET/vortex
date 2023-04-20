@@ -319,11 +319,32 @@ program test
 
             reset = 1'b0;
 
+            // expected outputs (this clock cycle):
             #(PERIOD / 4);
+            task_string = "this clock cycle";
+            $display("\n\t-> checking %s", task_string);
 
-            // expected outputs:
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b0;
+            
+			expected_mem_rsp_data = '0;
+
+            expected_mem_rsp_tag = 56'd0;
+
+            expected_rdata = 32'h0480006f;
+            expected_error = 1'b1;
+            expected_request_stall = 1'b0;
+            
+            check_outputs();
+
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
+            expected_mem_req_ready = 1'b1;
+            expected_mem_rsp_valid = 1'b0;
+
 			expected_mem_rsp_data[31:0] = 32'h0480006F;
 			expected_mem_rsp_data[63:32] = 32'h34202F73;
 			expected_mem_rsp_data[95:64] = 32'h00800F93;
@@ -342,7 +363,6 @@ program test
 			expected_mem_rsp_data[511:480] = 32'h00001F17;
 
             expected_mem_rsp_tag = 56'd0;
-            // expected_tb_addr_out_of_bounds = 1'b1;
 
             expected_rdata = 32'h0480006f;
             expected_error = 1'b1;
@@ -379,12 +399,15 @@ program test
             bpif.wen = 1'b0;
             bpif.wdata = 32'h00000000;
             bpif.strobe = 4'b0000;
-            
-            #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
+
 			expected_mem_rsp_data[31:0] = 32'h0480006F;
 			expected_mem_rsp_data[63:32] = 32'h34202F73;
 			expected_mem_rsp_data[95:64] = 32'h00800F93;
@@ -433,7 +456,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00452383;
@@ -484,7 +511,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -535,7 +566,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -586,7 +621,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -637,7 +676,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -712,9 +755,13 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
-            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_valid = 1'b0;  // no longer give response for write req
 			expected_mem_rsp_data[31:0] = 32'h00000000;
 			expected_mem_rsp_data[63:32] = 32'h00000000;
 			expected_mem_rsp_data[95:64] = 32'h00000000;
@@ -763,7 +810,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -829,9 +880,13 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
-            expected_mem_rsp_valid = 1'b1;
+            expected_mem_rsp_valid = 1'b0;  // no longer give response for write req
 			expected_mem_rsp_data[31:0] = 32'h00000000;
 			expected_mem_rsp_data[63:32] = 32'h40040000;
 			expected_mem_rsp_data[95:64] = 32'h00000000;
@@ -880,7 +935,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b1;
 			expected_mem_rsp_data[31:0] = 32'h00000000;
@@ -939,7 +998,11 @@ program test
             
             #(PERIOD / 4);
 
-            // expected outputs:    // vortex side idle
+            // expected outputs (next clock cycle):
+            #(PERIOD);
+            task_string = "next clock cycle";
+            $display("\n\t-> checking %s", task_string);
+
             expected_mem_req_ready = 1'b1;
             expected_mem_rsp_valid = 1'b0;
 			expected_mem_rsp_data[31:0] = 32'h0480006F;

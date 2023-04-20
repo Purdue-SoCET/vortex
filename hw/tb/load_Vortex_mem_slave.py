@@ -196,7 +196,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     # iterate through 512 bits = 64 bytes of data 
     for i in range(64):
         Vortex_read_logic_lines.append(
-            f"\t\tmem_rsp_data[{8*i+7}:{8*i}] = reg_file[{{mem_req_addr[7:0], 6'd{i}}}];"
+            f"\t\tnext_mem_rsp_data[{8*i+7}:{8*i}] = reg_file[{{mem_req_addr[7:0], 6'd{i}}}];"
         )
 
     # add newlines to end of each line and replace \t tabs with 4 spaces

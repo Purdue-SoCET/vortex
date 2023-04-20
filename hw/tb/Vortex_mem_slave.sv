@@ -85,11 +85,36 @@ module Vortex_mem_slave #(
     logic Vortex_bad_address;
     logic AHB_bad_address;
 
+    // buffered Vortex memory interface signals
+    logic                           next_mem_rsp_valid;
+    logic [`VX_MEM_DATA_WIDTH-1:0]  next_mem_rsp_data;
+    logic [`VX_MEM_TAG_WIDTH-1:0]   next_mem_rsp_tag;
+
     // reg file signals (bytewise, packed)
     // logic [2**14-1:0][7:0] reg_file;
     // logic [2**14-1:0][7:0] next_reg_file;
     logic [2**LOCAL_MEM_SIZE-1:0][7:0] reg_file;
     logic [2**LOCAL_MEM_SIZE-1:0][7:0] next_reg_file;
+
+    ////////////////
+    // registers: //
+    ////////////////
+
+    // output buffer registers
+    always_ff @ (posedge clk) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
+        if (reset)
+        begin
+            mem_rsp_valid <= 1'b0;
+            mem_rsp_data <= 512'd0;
+            mem_rsp_tag <= 26'd0;
+        end
+        else
+        begin
+            mem_rsp_valid <= next_mem_rsp_valid;
+            mem_rsp_data <= next_mem_rsp_data;
+            mem_rsp_tag <= next_mem_rsp_tag;
+        end
+    end
 
     // reg file instance
     always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
@@ -16497,7 +16522,8 @@ module Vortex_mem_slave #(
         next_reg_file = reg_file;
 
         // Vortex outputs
-        mem_rsp_data = 512'd0;
+        // mem_rsp_data = 512'd0;   // updated for buffer
+        next_mem_rsp_data = 512'd0;
 
         // AHB outputs
         bpif.error = 1'b0;
@@ -16536,70 +16562,70 @@ module Vortex_mem_slave #(
         /////////////////
 
         // Vortex read logic (this part is automated by load_Vortex_mem_slave.py)
-        mem_rsp_data[7:0] = reg_file[{mem_req_addr[7:0], 6'd0}];
-        mem_rsp_data[15:8] = reg_file[{mem_req_addr[7:0], 6'd1}];
-        mem_rsp_data[23:16] = reg_file[{mem_req_addr[7:0], 6'd2}];
-        mem_rsp_data[31:24] = reg_file[{mem_req_addr[7:0], 6'd3}];
-        mem_rsp_data[39:32] = reg_file[{mem_req_addr[7:0], 6'd4}];
-        mem_rsp_data[47:40] = reg_file[{mem_req_addr[7:0], 6'd5}];
-        mem_rsp_data[55:48] = reg_file[{mem_req_addr[7:0], 6'd6}];
-        mem_rsp_data[63:56] = reg_file[{mem_req_addr[7:0], 6'd7}];
-        mem_rsp_data[71:64] = reg_file[{mem_req_addr[7:0], 6'd8}];
-        mem_rsp_data[79:72] = reg_file[{mem_req_addr[7:0], 6'd9}];
-        mem_rsp_data[87:80] = reg_file[{mem_req_addr[7:0], 6'd10}];
-        mem_rsp_data[95:88] = reg_file[{mem_req_addr[7:0], 6'd11}];
-        mem_rsp_data[103:96] = reg_file[{mem_req_addr[7:0], 6'd12}];
-        mem_rsp_data[111:104] = reg_file[{mem_req_addr[7:0], 6'd13}];
-        mem_rsp_data[119:112] = reg_file[{mem_req_addr[7:0], 6'd14}];
-        mem_rsp_data[127:120] = reg_file[{mem_req_addr[7:0], 6'd15}];
-        mem_rsp_data[135:128] = reg_file[{mem_req_addr[7:0], 6'd16}];
-        mem_rsp_data[143:136] = reg_file[{mem_req_addr[7:0], 6'd17}];
-        mem_rsp_data[151:144] = reg_file[{mem_req_addr[7:0], 6'd18}];
-        mem_rsp_data[159:152] = reg_file[{mem_req_addr[7:0], 6'd19}];
-        mem_rsp_data[167:160] = reg_file[{mem_req_addr[7:0], 6'd20}];
-        mem_rsp_data[175:168] = reg_file[{mem_req_addr[7:0], 6'd21}];
-        mem_rsp_data[183:176] = reg_file[{mem_req_addr[7:0], 6'd22}];
-        mem_rsp_data[191:184] = reg_file[{mem_req_addr[7:0], 6'd23}];
-        mem_rsp_data[199:192] = reg_file[{mem_req_addr[7:0], 6'd24}];
-        mem_rsp_data[207:200] = reg_file[{mem_req_addr[7:0], 6'd25}];
-        mem_rsp_data[215:208] = reg_file[{mem_req_addr[7:0], 6'd26}];
-        mem_rsp_data[223:216] = reg_file[{mem_req_addr[7:0], 6'd27}];
-        mem_rsp_data[231:224] = reg_file[{mem_req_addr[7:0], 6'd28}];
-        mem_rsp_data[239:232] = reg_file[{mem_req_addr[7:0], 6'd29}];
-        mem_rsp_data[247:240] = reg_file[{mem_req_addr[7:0], 6'd30}];
-        mem_rsp_data[255:248] = reg_file[{mem_req_addr[7:0], 6'd31}];
-        mem_rsp_data[263:256] = reg_file[{mem_req_addr[7:0], 6'd32}];
-        mem_rsp_data[271:264] = reg_file[{mem_req_addr[7:0], 6'd33}];
-        mem_rsp_data[279:272] = reg_file[{mem_req_addr[7:0], 6'd34}];
-        mem_rsp_data[287:280] = reg_file[{mem_req_addr[7:0], 6'd35}];
-        mem_rsp_data[295:288] = reg_file[{mem_req_addr[7:0], 6'd36}];
-        mem_rsp_data[303:296] = reg_file[{mem_req_addr[7:0], 6'd37}];
-        mem_rsp_data[311:304] = reg_file[{mem_req_addr[7:0], 6'd38}];
-        mem_rsp_data[319:312] = reg_file[{mem_req_addr[7:0], 6'd39}];
-        mem_rsp_data[327:320] = reg_file[{mem_req_addr[7:0], 6'd40}];
-        mem_rsp_data[335:328] = reg_file[{mem_req_addr[7:0], 6'd41}];
-        mem_rsp_data[343:336] = reg_file[{mem_req_addr[7:0], 6'd42}];
-        mem_rsp_data[351:344] = reg_file[{mem_req_addr[7:0], 6'd43}];
-        mem_rsp_data[359:352] = reg_file[{mem_req_addr[7:0], 6'd44}];
-        mem_rsp_data[367:360] = reg_file[{mem_req_addr[7:0], 6'd45}];
-        mem_rsp_data[375:368] = reg_file[{mem_req_addr[7:0], 6'd46}];
-        mem_rsp_data[383:376] = reg_file[{mem_req_addr[7:0], 6'd47}];
-        mem_rsp_data[391:384] = reg_file[{mem_req_addr[7:0], 6'd48}];
-        mem_rsp_data[399:392] = reg_file[{mem_req_addr[7:0], 6'd49}];
-        mem_rsp_data[407:400] = reg_file[{mem_req_addr[7:0], 6'd50}];
-        mem_rsp_data[415:408] = reg_file[{mem_req_addr[7:0], 6'd51}];
-        mem_rsp_data[423:416] = reg_file[{mem_req_addr[7:0], 6'd52}];
-        mem_rsp_data[431:424] = reg_file[{mem_req_addr[7:0], 6'd53}];
-        mem_rsp_data[439:432] = reg_file[{mem_req_addr[7:0], 6'd54}];
-        mem_rsp_data[447:440] = reg_file[{mem_req_addr[7:0], 6'd55}];
-        mem_rsp_data[455:448] = reg_file[{mem_req_addr[7:0], 6'd56}];
-        mem_rsp_data[463:456] = reg_file[{mem_req_addr[7:0], 6'd57}];
-        mem_rsp_data[471:464] = reg_file[{mem_req_addr[7:0], 6'd58}];
-        mem_rsp_data[479:472] = reg_file[{mem_req_addr[7:0], 6'd59}];
-        mem_rsp_data[487:480] = reg_file[{mem_req_addr[7:0], 6'd60}];
-        mem_rsp_data[495:488] = reg_file[{mem_req_addr[7:0], 6'd61}];
-        mem_rsp_data[503:496] = reg_file[{mem_req_addr[7:0], 6'd62}];
-        mem_rsp_data[511:504] = reg_file[{mem_req_addr[7:0], 6'd63}];
+        next_mem_rsp_data[7:0] = reg_file[{mem_req_addr[7:0], 6'd0}];
+        next_mem_rsp_data[15:8] = reg_file[{mem_req_addr[7:0], 6'd1}];
+        next_mem_rsp_data[23:16] = reg_file[{mem_req_addr[7:0], 6'd2}];
+        next_mem_rsp_data[31:24] = reg_file[{mem_req_addr[7:0], 6'd3}];
+        next_mem_rsp_data[39:32] = reg_file[{mem_req_addr[7:0], 6'd4}];
+        next_mem_rsp_data[47:40] = reg_file[{mem_req_addr[7:0], 6'd5}];
+        next_mem_rsp_data[55:48] = reg_file[{mem_req_addr[7:0], 6'd6}];
+        next_mem_rsp_data[63:56] = reg_file[{mem_req_addr[7:0], 6'd7}];
+        next_mem_rsp_data[71:64] = reg_file[{mem_req_addr[7:0], 6'd8}];
+        next_mem_rsp_data[79:72] = reg_file[{mem_req_addr[7:0], 6'd9}];
+        next_mem_rsp_data[87:80] = reg_file[{mem_req_addr[7:0], 6'd10}];
+        next_mem_rsp_data[95:88] = reg_file[{mem_req_addr[7:0], 6'd11}];
+        next_mem_rsp_data[103:96] = reg_file[{mem_req_addr[7:0], 6'd12}];
+        next_mem_rsp_data[111:104] = reg_file[{mem_req_addr[7:0], 6'd13}];
+        next_mem_rsp_data[119:112] = reg_file[{mem_req_addr[7:0], 6'd14}];
+        next_mem_rsp_data[127:120] = reg_file[{mem_req_addr[7:0], 6'd15}];
+        next_mem_rsp_data[135:128] = reg_file[{mem_req_addr[7:0], 6'd16}];
+        next_mem_rsp_data[143:136] = reg_file[{mem_req_addr[7:0], 6'd17}];
+        next_mem_rsp_data[151:144] = reg_file[{mem_req_addr[7:0], 6'd18}];
+        next_mem_rsp_data[159:152] = reg_file[{mem_req_addr[7:0], 6'd19}];
+        next_mem_rsp_data[167:160] = reg_file[{mem_req_addr[7:0], 6'd20}];
+        next_mem_rsp_data[175:168] = reg_file[{mem_req_addr[7:0], 6'd21}];
+        next_mem_rsp_data[183:176] = reg_file[{mem_req_addr[7:0], 6'd22}];
+        next_mem_rsp_data[191:184] = reg_file[{mem_req_addr[7:0], 6'd23}];
+        next_mem_rsp_data[199:192] = reg_file[{mem_req_addr[7:0], 6'd24}];
+        next_mem_rsp_data[207:200] = reg_file[{mem_req_addr[7:0], 6'd25}];
+        next_mem_rsp_data[215:208] = reg_file[{mem_req_addr[7:0], 6'd26}];
+        next_mem_rsp_data[223:216] = reg_file[{mem_req_addr[7:0], 6'd27}];
+        next_mem_rsp_data[231:224] = reg_file[{mem_req_addr[7:0], 6'd28}];
+        next_mem_rsp_data[239:232] = reg_file[{mem_req_addr[7:0], 6'd29}];
+        next_mem_rsp_data[247:240] = reg_file[{mem_req_addr[7:0], 6'd30}];
+        next_mem_rsp_data[255:248] = reg_file[{mem_req_addr[7:0], 6'd31}];
+        next_mem_rsp_data[263:256] = reg_file[{mem_req_addr[7:0], 6'd32}];
+        next_mem_rsp_data[271:264] = reg_file[{mem_req_addr[7:0], 6'd33}];
+        next_mem_rsp_data[279:272] = reg_file[{mem_req_addr[7:0], 6'd34}];
+        next_mem_rsp_data[287:280] = reg_file[{mem_req_addr[7:0], 6'd35}];
+        next_mem_rsp_data[295:288] = reg_file[{mem_req_addr[7:0], 6'd36}];
+        next_mem_rsp_data[303:296] = reg_file[{mem_req_addr[7:0], 6'd37}];
+        next_mem_rsp_data[311:304] = reg_file[{mem_req_addr[7:0], 6'd38}];
+        next_mem_rsp_data[319:312] = reg_file[{mem_req_addr[7:0], 6'd39}];
+        next_mem_rsp_data[327:320] = reg_file[{mem_req_addr[7:0], 6'd40}];
+        next_mem_rsp_data[335:328] = reg_file[{mem_req_addr[7:0], 6'd41}];
+        next_mem_rsp_data[343:336] = reg_file[{mem_req_addr[7:0], 6'd42}];
+        next_mem_rsp_data[351:344] = reg_file[{mem_req_addr[7:0], 6'd43}];
+        next_mem_rsp_data[359:352] = reg_file[{mem_req_addr[7:0], 6'd44}];
+        next_mem_rsp_data[367:360] = reg_file[{mem_req_addr[7:0], 6'd45}];
+        next_mem_rsp_data[375:368] = reg_file[{mem_req_addr[7:0], 6'd46}];
+        next_mem_rsp_data[383:376] = reg_file[{mem_req_addr[7:0], 6'd47}];
+        next_mem_rsp_data[391:384] = reg_file[{mem_req_addr[7:0], 6'd48}];
+        next_mem_rsp_data[399:392] = reg_file[{mem_req_addr[7:0], 6'd49}];
+        next_mem_rsp_data[407:400] = reg_file[{mem_req_addr[7:0], 6'd50}];
+        next_mem_rsp_data[415:408] = reg_file[{mem_req_addr[7:0], 6'd51}];
+        next_mem_rsp_data[423:416] = reg_file[{mem_req_addr[7:0], 6'd52}];
+        next_mem_rsp_data[431:424] = reg_file[{mem_req_addr[7:0], 6'd53}];
+        next_mem_rsp_data[439:432] = reg_file[{mem_req_addr[7:0], 6'd54}];
+        next_mem_rsp_data[447:440] = reg_file[{mem_req_addr[7:0], 6'd55}];
+        next_mem_rsp_data[455:448] = reg_file[{mem_req_addr[7:0], 6'd56}];
+        next_mem_rsp_data[463:456] = reg_file[{mem_req_addr[7:0], 6'd57}];
+        next_mem_rsp_data[471:464] = reg_file[{mem_req_addr[7:0], 6'd58}];
+        next_mem_rsp_data[479:472] = reg_file[{mem_req_addr[7:0], 6'd59}];
+        next_mem_rsp_data[487:480] = reg_file[{mem_req_addr[7:0], 6'd60}];
+        next_mem_rsp_data[495:488] = reg_file[{mem_req_addr[7:0], 6'd61}];
+        next_mem_rsp_data[503:496] = reg_file[{mem_req_addr[7:0], 6'd62}];
+        next_mem_rsp_data[511:504] = reg_file[{mem_req_addr[7:0], 6'd63}];
 
         // AHB read logic
         bpif.rdata[7:0] = reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd0}];
@@ -16706,18 +16732,15 @@ module Vortex_mem_slave #(
         mem_req_ready = 1'b1;           
 
         // read ready immediately
-        mem_rsp_valid = mem_req_valid;  
-            // update to buffer to later clock cycle
-                // along with data read value
+        // mem_rsp_valid = mem_req_valid;   // updated for buffer
+        next_mem_rsp_valid = mem_req_valid & ~mem_req_rw;   // only need to respond for reads
 
         // match req immediately
-        mem_rsp_tag = mem_req_tag;
-            // update to buffer to later clock cycle
-                // along with data read value
+        // mem_rsp_tag = mem_req_tag;       // updated for buffer
+        next_mem_rsp_tag = mem_req_tag;
     end
 
-    // don't know what to do with: 
-        // Vortex busy
+    // only status registers use Vortex busy
 
 endmodule
 

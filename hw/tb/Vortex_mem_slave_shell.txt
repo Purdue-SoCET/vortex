@@ -85,11 +85,36 @@ module Vortex_mem_slave #(
     logic Vortex_bad_address;
     logic AHB_bad_address;
 
+    // buffered Vortex memory interface signals
+    logic                           next_mem_rsp_valid;
+    logic [`VX_MEM_DATA_WIDTH-1:0]  next_mem_rsp_data;
+    logic [`VX_MEM_TAG_WIDTH-1:0]   next_mem_rsp_tag;
+
     // reg file signals (bytewise, packed)
     // logic [2**14-1:0][7:0] reg_file;
     // logic [2**14-1:0][7:0] next_reg_file;
     logic [2**LOCAL_MEM_SIZE-1:0][7:0] reg_file;
     logic [2**LOCAL_MEM_SIZE-1:0][7:0] next_reg_file;
+
+    ////////////////
+    // registers: //
+    ////////////////
+
+    // output buffer registers
+    always_ff @ (posedge clk) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
+        if (reset)
+        begin
+            mem_rsp_valid <= 1'b0;
+            mem_rsp_data <= 512'd0;
+            mem_rsp_tag <= 26'd0;
+        end
+        else
+        begin
+            mem_rsp_valid <= next_mem_rsp_valid;
+            mem_rsp_data <= next_mem_rsp_data;
+            mem_rsp_tag <= next_mem_rsp_tag;
+        end
+    end
 
     // reg file instance
     always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
@@ -114,7 +139,8 @@ module Vortex_mem_slave #(
         next_reg_file = reg_file;
 
         // Vortex outputs
-        mem_rsp_data = 512'd0;
+        // mem_rsp_data = 512'd0;   // updated for buffer
+        next_mem_rsp_data = 512'd0;
 
         // AHB outputs
         bpif.error = 1'b0;
@@ -197,18 +223,15 @@ module Vortex_mem_slave #(
         mem_req_ready = 1'b1;           
 
         // read ready immediately
-        mem_rsp_valid = mem_req_valid;  
-            // update to buffer to later clock cycle
-                // along with data read value
+        // mem_rsp_valid = mem_req_valid;   // updated for buffer
+        next_mem_rsp_valid = mem_req_valid & ~mem_req_rw;   // only need to respond for reads
 
         // match req immediately
-        mem_rsp_tag = mem_req_tag;
-            // update to buffer to later clock cycle
-                // along with data read value
+        // mem_rsp_tag = mem_req_tag;       // updated for buffer
+        next_mem_rsp_tag = mem_req_tag;
     end
 
-    // don't know what to do with: 
-        // Vortex busy
+    // only status registers use Vortex busy
 
 endmodule
 
