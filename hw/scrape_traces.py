@@ -48,45 +48,103 @@ class MEM_Trans():
 class MEM_Rd_Req():
 
     # init
-    def __init__(self, string, addr, tag):
-        self.type = "Rd_Req"
-        self.string = string[:string.index(", byteen=")] + "\n"     # don't care about byteen
-        self.get_attributes()
+    def __init__(self, string):
+        self.type = "MEM Rd Req"
+        self.get_attributes(string)
+        self.build_string()
     
     # get attributes based on string
-    def get_attributes(self):
-        self.addr = self.string[self.string.index("addr="):self.string.index(", tag=")]
-        self.tag = self.string[self.string.index("tag="):self.string.index("\n")]
+    def get_attributes(self, string):
+        self.addr = leading_zeros(string[string.index("addr=") + len("addr="):string.index(", tag=")], 32//4)
+        self.tag = string[string.index("tag=") + len("tag="):string.index(", byteen=")]
+
+    # build string
+    def build_string(self):
+        self.string = ""
+        self.string += self.type + ":"
+        self.string += " "
+        self.string += "addr=" + self.addr
+        self.string += " "
+        self.string += "tag=" + self.tag
+        self.string += "\n"
 
 # ~struct for mem write requests
 class MEM_Wr_Req():
 
     # init
-    def __init__(self, string, addr, tag, byteen, data):
-        self.type = "Wr_Req"
-        self.string = string
-        self.get_attributes()
+    def __init__(self, string):
+        self.type = "MEM Wr Req"
+        self.get_attributes(string)
+        self.build_string()
 
     # get attributes based on string
-    def get_attributes(self):
-        self.addr = self.string[self.string.index("addr="):self.string.index(", tag=")]
-        self.tag = self.string[self.string.index("tag="):self.string.index(", byteen=")]
-        self.byteen = self.string[self.string.index("byteen="):self.string.index(" data=")]     # just space between byteen and data for some reason
-        self.data = self.string[self.string.index("data="):self.string.index("\n")]
+    def get_attributes(self, string):
+        self.addr = leading_zeros(string[string.index("addr=") + len("addr="):string.index(", tag=")], 32//4)
+        self.tag = string[string.index("tag=") + len("tag="):string.index(", byteen=")]
+        self.byteen = leading_zeros(string[string.index("byteen=") + len("byteen="):string.index(" data=")], 64//4)  # just space between byteen and data for some reason
+        self.data = leading_zeros(string[string.index("data=") + len("data="):string.index("\n")], 512//4)
+        self.get_simple_data()
+
+    # get simple data attribute based on byteen and data
+    def get_simple_data(self):
+        
+        # get int representation of byteen
+        byteen_int = int(self.byteen, 16)
+
+        # iterate through 64 bytes of data, adding x's or vals to simple data string
+        self.simple_data = ""
+        for byte in range(64):
+            byte_idx = byte * 2
+
+            # check for byte enabled
+            if (byteen_int & (1 << (63-byte))):
+                # put in vals
+                self.simple_data += self.data[byte_idx:byte_idx + 2]
+            else:
+                # put in x's
+                self.simple_data += "xx"
+
+            # get next bit of byteen
+            byteen_int >> 1
+
+    # build string
+    def build_string(self):
+        self.string = ""
+        self.string += self.type + ":"
+        self.string += " "
+        self.string += "addr=" + self.addr
+        self.string += " "
+        self.string += "tag=" + self.tag
+        self.string += " "
+        self.string += "byteen=" + self.byteen
+        self.string += " "
+        self.string += "data=" + self.simple_data
+        self.string += "\n"
 
 # ~struct for mem responses
 class MEM_Rsp():
 
     # init
-    def __init__(self, string, tag, data):
-        self.type = "Rsp"
-        self.string = string
-        self.get_attributes()
+    def __init__(self, string):
+        self.type = "MEM Rsp"
+        self.get_attributes(string)
+        self.build_string()
 
     # get attributes based on string
-    def get_attributes(self):
-        self.tag = self.string[self.string.index("tag="):self.string.index(", data=")]
-        self.data = self.string[self.string.index("data="):self.string.index("\n")]
+    def get_attributes(self, string):
+        self.tag = string[string.index("tag=") + len("tag="):string.index(", data=")]
+        self.data = leading_zeros(string[string.index("data=") + len("data="):string.index("\n")], 512//4)
+
+    # build string
+    def build_string(self):
+        self.string = ""
+        self.string += self.type + ":"
+        self.string += " "
+        self.string += "tag=" + self.tag
+        self.string += " "
+        self.string += "data=" + self.data
+        self.string += "\n"
+
 
 # class for storing scraped
 class Scrape():
@@ -129,7 +187,7 @@ class Scrape():
                     string = line[line.index("MEM"):]
 
                     # instantiate MEM_Rd_Req
-                    new_mem_trans = MEM_Rd_Req(string=string, addr="", tag="")
+                    new_mem_trans = MEM_Rd_Req(string=string)
                     self.MEM_Trans_list.append(new_mem_trans)
                     self.MEM_Rd_Req_list.append(new_mem_trans)
                     
@@ -149,7 +207,7 @@ class Scrape():
                     string = line[line.index("MEM"):]
 
                     # instantiate MEM_Rd_Req
-                    new_mem_trans = MEM_Wr_Req(string=string, addr="", tag="", byteen="", data="")
+                    new_mem_trans = MEM_Wr_Req(string=string)
                     self.MEM_Trans_list.append(new_mem_trans)
                     self.MEM_Wr_Req_list.append(new_mem_trans)
 
@@ -169,7 +227,7 @@ class Scrape():
                     string = line[line.index("MEM"):]
 
                     # instantiate MEM_Rsp
-                    new_mem_trans = MEM_Rsp(string=string, tag="", data="")
+                    new_mem_trans = MEM_Rsp(string=string)
                     self.MEM_Trans_list.append(new_mem_trans)
                     self.MEM_Rsp_list.append(new_mem_trans)
 
@@ -229,6 +287,17 @@ class Scrape():
 
 ###########################################################################################################
 # funcs:
+
+# add leading zeros to value if string shorter than expected width
+def leading_zeros(string, width):
+
+    # check for add leading zeros
+    if (len(string) < width):
+        return "0" * (width - len(string)) + string
+    
+    # otherwise, give string as-s
+    else:
+        return string
 
 # generate scrape corresponding to trace file
 def scrape_trace(file_name, trace_file_lines):
@@ -349,6 +418,7 @@ if __name__ == "__main__":
         print("python3 scrape_traces.py <rtlsim trace file> <questa trace file> <flags>")
         quit()
 
+    # collect flags
     if ("-p" in sys.argv):
         DO_PRINTS = True
 
@@ -356,7 +426,7 @@ if __name__ == "__main__":
         output_file_name_index = sys.argv.index("-out") + 1
         output_file_name = sys.argv[output_file_name_index]
     else:
-        output_file_name = "trace_diff.log"
+        output_file_name = "scrape_traces.log"
 
     if (DO_PRINTS):
         print(f"DO_PRINTS = {DO_PRINTS}")
