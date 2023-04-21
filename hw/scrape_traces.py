@@ -32,8 +32,14 @@ DO_PRINTS = False
 ###########################################################################################################
 # classes:
 
-# ~struct for mem transactions
+# ~struct for mem transactions (UNUSED RIGHT NOW)
 class MEM_Trans():
+
+    # instance vars:
+    #   string
+    # methods:
+    #   __init__
+    #   get_attributes
     
     # init
     def __init__(self, string):
@@ -46,6 +52,17 @@ class MEM_Trans():
 
 # ~struct for mem read requests
 class MEM_Rd_Req():
+
+    # instance vars:
+    #   type
+    #   addr
+    #   tag
+    #   string
+
+    # methods:
+    #   __init__
+    #   get_attributes
+    #   build_string
 
     # init
     def __init__(self, string):
@@ -70,6 +87,20 @@ class MEM_Rd_Req():
 
 # ~struct for mem write requests
 class MEM_Wr_Req():
+
+    # instance vars:
+    #   type
+    #   addr
+    #   tag
+    #   byteen
+    #   data
+    #   simple_data
+    #   string
+
+    # methods:
+    #   __init__
+    #   get_attributes
+    #   build_string
 
     # init
     def __init__(self, string):
@@ -124,6 +155,17 @@ class MEM_Wr_Req():
 # ~struct for mem responses
 class MEM_Rsp():
 
+    # instance vars:
+    #   type
+    #   tag
+    #   data
+    #   string
+
+    # methods:
+    #   __init__
+    #   get_attributes
+    #   build_string
+
     # init
     def __init__(self, string):
         self.type = "MEM Rsp"
@@ -145,14 +187,8 @@ class MEM_Rsp():
         self.string += "data=" + self.data
         self.string += "\n"
 
-
-# class for storing scraped
+# class for storing entire scraped trace
 class Scrape():
-
-    # instance vars:
-    # mem_trans_list -> list of mem_req objects
-
-    # methods:
 
     # init
     def __init__(self, file_name):
@@ -318,14 +354,59 @@ def scrape_trace(file_name, trace_file_lines):
 # compare rtlsim and questa scrape objects
 def compare_scrapes(rtlsim_scrape, questa_scrape):
 
-    
+    print_lines = []
 
-    # run comparison algo
+    # run comparison algo:
 
-    return
+    # init mem transactions same
+    same = True
+
+    # check for diff num mem transactions
+    if (len(rtlsim_scrape.MEM_Trans_list) != len(questa_scrape.MEM_Trans_list)):
+
+        # mem transactions diff
+        same = False
+
+        # give line lengths
+        print_lines += [
+            f"DIFF:",
+            f"\trtlsim: {len(rtlsim_scrape.MEM_Trans_list)} mem transactions",
+            f"\tquesta: {len(questa_scrape.MEM_Trans_list)} mem transactions",
+        ]
+
+    # otherwise, same num mem transactions
+    else:
+
+        if (DO_PRINTS):
+            print("scrapes have same num lines")
+
+        # go through each line of rtlsim and check same as corresponding questa line
+        for line in range(len(rtlsim_scrape.MEM_Trans_list)):
+            
+            # check for lines diff
+            if (rtlsim_scrape.MEM_Trans_list[line] != questa_scrape.MEM_Trans_list[line]):
+                
+                # replace baadf00d's with 0's in rtlsim line
+                baadf00d_line = rtlsim_scrape.MEM_Trans_list[line]
+                baadf00d_line.replace("baadf00d", "00000000")
+
+                # check lines diff again
+                if (baadf00d_line == questa_scrape.MEM_Trans_list[line]):
+
+                    # notify of baadf00d, but otherwise still match
+                    print("")
+
+                # otherwise, lines diff
+
+
+    # give final verdict on if mem transactions match
+    # if (True)
+
+    # return lines to print
+    return print_lines
 
 # overall function to scrape rtlsim, scrape questa, compare scrapes, and write output files
-def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name, output_file_name):
+def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name):
 
     # try to read rtlsim file lines
     try:
@@ -393,16 +474,12 @@ def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name, output_f
         print("ERROR: couldn't write questa scrape file")
         quit()
 
-    # compare rtlsim and questa scrapes and generate output file
-    # output_file_lines = compare_scrapes(rtlsim_scrape, questa_scrape)
+    # compare rtlsim and questa scrapes and print difference information
+    # print_lines = compare_scrapes(rtlsim_scrape, questa_scrape)
 
-    # # try to write output file
-    # try:
-    #     with open(output_file_name, "w") as output_file_fp:
-    #         output_file_fp.writelines(output_file_lines)
-    # except:
-    #     print("couldn't write output file")
-    #     quit()
+    # # print lines
+    # for line in print_lines:
+    #     print(line)
 
     # done program
     return
@@ -422,16 +499,9 @@ if __name__ == "__main__":
     if ("-p" in sys.argv):
         DO_PRINTS = True
 
-    if ("-out" in sys.argv):
-        output_file_name_index = sys.argv.index("-out") + 1
-        output_file_name = sys.argv[output_file_name_index]
-    else:
-        output_file_name = "scrape_traces.log"
-
     if (DO_PRINTS):
         print(f"DO_PRINTS = {DO_PRINTS}")
-        print(f"output file = {output_file_name}")
         print()
 
     # run program
-    compare_trace_files(sys.argv[1], sys.argv[2], output_file_name)
+    compare_trace_files(sys.argv[1], sys.argv[2])
