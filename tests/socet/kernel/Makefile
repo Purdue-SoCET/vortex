@@ -1,10 +1,10 @@
 
-COMP   = /opt/riscv/bin/riscv32-unknown-elf-gcc
+COMP   = /media/kalidows/Large/vortexnew/vortex/tests/socet/riscv-tools/bin/riscv64-unknown-elf-gcc
 # COMP   = /opt/riscv/bin/riscv32-unknown-linux-gnu-gcc
 CC_FLAGS = -march=rv32im -mabi=ilp32 -O0 -Wl,-Bstatic,-T,linker.ld -ffreestanding -nostdlib
 
-DMP  = /opt/riscv/bin/riscv32-unknown-elf-objdump
-CPY  = /opt/riscv/bin/riscv32-unknown-elf-objcopy
+DMP  = /media/kalidows/Large/vortexnew/vortex/tests/socet/riscv-tools/bin/riscv64-unknown-elf-objdump
+CPY  = /media/kalidows/Large/vortexnew/vortex/tests/socet/riscv-tools/bin/riscv64-unknown-elf-objcopy
 
 # DMP  = /opt/riscv/bin/riscv32-unknown-linux-gnu-objdump
 # CPY  = /opt/riscv/bin/riscv32-unknown-linux-gnu-objcopy
