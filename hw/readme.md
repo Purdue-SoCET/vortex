@@ -33,6 +33,7 @@ Generate trace file from questa version by running:
 ```
 make all
 ```
+The generated questa trace file is then "VX_top_trace.txt".  
 
 Use trace file scraper to compare rtlsim file and questa file:
 ```
