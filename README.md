@@ -2,6 +2,7 @@
 [![codecov](https://codecov.io/gh/vortexgpgpu/vortex/branch/master/graph/badge.svg)](https://codecov.io/gh/vortexgpgpu/vortex)
 
 ![Image of Vortex AFTx](./vortex.png)
+![Image of Vortex AFTx master](./vortexmaster.png)
 # Vortex OpenGPU AFTx Integration
 
 Vortex is a full-system RISCV-based GPGPU processor.
