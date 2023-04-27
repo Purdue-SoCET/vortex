@@ -10,6 +10,16 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
   - ``-zero``: reset all registers to 0 instead of corresponding hex file values
   - ``-p``: print debugging info
   - ``-size <n bits to represent size, 2^n>``: change the size of the local mem
+  
+shortcut usage which doesn't 
+
+### simulating Vortex_mem_slave.sv
+
+- commandline (from inside /tb directory):
+  - sim without waves
+  ``make Vortex_mem_slave.sim``
+  - sim with waves
+  ``make Vortex_mem_slave.wav``
 
 # Loading local_mem.sv with corresponding hex file data
 
