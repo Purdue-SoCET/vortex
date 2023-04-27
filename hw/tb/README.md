@@ -16,9 +16,9 @@ shortcut usage which doesn't
 ### simulating Vortex_mem_slave.sv
 
 - commandline (from inside /tb directory):
-  - sim without waves
+  - sim without waves  
   ``make Vortex_mem_slave.sim``
-  - sim with waves
+  - sim with waves  
   ``make Vortex_mem_slave.wav``
 
 # Loading local_mem.sv with corresponding hex file data
