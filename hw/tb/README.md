@@ -5,15 +5,18 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
 
 - commandline (from inside /tb directory):  
 ``python3 load_Vortex_mem_slave.py <.hex file name> <optional flags>``  
+  - <.hex file name> is relative path from /tb (if in hex_files folder, need to do ``hex_files/<.hex file name>``)
 
 - flags:  
   - ``-zero``: reset all registers to 0 instead of corresponding hex file values
   - ``-p``: print debugging info
   - ``-size <n bits to represent size, 2^n>``: change the size of the local mem
   
-shortcut usage which doesn't 
+- shortcut with Makefile (limited functionality, uses default size of 14-bit address space)  
+``make <.hex file name>
+  - <.hex file name> must be located in hex_files folder. don't include ``hex_files/``
 
-### simulating Vortex_mem_slave.sv
+# Simulating Vortex_mem_slave.sv
 
 - commandline (from inside /tb directory):
   - sim without waves  
