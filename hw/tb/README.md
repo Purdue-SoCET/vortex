@@ -16,7 +16,7 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
 ``make <.hex file name>.load``
   - <.hex file name> must be located in hex_files folder. don't include ``hex_files/``
 
-# Simulating Vortex_mem_slave.sv
+# Simulating Vortex_mem_slave_tb.sv
 - testbench expects loaded hex file to be rv32ud-p-fadd.hex  
   ``make rv32ud-p-fadd.hex.load``  
 
