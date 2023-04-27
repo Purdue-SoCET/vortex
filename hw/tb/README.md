@@ -13,7 +13,7 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
   - ``-size <n bits to represent size, 2^n>``: change the size of the local mem
   
 - shortcut with Makefile (limited functionality, uses default size of 14-bit address space)  
-``make <.hex file name>``
+``make <.hex file name>.load``
   - <.hex file name> must be located in hex_files folder. don't include ``hex_files/``
 
 # Simulating Vortex_mem_slave.sv
