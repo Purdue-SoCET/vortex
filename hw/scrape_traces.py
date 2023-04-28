@@ -403,7 +403,7 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
                 ]
 
             # check baadf00d line exists in questa
-            elif (rtlsim_trans_str_list[line].replace("baadf00d", "00000000") == questa_trans_str_list[line]):
+            elif (rtlsim_trans_str_list[line].replace("baadf00d", "00000000") in questa_trans_str_list):
 
                 # notify of baadf00d, but otherwise still match
                 print_lines += [
