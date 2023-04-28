@@ -358,49 +358,132 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
 
     # run comparison algo:
 
+    # fetch rtlsim and questa mem transaction list strings
+    rtlsim_trans_str_list = [x.string for x in rtlsim_scrape.MEM_Trans_list]
+    questa_trans_str_list = [x.string for x in questa_scrape.MEM_Trans_list]
+
     # init mem transactions same
     same = True
+    diff_count = 0
 
     # check for diff num mem transactions
-    if (len(rtlsim_scrape.MEM_Trans_list) != len(questa_scrape.MEM_Trans_list)):
+    if (len(rtlsim_trans_str_list) != len(questa_trans_str_list)):
 
         # mem transactions diff
         same = False
+        diff_count += 1
 
         # give line lengths
         print_lines += [
             f"DIFF:",
-            f"\trtlsim: {len(rtlsim_scrape.MEM_Trans_list)} mem transactions",
-            f"\tquesta: {len(questa_scrape.MEM_Trans_list)} mem transactions",
+            f"\trtlsim: {len(rtlsim_trans_str_list)} mem transactions",
+            f"\tquesta: {len(questa_trans_str_list)} mem transactions",
+            f"",
         ]
 
     # otherwise, same num mem transactions
     else:
+        print_lines += [
+            f"SAME: scrapes have same num lines",
+            f"",
+        ]
 
-        if (DO_PRINTS):
-            print("scrapes have same num lines")
+    # go through each line of rtlsim and check same as corresponding questa line
+    for line in range(len(rtlsim_trans_str_list)):
 
-        # go through each line of rtlsim and check same as corresponding questa line
-        for line in range(len(rtlsim_scrape.MEM_Trans_list)):
-            
-            # check for lines diff
-            if (rtlsim_scrape.MEM_Trans_list[line] != questa_scrape.MEM_Trans_list[line]):
+        # check for ran out of questa lines
+        if (line >= len(questa_trans_str_list)):
+
+            # check line exists in questa
+            if (rtlsim_trans_str_list[line] in questa_trans_str_list):
                 
-                # replace baadf00d's with 0's in rtlsim line
-                baadf00d_line = rtlsim_scrape.MEM_Trans_list[line]
-                baadf00d_line.replace("baadf00d", "00000000")
+                # notify of different ordering, but otherwise still match
+                print_lines += [
+                    f"SAME: Line {line + 1}: diff ordering, otherwise match (ran out of questa lines)"
+                ]
 
-                # check lines diff again
-                if (baadf00d_line == questa_scrape.MEM_Trans_list[line]):
+            # check baadf00d line exists in questa
+            elif (rtlsim_trans_str_list[line].replace("baadf00d", "00000000") == questa_trans_str_list[line]):
 
-                    # notify of baadf00d, but otherwise still match
-                    print("")
+                # notify of baadf00d, but otherwise still match
+                print_lines += [
+                    f"SAME: Line {line + 1}: diff ordering, undefined mem, otherwise match (ran out of questa lines)",
+                ]
 
-                # otherwise, lines diff
+            # otherwise, line doesn't match
+            else:
+                same = False
+                diff_count += 1
 
+                # notify of line diff
+                print_lines += [
+                    f"DIFF: rtlsim Line {line + 1}: no matching questa line (ran out of questa lines)",
+                ]
+        
+        # check for lines diff
+        elif (rtlsim_trans_str_list[line] != questa_trans_str_list[line]):
+            
+            # check line exists in questa
+            if (rtlsim_trans_str_list[line] in questa_trans_str_list):
+
+                # notify of different ordering, but otherwise still match
+                print_lines += [
+                    f"SAME: Line {line + 1}: diff ordering, otherwise match"
+                ]
+
+                continue
+
+            # replace baadf00d's with 0's in rtlsim line
+            baadf00d_line = rtlsim_trans_str_list[line]
+            baadf00d_line = baadf00d_line.replace("baadf00d", "00000000")
+
+            # check lines diff again with baadf00d
+            if (baadf00d_line == questa_trans_str_list[line]):
+
+                # notify of baadf00d, but otherwise still match
+                print_lines += [
+                    f"SAME: Line {line + 1}: undefined mem, otherwise match",
+                ]
+
+            # otherwise, check baadf00d line exists in questa
+            elif (baadf00d_line in questa_trans_str_list):
+                
+                # notify of different ordering, but otherwise still match
+                print_lines += [
+                    f"SAME: Line {line + 1}: diff ordering, undefined mem, otherwise match"
+                ]
+            
+            # otherwise, this mem transaction diff
+            else:
+                same = False
+                diff_count += 1
+
+                # notify of line diff
+                print_lines += [
+                    f"DIFF: Line {line + 1}: no matching questa line",
+                ]
+
+                print(baadf00d_line)
 
     # give final verdict on if mem transactions match
-    # if (True)
+    if (same):
+        # traces officially same
+        print_lines += [
+            f"",
+            f"MATCH: rtlsim and questa traces match",
+            f"",
+        ]
+    else:
+        # traces officially not same, notify of differences
+        print_lines += [
+            f"",
+            f"NO MATCH: rtlsim and questa traces do not match",
+            f"\t{diff_count} differences"
+            f"",
+        ]
+
+    # TODO:
+    # determine if effectively same program --> same final state of memory --> compare mem writes
 
     # return lines to print
     return print_lines
@@ -475,11 +558,11 @@ def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name):
         quit()
 
     # compare rtlsim and questa scrapes and print difference information
-    # print_lines = compare_scrapes(rtlsim_scrape, questa_scrape)
+    print_lines = compare_scrapes(rtlsim_scrape, questa_scrape)
 
-    # # print lines
-    # for line in print_lines:
-    #     print(line)
+    if (DO_PRINTS):
+        for line in print_lines:
+            print(line)
 
     # done program
     return
