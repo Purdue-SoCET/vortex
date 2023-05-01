@@ -1,121 +1,91 @@
 module VX_wnd_dec_unit
 #(
-// 2^N vector registers
-// 2^W warps
-// 2^R as window size ("in" + "local")
-// O as size of ("in" + "local")
-    parameter N = 8,
-    parameter W = 2,
-    parameter R = 5,
-    parameter O = 20
+// NUM_REGS
+// NUM_WARPS
+// n_windows, dictates size of windows, does NUM_REGS / 
+    parameter NUM_REGS      = 192, // inheret these
+    parameter NUM_WARPS     = 4,   // inheret these
+    parameter n_windows     = 4,   //each warp assigned 48 registers, windowed 4 times, that means, lowest 4 g
+    parameter n_global_regs = 4,  //manually set or do auto calculation before
+    parameter n_local_regs  = 4,
+    parameter n_in_regs     = 4,
+    parameter n_out_regs    = 4
 ) (
-    // input logic reg_offset, 
-    // // input logic reg_wnd_size,
-    // input logic reg_wnd_en,
-    // input logic rs1_i, rs2_i, rs3_i,
-    // output logic rs1_o, rs2_o, rs3_o
-
-    input logic clk, nRST,
+    input logic CLK, nRST,
     input logic save, restore,
-    input logic [W-1:0] warp_id,
-    input logic [R-1:0] rs1, rs2, rd,
-    output logic deschedule, //this goes to the warp_sched
-    output logic [N-W-1:0] rs1_o, rs2_o, rd_o
+    input logic [$clog2(NUM_WARPS) - 1:0] wid,
+    input logic [$clog2(NUM_REGS)-1:0] rs1_i, rs2_i, rd_i,
+    // output logic deschedule, //this goes to the warp_sched //also I have no idea how to implement this within the actual GPU
+    output logic [$clog2(NUM_REGS)-1:0] rs1_o, rs2_o, rd_o
 );
 
-logic [2^W-1:0][N-W-1:0] CWP_buffer, CWP_buffer_next; //change to array of structs
+// does actually require some psuedoinstructions to be created within function calls due to save and restore requirements
 
-typedef struct packed (
-    //input reg
-    //local reg
-    //output reg
-); CWP
+logic [$clog2(n_windows)-1:0] CWP, next_CWP,
+                    SWP, next_SWP; //if saving last CWP to memory, use stack window ptr
+logic [NUM_WARPS - 1:0][$clog2(n_windows)-1:0] CWP_map, next_CWP_map;
 
-CWP [2^W-1:0] CWP_buff, CWP_buffer_next;
+// making the assumption that each category of registers are constant and equal
+// total_regs (per core) / n_warps (each warp gets its own registers) / n_windows (split it between the windows)
+// logic [n_windows:0] n_global_regs,
+//                     n_local_regs,
+//                     n_in_regs,
+//                     n_out_regs;
 
-//spill and fill handled by OS (probably lol)
-
-always_comb begin
-    CWP_buffer_next = CWP_buffer
-    deschedule = 0;
-
-    if(save) begin
-        if(CWP_idx[N-W]) begin
-
-        end else begin
-            CWP_buffer_next[warp_id] = CWP[warp_id] + O;
-        end
-    end else if(restore) begin
-        if(CWP_buffer[WID] >= 0) begin
-            CWP_buffer_next[WID] = CWP[WID] - O;
-        end
-    end 
-    // else if(trap) //
-
-end
-
-// typedef struct packed {
-//     idle, newptr, restore
-// } wnd_state;
-
-// wnd_state state, state_next;
-
-// always_comb begin
-//     casez (state)
-//         idle: begin
-//             // pass through signals
-//         end
-//         newptr: begin
-//             // if we get a function call, start windowing
-//             if (another_window)
-//                 CWP_buff[top_of_CWP_buff] = offset;
-
-//             if (end_of_func)
-//                 state_next = restore;
-
-//             //use this to create an LIFO (stack) of pointers to define the offset from the 
-
-//         end
-//         restore: begin
-//             // if end of func go to idle
-
-//         end
-//     endcase
-
+// always_comb begin : declare_window_sizes
+//     n_global_regs = 
 // end
-//function call wind from r3 (r4)
-    //function call  r7 r8 
 
-// r1 r2 r3  r4  r5 r6 r7  r8
-//       wr1 wr2       wr3 wr4
+// predetermine the registers,
+// each iterative CWP should offset by greater amounts, default offset based on number of global registers
 
-always_ff begin
-    if(!nRST) begin
-        // state = idle;
-        CWP <= '0;
-    end else begin 
-        // state = state_next;
-        CWP_next;
+always_comb begin : offset_calculation_block
+    next_CWP_map = CWP_map;
+    // next_SWP = SWP;
+    if(save) begin // we do not care about overflow/underflow as implementation of these windows can be made circular (i.e. restore at CWP 4 (if 4 was max) would restult in next CWP = 0)
+        next_CWP_map[wid] = CWP_map[wid] - 1;
+        // next_SWP = CWP;
+    end
+    if(restore) begin
+        next_CWP_map[wid] = CWP_map[wid] + 1;
+        // next_SWP = CWP;
+    end
+    
+    // calculate the registers based on CWP
+
+    // layout global registers as always ground to r0
+    if (rs1_i >= 0 | rs1_i < n_global_regs) begin
+        rs1_o = rs1_i;
+    end else begin // if not addressing global registers, offset off of global registers || assuming uniformity for now
+        rs1_o = rs1_i + (CWP_map[wid] * n_global_regs * 2);
     end
 
+    if (rs2_i >= 0 | rs2_i < n_global_regs) begin
+        rs2_o = rs2_i + (CWP_map[wid] * n_global_regs * 2);
+    end else begin 
+        rs2_o = rs2_i + (CWP_map[wid] * n_global_regs * 2);
+    end
+
+    if (rd_i >= 0 | rd_i < n_global_regs) begin
+        rd_o = rd_i + (CWP_map[wid] * n_global_regs * 2);
+    end else begin 
+        rd_o = rd_i + (CWP_map[wid] * n_global_regs * 2);
+    end
 end
 
-//offset = rs1
-//size   = rs2 (static for now, lets say 1 byte)
+always_ff @ (posedge CLK, negedge nRST) begin
+    if(~nRST) begin
+        CWP_map <= '0;
+        // SWP <= 0;
+    end else begin
+        CWP_map <= next_CWP_map;
+        // SWP <= next_SWP;
+    end
+end
 
-//muxes 
-// always_comb begin
-//     rs1_o = reg_wnd_en ?  : rs1_i;
-//     rs2_o = reg_wnd_en ?  : rs2_i;
-//     rs3_o = reg_wnd_en ?  : rs3_i;
-// end
+// Notes:
+// need to redefine the stackpointer and frame pointer every time window changes...
 
-// Questions:
-
-// not sure how to address to vector reg file with WarpIDs, working with Zhaoyu on that
-
-// does this need compiler changes? Like if we were to compile code with function calls do we want to
-// have new functions for JAL like JALW (jump-and-link-window) or BW 
 
 // Gdoc for Questions: https://docs.google.com/document/d/1ORtKf3I7MQDR89E0QIDPLdhS2ttQoNUf5SxBB3j17Ns/edit
 // Gdoc for psudocode: https://docs.google.com/document/d/1wMDKfh24dMHNgilFOCy2GET8NrVlFINnr3iEOmQ3SVE/edit
