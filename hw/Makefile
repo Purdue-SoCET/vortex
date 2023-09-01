@@ -14,11 +14,11 @@
 # Run: make all or make all_gui
 
 TB_DIR := tb
-VX_TB := VX_local_mem_tb
+VX_TB := VX_ahb_local_mem_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
 
 WAVE_DIR := $(TB_DIR)/scripts
-WAVE:= $(WAVE_DIR)/VX_top_level.do
+WAVE:= $(WAVE_DIR)/ahb.do
 
 # Additional files 
 ADD_INCL += $(INCL)
@@ -47,7 +47,7 @@ COMMON_CELL_DIR := $(FPNEW_DIR)/common_cells/src
 AHB_DIR := $(RTL_DIR)/ahb
 AHB_INTF_DIR := $(AHB_DIR)/ahb_if
 AHB_INTF_FILES := $(wildcard $(AHB_INTF_DIR)/*.sv)
-AHB_RTL_FILES := $(AHB_DIR)/ahb_manager/src/ahb_manager.sv
+AHB_RTL_FILES := $(AHB_DIR)/ahb_subordinate/src/ahb_subordinate.sv
 
 INCL := 
 INCL := include
@@ -89,7 +89,7 @@ WORKDIR := work
 
 # Compiler/simulator options
 VSIMOPTS := -lib $(WORKDIR)
-VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt $(MACROS)
+VLOGOPTS := -sv -suppress 13389 -work $(WORKDIR) -incr -vopt $(MACROS)
 
 # Note: C-functions in SV 
 #VLOGOPTS_DPI := -dpiheader dpi_header_file.h -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors" +define+UTIL_DPI +define+FLOAT_DPI

@@ -2,7 +2,7 @@ module ahb_subordinate #(
     parameter int ADDR_WIDTH = 32,
     parameter int DATA_WIDTH = 32,
     parameter logic [ADDR_WIDTH-1:0] BASE_ADDR = 'h8000_0000,
-    parameter int NWORDS = 4  // Number of words of address space to cover
+    parameter int NWORDS = 100  // Number of words of address space to cover
 ) (
     ahb_if.subordinate ahb_if,
     bus_protocol_if.protocol bus_if
@@ -10,6 +10,8 @@ module ahb_subordinate #(
 
     localparam int WORD_LENGTH = ADDR_WIDTH / 8;
     localparam logic [ADDR_WIDTH-1:0] TOP_ADDR = BASE_ADDR + NWORDS * WORD_LENGTH;
+
+    //localparam logic [ADDR_WIDTH-1:0] TOP_ADDR = 'hFFFF_FFFF;
 
     typedef enum logic [1:0] {
         IDLE,
@@ -35,7 +37,9 @@ module ahb_subordinate #(
     logic align_error;
     assign decoded_addr = addr_d - BASE_ADDR;
     assign range_error  = (addr_d < BASE_ADDR || addr_d >= TOP_ADDR);
-    assign align_error  = ((addr_d & WORD_LENGTH - 1) != 'b0);
+    //assign align_error  = ((addr_d & WORD_LENGTH - 1) != 'b0);
+    //I HAVE CHANGED ALIGN ERROR CHANGE IT BACK LATER
+    assign align_error = 0;
 
     logic addr_error;
     assign addr_error = sel_d && (range_error || align_error);
@@ -95,7 +99,8 @@ module ahb_subordinate #(
             end
             ACCESS: begin
                 if (trans_d != 2'b01 && addr_error != 1'b1) begin  // Not a BUSY transfer in the burst
-                    bus_if.addr = addr_d - BASE_ADDR;  //decoded address to the protocol if.
+                    bus_if.addr = addr_d;
+                    //bus_if.addr = addr_d - BASE_ADDR;  //decoded address to the protocol if.
                     bus_if.strobe = ahb_if.HWSTRB;
                     bus_if.wen = write_d;
                     bus_if.ren = !write_d;
