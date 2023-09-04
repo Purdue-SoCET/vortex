@@ -72,8 +72,8 @@ module Vortex_mem_slave #(
     // parameters: //
     /////////////////
 
-    parameter VORTEX_START_PC_ADDR = 32'h80000000;
-    parameter VORTEX_LOCAL_MEM_AHB_BASE_ADDR = 32'hB0000000;
+    // parameter VORTEX_START_PC_ADDR = 32'h80000000;
+    parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
     // parameter LOCAL_MEM_SIZE = 12;
 < LOCAL_MEM_SIZE val here >
 
@@ -83,7 +83,7 @@ module Vortex_mem_slave #(
 
     // bad address signals
     logic Vortex_bad_address;
-    logic AHB_bad_address;
+    // logic AHB_bad_address;
 
     // buffered Vortex memory interface signals
     logic                           next_mem_rsp_valid;
@@ -152,7 +152,7 @@ module Vortex_mem_slave #(
 
         // Vortex bad address
         // if (mem_req_addr[25:8] != 18'b100000000000000000)
-        if (mem_req_addr[32-6-1:LOCAL_MEM_SIZE-6] != VORTEX_START_PC_ADDR[32-1:LOCAL_MEM_SIZE])
+        if (mem_req_addr[32-6-1:LOCAL_MEM_SIZE-6] != VORTEX_MEM_SLAVE_AHB_BASE_ADDR[32-1:LOCAL_MEM_SIZE])
         begin
             Vortex_bad_address = 1'b1;
         end
@@ -163,16 +163,16 @@ module Vortex_mem_slave #(
 
         // AHB bad address
         // if (gbif.addr[31:14] != 18'b101100000000000000)
-        if (bpif.addr[32-1:LOCAL_MEM_SIZE] != VORTEX_LOCAL_MEM_AHB_BASE_ADDR[32-1:LOCAL_MEM_SIZE])
-        begin
-            AHB_bad_address = 1'b1;
-            bpif.error = 1'b1;
-        end
-        else
-        begin
-            AHB_bad_address = 1'b0;
-            bpif.error = 1'b0;
-        end
+        // if (bpif.addr[32-1:LOCAL_MEM_SIZE] != VORTEX_LOCAL_MEM_AHB_BASE_ADDR[32-1:LOCAL_MEM_SIZE])
+        // begin
+        //     AHB_bad_address = 1'b1;
+        //     bpif.error = 1'b1;
+        // end
+        // else
+        // begin
+        //     AHB_bad_address = 1'b0;
+        //     bpif.error = 1'b0;
+        // end
 
         /////////////////
         // read logic: //
@@ -192,7 +192,8 @@ module Vortex_mem_slave #(
         //////////////////////////////////////////
 
         // check for valid, write, and address in range
-        if (mem_req_valid & mem_req_rw & ~Vortex_bad_address)
+        // if (mem_req_valid & mem_req_rw & ~Vortex_bad_address)
+        if (mem_req_valid & mem_req_rw)
         begin
             // this part is automated by load_Vortex_mem_slave.py:
 < Vortex write logic here >
@@ -206,7 +207,8 @@ module Vortex_mem_slave #(
         ////////////////////////////////////////
 
         // if Vortex not writing, check for write and address in range
-        else if (bpif.wen & ~AHB_bad_address)
+        // else if (bpif.wen & ~AHB_bad_address)
+        else if (bpif.wen)
         begin
             // assumption: follow word address
             if (bpif.strobe[0]) next_reg_file[{bpif.addr[LOCAL_MEM_SIZE-1:2], 2'd0}] = bpif.wdata[7:0];

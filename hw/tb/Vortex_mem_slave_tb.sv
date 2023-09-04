@@ -332,7 +332,8 @@ program test
             expected_mem_rsp_tag = 56'd0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -365,7 +366,8 @@ program test
             expected_mem_rsp_tag = 56'd0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -388,7 +390,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd1;
             mem_rsp_ready = 1'b0;
@@ -428,7 +430,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -442,7 +445,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_1101;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_1101; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd2;
             mem_rsp_ready = 1'b0;
@@ -483,7 +486,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -497,7 +501,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd3;
             mem_rsp_ready = 1'b0;
@@ -538,7 +542,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -552,7 +557,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0001;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0001; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd4;
             mem_rsp_ready = 1'b0;
@@ -593,7 +598,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -607,7 +613,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd5;
             mem_rsp_ready = 1'b0;
@@ -648,7 +654,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -662,7 +669,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0011; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd6;
             mem_rsp_ready = 1'b0;
@@ -703,7 +710,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -726,7 +734,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
             mem_req_byteen = 64'hffff0000ffff0000;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0000; // shift to 0xF000_0000
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
             mem_req_data[95:64] = 32'h89abcdef;
@@ -782,7 +790,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b1;
             
             check_outputs();
@@ -796,7 +805,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0100_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd8;
             mem_rsp_ready = 1'b0;
@@ -837,7 +846,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -851,7 +861,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b1;
             mem_req_byteen = 64'h0ff0f00f0f0ff0f0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0011; // shift to 0xF000_0000
             mem_req_data[31:0] = 32'h89abcdef;
             mem_req_data[63:32] = 32'h01234567;
             mem_req_data[95:64] = 32'h89abcdef;
@@ -907,7 +917,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b1;
             
             check_outputs();
@@ -921,7 +932,7 @@ program test
             mem_req_valid = 1'b1;
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_1000_0011;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0011; // shift to 0xF000_0000
             mem_req_data = 32'h00000000;
             mem_req_tag = 16'd10;
             mem_rsp_ready = 1'b0;
@@ -962,7 +973,8 @@ program test
             // expected_tb_addr_out_of_bounds = 1'b0;
 
             expected_rdata = 32'h0480006f;
-            expected_error = 1'b1;
+            // expected_error = 1'b1;
+            expected_error = 1'b0; // no bpif error since tag bits taken care of by bpif module
             expected_request_stall = 1'b0;
             
             check_outputs();
@@ -984,7 +996,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1045,7 +1057,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1102,7 +1114,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1159,7 +1171,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1216,7 +1228,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1273,7 +1285,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1338,7 +1350,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1389,7 +1401,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1446,7 +1458,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1497,7 +1509,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1554,7 +1566,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;
@@ -1605,7 +1617,7 @@ program test
             mem_req_valid = 1'b0;   // vortex side idle
             mem_req_rw = 1'b0;
             mem_req_byteen = '0;
-            mem_req_addr = 26'b10_0000_0000_0000_0000_0000_0000;
+            mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
             mem_rsp_ready = 1'b0;

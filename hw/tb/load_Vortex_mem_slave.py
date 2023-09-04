@@ -25,7 +25,7 @@ import sys
 ###########################################################################################################
 # consts:
 
-# 128 Kb
+# 16 KB = 16384 B --> log2(16384) = 14 bit addr space
 LOCAL_MEM_NUM_BITS = 14
 LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
 
@@ -207,7 +207,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
     ##########################################
 
     # start lines
-    Vortex_write_logic_lines =[]
+    Vortex_write_logic_lines = []
 
     # iterate through 512 bits = 64 bytes of data
     for i in range(64):
