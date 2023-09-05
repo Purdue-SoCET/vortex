@@ -1,7 +1,5 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
-add wave -noupdate /Vortex_mem_slave_tb/DUT/VORTEX_START_PC_ADDR
-add wave -noupdate /Vortex_mem_slave_tb/DUT/VORTEX_LOCAL_MEM_AHB_BASE_ADDR
 add wave -noupdate /Vortex_mem_slave_tb/DUT/LOCAL_MEM_SIZE
 add wave -noupdate /Vortex_mem_slave_tb/PROG/clk
 add wave -noupdate /Vortex_mem_slave_tb/PROG/reset
@@ -27,10 +25,9 @@ add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -gro
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_req_byteen
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_req_addr
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_req_data
-add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_req_ready
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_rsp_tag
-add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/busy
-add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Input Signals} /Vortex_mem_slave_tb/PROG/mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/mem_req_ready
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/expected_mem_req_ready
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/mem_rsp_valid
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/expected_mem_rsp_valid
@@ -39,11 +36,10 @@ add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -gro
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/mem_req_tag
 add wave -noupdate -expand -group {Vortex Memory Interface Signals} -expand -group {Output Signals} /Vortex_mem_slave_tb/PROG/expected_mem_rsp_tag
 add wave -noupdate -expand -group {Internal Signals} /Vortex_mem_slave_tb/DUT/Vortex_bad_address
-add wave -noupdate -expand -group {Internal Signals} /Vortex_mem_slave_tb/DUT/AHB_bad_address
 add wave -noupdate -expand -group {Internal Signals} /Vortex_mem_slave_tb/DUT/reg_file
 add wave -noupdate -expand -group {Internal Signals} /Vortex_mem_slave_tb/DUT/next_reg_file
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36 ns} 0}
+WaveRestoreCursors {{Cursor 1} {178 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 242
 configure wave -valuecolwidth 100
@@ -59,4 +55,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {536 ns}
+WaveRestoreZoom {0 ns} {1012 ns}

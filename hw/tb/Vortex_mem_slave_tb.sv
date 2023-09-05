@@ -52,7 +52,7 @@ module Vortex_mem_slave_tb ();
 
     // Status:
     // vortex outputs
-    logic                               busy;
+    // logic                               busy;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // AHB generic bus interface:
@@ -79,7 +79,7 @@ module Vortex_mem_slave_tb ();
         .mem_rsp_tag    (mem_rsp_tag),
         .mem_rsp_ready  (mem_rsp_ready),
 
-        .busy           (busy),
+        // .busy           (busy),
 
         .bpif           (bpif)
 	);
@@ -104,7 +104,7 @@ module Vortex_mem_slave_tb ();
         .mem_rsp_tag    (mem_rsp_tag),
         .mem_rsp_ready  (mem_rsp_ready),
 
-        .busy           (busy),
+        // .busy           (busy),
 
         .bpif           (bpif)
     );
@@ -132,7 +132,7 @@ program test
     input logic [`VX_MEM_TAG_WIDTH-1:0]     mem_rsp_tag,
     output logic                            mem_rsp_ready,
     // Status
-    output logic                            busy,
+    // output logic                            busy,
 
     // AHB generic bus protocol
     bus_protocol_if                         bpif
@@ -302,7 +302,7 @@ program test
             mem_req_data = '0;
             mem_req_tag = '0;
             mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -393,8 +393,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd1;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -448,8 +448,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_1101; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd2;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -504,8 +504,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd3;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -560,8 +560,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0001; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd4;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -616,8 +616,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd5;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -672,8 +672,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0011; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd6;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -752,8 +752,8 @@ program test
             mem_req_data[479:448] = 32'h89abcdef;
             mem_req_data[511:480] = 32'h01234567;
             mem_req_tag = 16'd7;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -808,8 +808,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0100_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 16'd8;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -879,8 +879,8 @@ program test
             mem_req_data[479:448] = 32'h89abcdef;
             mem_req_data[511:480] = 32'h01234567;
             mem_req_tag = 16'd9;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -935,8 +935,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_1000_0011; // shift to 0xF000_0000
             mem_req_data = 32'h00000000;
             mem_req_tag = 16'd10;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'h00000000;   // not in range
             bpif.ren = 1'b0;
@@ -999,8 +999,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0000000;   // instruction 0
             bpif.ren = 1'b1;
@@ -1060,8 +1060,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB000003c;   // instruction 15
             bpif.ren = 1'b1;
@@ -1117,8 +1117,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0001004;   // second word in first data segment
             bpif.ren = 1'b1;
@@ -1174,8 +1174,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB00013c7;   // random word in first data segment
             bpif.ren = 1'b1;
@@ -1231,8 +1231,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0002024;   // word 9 in second data segment
             bpif.ren = 1'b1;
@@ -1288,8 +1288,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0002109;   // word 0x108 in second data segment
             bpif.ren = 1'b1;
@@ -1353,8 +1353,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0001014;   // word 5
             bpif.ren = 1'b0;
@@ -1404,8 +1404,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0001014;   // word 5
             bpif.ren = 1'b1;
@@ -1461,8 +1461,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0001036;   // word 0x1034
             bpif.ren = 1'b0;
@@ -1512,8 +1512,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0001036;   // word 0x1034
             bpif.ren = 1'b1;
@@ -1569,8 +1569,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0003333;   // word 0x3330
             bpif.ren = 1'b0;
@@ -1620,8 +1620,8 @@ program test
             mem_req_addr = 26'b11_1100_0000_0000_0000_0000_0000; // shift to 0xF000_0000
             mem_req_data = '0;
             mem_req_tag = 56'd0;
-            mem_rsp_ready = 1'b0;
-            busy = 1'b0;
+            mem_rsp_ready = 1'b1;
+            // busy = 1'b0;
 
             bpif.addr = 32'hB0003333;   // word 0x3330
             bpif.ren = 1'b1;

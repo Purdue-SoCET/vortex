@@ -7,6 +7,7 @@
 
     assumptions:
         AHB only references word addresses
+        Vortex always ready for response
 */
 
 // temporary include to have defined vals
@@ -47,7 +48,7 @@ module Vortex_mem_slave #(
 
     // Status:
     // vortex outputs
-    input logic                             busy,
+    // input logic                             busy,
 
     //////////////////////////////////
     // Generic Bus Interface (AHB): //

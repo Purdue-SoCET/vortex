@@ -6,7 +6,9 @@
     logic to serve as interface between AFTx07 and Vortex
 
     assumptions:
+        synchronous, active-high reset
         AHB only references word addresses
+        mem_slave and ahb_manager can respond in same cycle but will not respond in successive cycles
         it is safe to use reset as start/stop for Vortex
         it is safe to feed PC reset value into Vortex
 */
@@ -89,18 +91,23 @@ module Vortex_wrapper_no_Vortex #(
     // AHB Manager for Vortex_... : //
     //////////////////////////////////
 
-    // FILL IN
+    ahb_if.manager ahb_manager_ahbif
 
     /////////////////////////////////
     // CTRL/STATUS to/from Vortex: //
     /////////////////////////////////
 
     input logic Vortex_busy,
-    output logic ctrl_status_reset,
+    output logic Vortex_reset,
     output logic ctrl_status_PC_reset_val
 );
 
-    parameter MEM_SLAVE_ADDR_SPACE_BITS = 14
+    parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
+    parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
+    parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
+    parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
+    parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
+    parameter BUFFER_WIDTH = 1;
 
     ////////////////
     // constants: //
@@ -113,6 +120,12 @@ module Vortex_wrapper_no_Vortex #(
     localparam DEF_MEM_REQ_ADDR = 26'h0;
     localparam DEF_MEM_REQ_DATA = 512'h0;
     localparam DEF_MEM_REQ_TAG = 56'h0;
+    localparam DEF_MEM_REQ_READY = 1'b1;
+
+    // default mem rsp
+    localparam DEF_MEM_RSP_VALID = 1'b0;
+    localparam DEF_MEM_RSP_DATA = 512'h0;
+    localparam DEF_MEM_RSP_TAG = 56'h0;
     localparam DEF_MEM_RSP_READY = 1'b1;
 
     ///////////////////////
@@ -154,10 +167,333 @@ module Vortex_wrapper_no_Vortex #(
     // req arbiter
 
     // rsp buffer
+    logic                               mem_rsp_valid_buffer, next_mem_rsp_valid_buffer;        
+    logic [`VX_MEM_DATA_WIDTH-1:0]      mem_rsp_data_buffer, next_mem_rsp_data_buffer;      // 512
+    logic [`VX_MEM_TAG_WIDTH-1:0]       mem_rsp_tag_buffer, next_mem_rsp_tag_buffer;        // 56 (55 for SM disabled)
+    logic double_mem_rsp;
 
     // ctrl/status reg
     logic ctrl_status_busy, next_ctrl_status_busy;  // busy reg
     logic ctrl_status_start_triggered;              // detector for start write, will allow FSM transition
     logic next_ctrl_status_PC_reset_val;            // PC reset val reg
+    logic ctrl_status_reset_state, next_ctrl_status_reset_state;    // FSM state
+
+    /////////////////////
+    // instantiations: //
+    /////////////////////
+
+    // mem_slave
+    Vortex_mem_slave #(
+        .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
+        .LOCAL_MEM_SIZE(MEM_SLAVE_ADDR_SPACE_BITS)  // 32 KB local mem
+    ) mem_slave (
+    
+        /////////////////
+        // Sequential: //
+        /////////////////
+        .clk(clk), 
+        .reset(reset),
+
+        ///////////////////////
+        // Memory Interface: //
+        ///////////////////////
+
+        // Memory Request:
+        // vortex outputs
+        .mem_req_valid(mem_slave_mem_req_valid),
+        .mem_req_rw(mem_slave_mem_req_rw),
+        .mem_req_byteen(mem_slave_mem_req_byteen),  // 64 (512 / 8)
+        .mem_req_addr(mem_slave_mem_req_addr),      // 26
+        .mem_req_data(mem_slave_mem_req_data),      // 512
+        .mem_req_tag(mem_slave_mem_req_tag),        // 56 (55 for SM disabled)
+        // vortex inputs
+        .mem_req_ready(mem_slave_mem_req_ready),
+
+        // Memory response:
+        // vortex inputs
+        .mem_rsp_valid(mem_slave_mem_rsp_valid),        
+        .mem_rsp_data(mem_slave_mem_rsp_data),      // 512
+        .mem_rsp_tag(mem_slave_mem_rsp_tag),        // 56 (55 for SM disabled)
+        // vortex outputs
+        .mem_rsp_ready(mem_slave_mem_rsp_ready),
+
+        // Status:
+        // vortex outputs
+        // input logic                             busy,
+
+        //////////////////////////////////
+        // Generic Bus Interface (AHB): //
+        //////////////////////////////////
+
+        .bpif(mem_slave_bpif)
+    );
+
+    // ahb_manager
+    VX_ahb_adapter #(
+        .VX_BYTEEN_WIDTH(64),
+        .AHB_STROBE_WIDTH(4)
+    ) ahb_manager (
+
+        /////////////////
+        // Sequential: //
+        /////////////////
+        .clk(clk),
+        .reset(reset),
+
+        ///////////////////////
+        // Memory Interface: //
+        ///////////////////////
+
+        // Memory Request:
+        // vortex outputs
+        .mem_req_valid(ahb_manager_mem_req_valid),
+        .mem_req_rw(ahb_manager_mem_req_rw),
+        .mem_req_byteen(ahb_manager_mem_req_byteen),  // 64 (512 / 8)
+        .mem_req_addr(ahb_manager_mem_req_addr),      // 26
+        .mem_req_data(ahb_manager_mem_req_data),      // 512
+        .mem_req_tag(ahb_manager_mem_req_tag),        // 56 (55 for SM disabled)
+        // vortex inputs
+        .mem_req_ready(ahb_manager_mem_req_ready),
+
+        // Memory response:
+        // vortex inputs
+        .mem_rsp_valid(ahb_manager_mem_rsp_valid),        
+        .mem_rsp_data(ahb_manager_mem_rsp_data),      // 512
+        .mem_rsp_tag(ahb_manager_mem_rsp_tag),        // 56 (55 for SM disabled)
+        // vortex outputs
+        .mem_rsp_ready(ahb_manager_mem_rsp_ready),
+
+        // Status:
+        // vortex outputs
+        // input logic                             busy,
+
+        //////////////////////////////////
+        // AHB Interface (AHB manager): //
+        //////////////////////////////////
+
+        .ahb(ahb_manager_ahbif)
+    );
+
+    ////////////////////////////
+    // mem_req_arbiter logic: //
+    ////////////////////////////
+
+    always_comb begin : mem_req_arbiter_comb_logic
+        
+        // only need to mux valid signal based on address
+        mem_slave_mem_req_valid = 1'b0;
+        ahb_manager_mem_req_valid = 1'b0;
+        if (Vortex_mem_req_valid)
+        begin
+            if (Vortex_mem_req_addr[32-6-1:MEM_SLAVE_ADDR_SPACE_BITS-6] == 
+                MEM_SLAVE_AHB_BASE_ADDR[32-1:MEM_SLAVE_ADDR_SPACE_BITS])
+            begin
+                mem_slave_mem_req_valid = 1'b1;
+            end
+            else
+            begin
+                ahb_manager_mem_req_valid = 1'b1;
+            end
+        end
+
+        // ready if both mem_slave and ahb_manager ready
+        Vortex_mem_req_ready = mem_slave_mem_req_ready & ahb_manager_mem_req_ready;
+
+        // hardwire all other signals
+        mem_slave_mem_req_rw = Vortex_mem_req_rw;
+        mem_slave_mem_req_byteen = Vortex_mem_req_byteen;       // 64 (512 / 8)
+        mem_slave_mem_req_addr = Vortex_mem_req_addr;           // 26
+        mem_slave_mem_req_data = Vortex_mem_req_data;           // 512
+        mem_slave_mem_req_tag = Vortex_mem_req_tag;             // 56 (55 for SM disabled)
+
+        ahb_manager_mem_req_rw = Vortex_mem_req_rw; 
+        ahb_manager_mem_req_byteen = Vortex_mem_req_byteen;     // 64 (512 / 8)
+        ahb_manager_mem_req_addr = Vortex_mem_req_addr;         // 26
+        ahb_manager_mem_req_data = Vortex_mem_req_data;         // 512
+        ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled)
+        
+    end
+
+    ///////////////////////////
+    // mem_rsp_buffer logic: //
+    ///////////////////////////
+
+    always_ff @ (posedge clk) begin : mem_rsp_buffer_reg_logic
+        if (reset)
+        begin
+            mem_rsp_valid_buffer <= DEF_MEM_RSP_VALID;
+            mem_rsp_data_buffer <= DEF_MEM_RSP_DATA;
+            mem_rsp_tag_buffer <= DEF_MEM_RSP_TAG;
+        end
+        else
+        begin
+            mem_rsp_valid_buffer <= next_mem_rsp_valid_buffer;
+            mem_rsp_data_buffer <= next_mem_rsp_data_buffer;
+            mem_rsp_tag_buffer <= next_mem_rsp_tag_buffer;
+        end
+    end
+
+    always_comb begin : mem_rsp_buffer_comb_logic
+
+        double_mem_rsp = 1'b0;
+
+        // default buffer
+        next_mem_rsp_valid_buffer = DEF_MEM_RSP_VALID;
+        next_mem_rsp_data_buffer = DEF_MEM_RSP_DATA;
+        next_mem_rsp_tag_buffer = DEF_MEM_RSP_TAG;
+
+        // check for mem_slave and ahb_manager both responding at once
+        if (mem_slave_mem_rsp_valid & ahb_manager_mem_rsp_valid)
+        begin
+            double_mem_rsp = 1'b1;
+
+            // take mem_slave response
+            Vortex_mem_rsp_valid = mem_slave_mem_rsp_valid;
+            Vortex_mem_rsp_data = mem_slave_mem_rsp_data;
+            Vortex_mem_rsp_tag = mem_slave_mem_rsp_tag;
+
+            // buffer ahb_manager response
+            next_mem_rsp_valid_buffer = ahb_manager_mem_rsp_valid;
+            next_mem_rsp_data_buffer = ahb_manager_mem_rsp_data;
+            next_mem_rsp_tag_buffer = ahb_manager_mem_rsp_tag;
+        end
+        else if (mem_slave_mem_rsp_valid)
+        begin
+            // take mem_slave response
+            Vortex_mem_rsp_valid = mem_slave_mem_rsp_valid;
+            Vortex_mem_rsp_data = mem_slave_mem_rsp_data;
+            Vortex_mem_rsp_tag = mem_slave_mem_rsp_tag;
+        end
+        else if (mem_slave_mem_req_valid)
+        begin
+            // take ahb_manager response
+            Vortex_mem_rsp_valid = ahb_manager_mem_rsp_valid;
+            Vortex_mem_rsp_data = ahb_manager_mem_rsp_data;
+            Vortex_mem_rsp_tag = ahb_manager_mem_rsp_tag;
+        end
+        else
+        begin
+            // take buffer response
+            Vortex_mem_rsp_valid = mem_rsp_valid_buffer;
+            Vortex_mem_rsp_data = mem_rsp_data_buffer;
+            Vortex_mem_rsp_tag = mem_rsp_tag_buffer;
+        end
+
+        // give response ready to both
+        mem_slave_mem_rsp_ready = Vortex_mem_rsp_ready;
+        ahb_manager_mem_rsp_ready = Vortex_mem_rsp_ready;
+
+    end
+
+    ////////////////////////////
+    // ctrl_status_FSM logic: //
+    ////////////////////////////
+
+    always_ff @ (posedge clk) begin : ctrl_status_FSM_reg_logic
+        if (reset)
+        begin
+            ctrl_status_reset_state <= 1'b1;
+            ctrl_status_busy <= 1'b0;
+            ctrl_status_PC_reset_val <= 32'hF000_0000;
+        end
+        else
+        begin
+            ctrl_status_reset_state <= next_ctrl_status_reset_state;
+            ctrl_status_busy <= next_ctrl_status_busy;
+            ctrl_status_PC_reset_val <= next_ctrl_status_PC_reset_val;
+        end
+    end
+
+    always_comb begin : ctrl_status_FSM_comb_logic
+
+        // hardwire busy to reg
+        next_ctrl_status_busy = Vortex_busy;
+
+        // state transition logic
+        case (ctrl_status_reset_state) 
+            
+            // reset state (Vortex idle)
+            1'b1:
+            begin
+                next_ctrl_status_reset_state = 1'b1;
+
+                // check for start triggered
+                if (ctrl_status_start_triggered)
+                begin
+                    next_ctrl_status_reset_state = 1'b0;
+                end
+            end
+
+            // no reset state (Vortex running)
+            1'b0:
+            begin
+                next_ctrl_status_reset_state = 1'b0;
+
+                // check for busy transition low
+                if (~next_ctrl_status_busy & ctrl_status_busy)
+                begin
+                    next_ctrl_status_reset_state = 1'b1;
+                end
+            end
+
+        endcase
+
+        // output logic
+        Vortex_reset = reset | ctrl_status_reset_state; // reset follows reg reset OR logic reset
+    end
+
+    always_comb begin : ctrl_status_ahb_subordinate_comb_logic:
+
+        // hardwired vals
+        bpif.request_stall = 1'b0;
+        bpif.error = 1'b0;
+
+        // default 
+
+        // default vals
+        bpif.rdata = 32'h0;
+        ctrl_status_start_triggered = 1'b0;
+
+        // AHB read logic: 
+
+        // busy reg read
+        if (bpif.addr[LOCAL_MEM_SIZE-1:2] == BUSY_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+        begin
+            bpif.rdata = {31'h0, ctrl_status_busy};
+        end
+
+        // start reg read --> default/0
+    
+        // PC reg read
+        else if (bpif.addr[LOCAL_MEM_SIZE-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+        begin
+            bpif.rdata = ctrl_status_PC_reset_val;
+        end
+
+        // AHB write logic:
+
+        // only care about writes to start reg and PC reg
+        if (bpif.wen)
+        begin
+            // busy reg write --> no good
+
+            // start reg write 1
+            if (bpif.strobe[0] & 
+                bpif.addr[LOCAL_MEM_SIZE-1:2] == START_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2] &
+                bpif.wdata[0])
+            begin
+                ctrl_status_start_triggered = 1'b1;
+            end
+
+            // PC reg write
+            if (bpif.addr[LOCAL_MEM_SIZE-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+            begin
+                if (bpif.strobe[0]) next_ctrl_status_PC_reset_val[7:0] = bpif.wdata[7:0];
+                if (bpif.strobe[1]) next_ctrl_status_PC_reset_val[15:8] = bpif.wdata[15:8];
+                if (bpif.strobe[2]) next_ctrl_status_PC_reset_val[23:16] = bpif.wdata[23:16];
+                if (bpif.strobe[3]) next_ctrl_status_PC_reset_val[31:24] = bpif.wdata[31:24]; 
+            end
+        end
+    end
 
 endmodule
