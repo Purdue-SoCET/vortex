@@ -99,7 +99,7 @@ module Vortex_wrapper_no_Vortex #(
 
     input logic Vortex_busy,
     output logic Vortex_reset,
-    output logic ctrl_status_PC_reset_val
+    output logic Vortex_PC_reset_val
 );
 
     parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
@@ -175,7 +175,7 @@ module Vortex_wrapper_no_Vortex #(
     // ctrl/status reg
     logic ctrl_status_busy, next_ctrl_status_busy;  // busy reg
     logic ctrl_status_start_triggered;              // detector for start write, will allow FSM transition
-    logic next_ctrl_status_PC_reset_val;            // PC reset val reg
+    logic ctrl_status_PC_reset_val, next_ctrl_status_PC_reset_val;  // PC reset val reg
     logic ctrl_status_reset_state, next_ctrl_status_reset_state;    // FSM state
 
     /////////////////////
@@ -406,9 +406,6 @@ module Vortex_wrapper_no_Vortex #(
 
     always_comb begin : ctrl_status_FSM_comb_logic
 
-        // hardwire busy to reg
-        next_ctrl_status_busy = Vortex_busy;
-
         // state transition logic
         case (ctrl_status_reset_state) 
             
@@ -442,13 +439,11 @@ module Vortex_wrapper_no_Vortex #(
         Vortex_reset = reset | ctrl_status_reset_state; // reset follows reg reset OR logic reset
     end
 
-    always_comb begin : ctrl_status_ahb_subordinate_comb_logic:
+    always_comb begin : ctrl_status_ahb_subordinate_comb_logic
 
         // hardwired vals
         bpif.request_stall = 1'b0;
         bpif.error = 1'b0;
-
-        // default 
 
         // default vals
         bpif.rdata = 32'h0;
@@ -494,6 +489,15 @@ module Vortex_wrapper_no_Vortex #(
                 if (bpif.strobe[3]) next_ctrl_status_PC_reset_val[31:24] = bpif.wdata[31:24]; 
             end
         end
+    end
+
+    always_comb begin : Vortex_ctrl_status_connections_comb_logic
+
+        // hardwire busy to reg
+        next_ctrl_status_busy = Vortex_busy;
+
+        // hardwire PC reset val from reg
+        Vortex_PC_reset_val = ctrl_status_PC_reset_val;
     end
 
 endmodule
