@@ -6,43 +6,43 @@ module Vortex (
     `SCOPE_IO_Vortex
 
     // Clock
-    input  wire                             clk,
-    input  wire                             reset,
+    input  logic                             clk,
+    input  logic                             reset,
 
     // Memory request
-    output wire                             mem_req_valid,
-    output wire                             mem_req_rw,    
-    output wire [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
-    output wire [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
-    output wire [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
-    output wire [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
-    input  wire                             mem_req_ready,
+    output logic                             mem_req_valid,
+    output logic                             mem_req_rw,    
+    output logic [`VX_MEM_BYTEEN_WIDTH-1:0]  mem_req_byteen,    
+    output logic [`VX_MEM_ADDR_WIDTH-1:0]    mem_req_addr,
+    output logic [`VX_MEM_DATA_WIDTH-1:0]    mem_req_data,
+    output logic [`VX_MEM_TAG_WIDTH-1:0]     mem_req_tag,
+    input  logic                             mem_req_ready,
 
     // Memory response    
-    input wire                              mem_rsp_valid,        
-    input wire [`VX_MEM_DATA_WIDTH-1:0]     mem_rsp_data,
-    input wire [`VX_MEM_TAG_WIDTH-1:0]      mem_rsp_tag,
-    output wire                             mem_rsp_ready,
+    input logic                              mem_rsp_valid,        
+    input logic [`VX_MEM_DATA_WIDTH-1:0]     mem_rsp_data,
+    input logic [`VX_MEM_TAG_WIDTH-1:0]      mem_rsp_tag,
+    output logic                             mem_rsp_ready,
 
     // Status
-    output wire                             busy
+    output logic                             busy
 );
     `STATIC_ASSERT((`L3_ENABLE == 0 || `NUM_CLUSTERS > 1), ("invalid parameter"))
 
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_valid;
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_rw;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_BYTEEN_WIDTH-1:0] per_cluster_mem_req_byteen;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_ADDR_WIDTH-1:0] per_cluster_mem_req_addr;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_DATA_WIDTH-1:0] per_cluster_mem_req_data;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_TAG_WIDTH-1:0]  per_cluster_mem_req_tag;
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_ready;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_valid;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_rw;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_BYTEEN_WIDTH-1:0] per_cluster_mem_req_byteen;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_ADDR_WIDTH-1:0] per_cluster_mem_req_addr;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_DATA_WIDTH-1:0] per_cluster_mem_req_data;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_TAG_WIDTH-1:0]  per_cluster_mem_req_tag;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_mem_req_ready;
 
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_mem_rsp_valid;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_DATA_WIDTH-1:0] per_cluster_mem_rsp_data;
-    wire [`NUM_CLUSTERS-1:0][`L2_MEM_TAG_WIDTH-1:0]  per_cluster_mem_rsp_tag;
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_mem_rsp_ready;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_mem_rsp_valid;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_DATA_WIDTH-1:0] per_cluster_mem_rsp_data;
+    logic [`NUM_CLUSTERS-1:0][`L2_MEM_TAG_WIDTH-1:0]  per_cluster_mem_rsp_tag;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_mem_rsp_ready;
 
-    wire [`NUM_CLUSTERS-1:0]                         per_cluster_busy;
+    logic [`NUM_CLUSTERS-1:0]                         per_cluster_busy;
 
     for (genvar i = 0; i < `NUM_CLUSTERS; i++) begin
 

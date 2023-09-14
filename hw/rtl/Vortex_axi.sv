@@ -7,71 +7,71 @@ module Vortex_axi #(
     parameter AXI_STROBE_WIDTH = (`VX_MEM_DATA_WIDTH / 8)
 )(
     // Clock
-    input  wire                         clk,
-    input  wire                         reset,
+    input  logic                         clk,
+    input  logic                         reset,
 
     // AXI write request address channel    
-    output wire [AXI_TID_WIDTH-1:0]     m_axi_awid,
-    output wire [AXI_ADDR_WIDTH-1:0]    m_axi_awaddr,
-    output wire [7:0]                   m_axi_awlen,
-    output wire [2:0]                   m_axi_awsize,
-    output wire [1:0]                   m_axi_awburst,  
-    output wire                         m_axi_awlock,    
-    output wire [3:0]                   m_axi_awcache,
-    output wire [2:0]                   m_axi_awprot,        
-    output wire [3:0]                   m_axi_awqos,
-    output wire                         m_axi_awvalid,
-    input wire                          m_axi_awready,
+    output logic [AXI_TID_WIDTH-1:0]     m_axi_awid,
+    output logic [AXI_ADDR_WIDTH-1:0]    m_axi_awaddr,
+    output logic [7:0]                   m_axi_awlen,
+    output logic [2:0]                   m_axi_awsize,
+    output logic [1:0]                   m_axi_awburst,  
+    output logic                         m_axi_awlock,    
+    output logic [3:0]                   m_axi_awcache,
+    output logic [2:0]                   m_axi_awprot,        
+    output logic [3:0]                   m_axi_awqos,
+    output logic                         m_axi_awvalid,
+    input logic                          m_axi_awready,
 
     // AXI write request data channel     
-    output wire [AXI_DATA_WIDTH-1:0]    m_axi_wdata,
-    output wire [AXI_STROBE_WIDTH-1:0]  m_axi_wstrb,    
-    output wire                         m_axi_wlast,  
-    output wire                         m_axi_wvalid, 
-    input wire                          m_axi_wready,
+    output logic [AXI_DATA_WIDTH-1:0]    m_axi_wdata,
+    output logic [AXI_STROBE_WIDTH-1:0]  m_axi_wstrb,    
+    output logic                         m_axi_wlast,  
+    output logic                         m_axi_wvalid, 
+    input logic                          m_axi_wready,
 
     // AXI write response channel
-    input wire [AXI_TID_WIDTH-1:0]      m_axi_bid,
-    input wire [1:0]                    m_axi_bresp,
-    input wire                          m_axi_bvalid,
-    output wire                         m_axi_bready,
+    input logic [AXI_TID_WIDTH-1:0]      m_axi_bid,
+    input logic [1:0]                    m_axi_bresp,
+    input logic                          m_axi_bvalid,
+    output logic                         m_axi_bready,
     
     // AXI read request channel
-    output wire [AXI_TID_WIDTH-1:0]     m_axi_arid,
-    output wire [AXI_ADDR_WIDTH-1:0]    m_axi_araddr,
-    output wire [7:0]                   m_axi_arlen,
-    output wire [2:0]                   m_axi_arsize,
-    output wire [1:0]                   m_axi_arburst,            
-    output wire                         m_axi_arlock,    
-    output wire [3:0]                   m_axi_arcache,
-    output wire [2:0]                   m_axi_arprot,        
-    output wire [3:0]                   m_axi_arqos, 
-    output wire                         m_axi_arvalid,
-    input wire                          m_axi_arready,
+    output logic [AXI_TID_WIDTH-1:0]     m_axi_arid,
+    output logic [AXI_ADDR_WIDTH-1:0]    m_axi_araddr,
+    output logic [7:0]                   m_axi_arlen,
+    output logic [2:0]                   m_axi_arsize,
+    output logic [1:0]                   m_axi_arburst,            
+    output logic                         m_axi_arlock,    
+    output logic [3:0]                   m_axi_arcache,
+    output logic [2:0]                   m_axi_arprot,        
+    output logic [3:0]                   m_axi_arqos, 
+    output logic                         m_axi_arvalid,
+    input logic                          m_axi_arready,
     
     // AXI read response channel
-    input wire [AXI_TID_WIDTH-1:0]      m_axi_rid,
-    input wire [AXI_DATA_WIDTH-1:0]     m_axi_rdata,  
-    input wire [1:0]                    m_axi_rresp,
-    input wire                          m_axi_rlast,
-    input wire                          m_axi_rvalid,
-    output wire                         m_axi_rready,
+    input logic [AXI_TID_WIDTH-1:0]      m_axi_rid,
+    input logic [AXI_DATA_WIDTH-1:0]     m_axi_rdata,  
+    input logic [1:0]                    m_axi_rresp,
+    input logic                          m_axi_rlast,
+    input logic                          m_axi_rvalid,
+    output logic                         m_axi_rready,
 
     // Status
-    output wire                         busy
+    output logic                         busy
 );
-    wire                            mem_req_valid;
-    wire                            mem_req_rw; 
-    wire [`VX_MEM_BYTEEN_WIDTH-1:0] mem_req_byteen;
-    wire [`VX_MEM_ADDR_WIDTH-1:0]   mem_req_addr;
-    wire [`VX_MEM_DATA_WIDTH-1:0]   mem_req_data;
-    wire [`VX_MEM_TAG_WIDTH-1:0]    mem_req_tag;
-    wire                            mem_req_ready;
+    logic                            mem_req_valid;
+    logic                            mem_req_rw; 
+    logic [`VX_MEM_BYTEEN_WIDTH-1:0] mem_req_byteen;
+    logic [`VX_MEM_ADDR_WIDTH-1:0]   mem_req_addr;
+    logic [`VX_MEM_DATA_WIDTH-1:0]   mem_req_data;
+    logic [`VX_MEM_TAG_WIDTH-1:0]    mem_req_tag;
+    logic                            mem_req_ready;
 
-    wire                            mem_rsp_valid;        
-    wire [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data;
-    wire [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag;
-    wire                            mem_rsp_ready;
+    logic                            mem_rsp_valid;        
+    logic [`VX_MEM_DATA_WIDTH-1:0]   mem_rsp_data;
+    logic [`VX_MEM_TAG_WIDTH-1:0]    mem_rsp_tag;
+    logic                            mem_rsp_ready;
 
     VX_axi_adapter #(
         .VX_DATA_WIDTH    (`VX_MEM_DATA_WIDTH), 

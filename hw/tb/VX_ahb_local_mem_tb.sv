@@ -11,7 +11,7 @@
 `default_nettype none
 `timescale 1 ns / 1 ns
 
-module VX_local_mem_tb; 
+module VX_ahb_local_mem_tb; 
 
     parameter PERIOD = 2;
     parameter RSP_DELAY = 2 * PERIOD; 

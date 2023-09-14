@@ -92,7 +92,7 @@ module VX_local_mem_tb;
 
 
     Vortex DUT(.clk(clk),
-               .reset(reset), 
+               .reset(~reset), 
                .mem_req_valid(mem_req_valid), 
                .mem_req_rw(mem_req_rw), 
                .mem_req_byteen(mem_req_byteen),
@@ -126,10 +126,12 @@ module VX_local_mem_tb;
         ahb_if,
         bpif
     );
-
+    
     assign HRDATA = ahb_if.HRDATA;
     assign HREADY = ahb_if.HREADYOUT;
     assign HRESP = ahb_if.HRESP;
+    assign ahb_if.HCLK = clk;
+    assign ahb_if.HRESETn = reset; 
     assign ahb_if.HSEL = HSEL;
     assign ahb_if.HWRITE = HWRITE;
     assign ahb_if.HTRANS = HTRANS;
@@ -254,9 +256,9 @@ module VX_local_mem_tb;
     initial begin 
 
         // Reset
-        reset = 1'b1; 
-        #(PERIOD * 13); 
         reset = 1'b0; 
+        #(PERIOD * 13); 
+        reset = 1'b1; 
 
         #30000; 
         $stop(); 

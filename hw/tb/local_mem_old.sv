@@ -1089,7 +1089,7 @@ module local_mem #(
             tb_addr_out_of_bounds = 1'b1;
         end
         
-        // hardwired outputs:
+        // hardlogicd outputs:
         
         // hardwiring for chunk 0 with multiple blocks
         wsel_0_80000000 = mem_req_addr[5-1 : 0];

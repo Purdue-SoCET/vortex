@@ -11,70 +11,70 @@ module VX_axi_adapter #(
     parameter VX_BYTEEN_WIDTH  = (VX_DATA_WIDTH / 8),
     parameter AXI_STROBE_WIDTH = (AXI_DATA_WIDTH / 8)
 ) (
-    input  wire                         clk,
-    input  wire                         reset,
+    input  logic                         clk,
+    input  logic                         reset,
 
     // Vortex request
-    input wire                          mem_req_valid,
-    input wire                          mem_req_rw,
-    input wire [VX_BYTEEN_WIDTH-1:0]    mem_req_byteen,
-    input wire [VX_ADDR_WIDTH-1:0]      mem_req_addr,
-    input wire [VX_DATA_WIDTH-1:0]      mem_req_data,
-    input wire [VX_TAG_WIDTH-1:0]       mem_req_tag,
+    input logic                          mem_req_valid,
+    input logic                          mem_req_rw,
+    input logic [VX_BYTEEN_WIDTH-1:0]    mem_req_byteen,
+    input logic [VX_ADDR_WIDTH-1:0]      mem_req_addr,
+    input logic [VX_DATA_WIDTH-1:0]      mem_req_data,
+    input logic [VX_TAG_WIDTH-1:0]       mem_req_tag,
 
     // Vortex response
-    input wire                          mem_rsp_ready,
-    output wire                         mem_rsp_valid,        
-    output wire [VX_DATA_WIDTH-1:0]     mem_rsp_data,
-    output wire [VX_TAG_WIDTH-1:0]      mem_rsp_tag,
-    output wire                         mem_req_ready,
+    input logic                          mem_rsp_ready,
+    output logic                         mem_rsp_valid,        
+    output logic [VX_DATA_WIDTH-1:0]     mem_rsp_data,
+    output logic [VX_TAG_WIDTH-1:0]      mem_rsp_tag,
+    output logic                         mem_req_ready,
 
     // AXI write request address channel    
-    output wire [AXI_TID_WIDTH-1:0]     m_axi_awid,
-    output wire [AXI_ADDR_WIDTH-1:0]    m_axi_awaddr,
-    output wire [7:0]                   m_axi_awlen,
-    output wire [2:0]                   m_axi_awsize,
-    output wire [1:0]                   m_axi_awburst,
-    output wire                         m_axi_awlock,    
-    output wire [3:0]                   m_axi_awcache,
-    output wire [2:0]                   m_axi_awprot,        
-    output wire [3:0]                   m_axi_awqos,
-    output wire                         m_axi_awvalid,
-    input wire                          m_axi_awready,
+    output logic [AXI_TID_WIDTH-1:0]     m_axi_awid,
+    output logic [AXI_ADDR_WIDTH-1:0]    m_axi_awaddr,
+    output logic [7:0]                   m_axi_awlen,
+    output logic [2:0]                   m_axi_awsize,
+    output logic [1:0]                   m_axi_awburst,
+    output logic                         m_axi_awlock,    
+    output logic [3:0]                   m_axi_awcache,
+    output logic [2:0]                   m_axi_awprot,        
+    output logic [3:0]                   m_axi_awqos,
+    output logic                         m_axi_awvalid,
+    input logic                          m_axi_awready,
 
     // AXI write request data channel     
-    output wire [AXI_DATA_WIDTH-1:0]    m_axi_wdata,
-    output wire [AXI_STROBE_WIDTH-1:0]  m_axi_wstrb,    
-    output wire                         m_axi_wlast,  
-    output wire                         m_axi_wvalid, 
-    input wire                          m_axi_wready,
+    output logic [AXI_DATA_WIDTH-1:0]    m_axi_wdata,
+    output logic [AXI_STROBE_WIDTH-1:0]  m_axi_wstrb,    
+    output logic                         m_axi_wlast,  
+    output logic                         m_axi_wvalid, 
+    input logic                          m_axi_wready,
 
     // AXI write response channel
-    input wire [AXI_TID_WIDTH-1:0]      m_axi_bid,
-    input wire [1:0]                    m_axi_bresp,  
-    input wire                          m_axi_bvalid,
-    output wire                         m_axi_bready,
+    input logic [AXI_TID_WIDTH-1:0]      m_axi_bid,
+    input logic [1:0]                    m_axi_bresp,  
+    input logic                          m_axi_bvalid,
+    output logic                         m_axi_bready,
     
     // AXI read address channel
-    output wire [AXI_TID_WIDTH-1:0]     m_axi_arid,
-    output wire [AXI_ADDR_WIDTH-1:0]    m_axi_araddr,
-    output wire [7:0]                   m_axi_arlen,
-    output wire [2:0]                   m_axi_arsize,
-    output wire [1:0]                   m_axi_arburst,    
-    output wire                         m_axi_arlock,    
-    output wire [3:0]                   m_axi_arcache,
-    output wire [2:0]                   m_axi_arprot,        
-    output wire [3:0]                   m_axi_arqos, 
-    output wire                         m_axi_arvalid,
-    input wire                          m_axi_arready,
+    output logic [AXI_TID_WIDTH-1:0]     m_axi_arid,
+    output logic [AXI_ADDR_WIDTH-1:0]    m_axi_araddr,
+    output logic [7:0]                   m_axi_arlen,
+    output logic [2:0]                   m_axi_arsize,
+    output logic [1:0]                   m_axi_arburst,    
+    output logic                         m_axi_arlock,    
+    output logic [3:0]                   m_axi_arcache,
+    output logic [2:0]                   m_axi_arprot,        
+    output logic [3:0]                   m_axi_arqos, 
+    output logic                         m_axi_arvalid,
+    input logic                          m_axi_arready,
     
     // AXI read response channel
-    input wire [AXI_TID_WIDTH-1:0]      m_axi_rid,
-    input wire [AXI_DATA_WIDTH-1:0]     m_axi_rdata,  
-    input wire [1:0]                    m_axi_rresp,
-    input wire                          m_axi_rlast,
-    input wire                          m_axi_rvalid,
-    output wire                         m_axi_rready
+    input logic [AXI_TID_WIDTH-1:0]      m_axi_rid,
+    input logic [AXI_DATA_WIDTH-1:0]     m_axi_rdata,  
+    input logic [1:0]                    m_axi_rresp,
+    input logic                          m_axi_rlast,
+    input logic                          m_axi_rvalid,
+    output logic                         m_axi_rready
 );
     localparam AXSIZE = $clog2(VX_DATA_WIDTH/8);
 
@@ -86,7 +86,7 @@ module VX_axi_adapter #(
     reg awvalid_ack;
     reg wvalid_ack;
 
-    wire mem_req_fire = mem_req_valid && mem_req_ready;
+    logic mem_req_fire = mem_req_valid && mem_req_ready;
 
     always @(posedge clk) begin
 		if (reset) begin
@@ -103,7 +103,7 @@ module VX_axi_adapter #(
 		end
 	end
 
-    wire axi_write_ready = (m_axi_awready || awvalid_ack) && (m_axi_wready || wvalid_ack);
+    logic axi_write_ready = (m_axi_awready || awvalid_ack) && (m_axi_wready || wvalid_ack);
 
     // AXI write request address channel        
     assign m_axi_awvalid    = mem_req_valid && mem_req_rw && !awvalid_ack;

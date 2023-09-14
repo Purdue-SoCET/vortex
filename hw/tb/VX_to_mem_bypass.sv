@@ -61,10 +61,10 @@ module VX_to_mem_bypass (
   reg [`VX_MEM_ADDR_WIDTH-1:0] addr; //address
 
   reg [31:0] ram [MAX_SIZE-1:0]; //ram instance
-  wire [`ceilLog2(MAX_SIZE)-1:0] ram_addr = state_busy  ?         {addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt}
+  logic [`ceilLog2(MAX_SIZE)-1:0] ram_addr = state_busy  ?         {addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt}
                                                      : {mem_req_addr[`ceilLog2(MAX_SIZE/DATA_CYCLES)-1:0], cnt}; //if state busy addr is 
-  wire do_read = mem_req_valid && mem_req_ready && !mem_req_rw || state_busy && !state_rw; //do read of ram if mem_req is valid and 
-  wire do_write = mem_req_valid;
+  logic do_read = mem_req_valid && mem_req_ready && !mem_req_rw || state_busy && !state_rw; //do read of ram if mem_req is valid and 
+  logic do_write = mem_req_valid;
 
   //initialize ram to zero
   initial

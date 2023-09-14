@@ -2,7 +2,7 @@
 
 module VX_ahb_adapter #(
     parameter VX_DATA_WIDTH    = 512, 
-    parameter VX_ADDR_WIDTH    = (32 - $clog2(VX_DATA_WIDTH/8)),            
+    parameter VX_ADDR_WIDTH    = (32 - $clog2(VX_DATA_WIDTH/8)), //26           
     parameter VX_TAG_WIDTH     = 8,
     parameter AHB_DATA_WIDTH   = (VX_DATA_WIDTH / 16), 
     parameter AHB_ADDR_WIDTH   = 32,
@@ -48,8 +48,8 @@ module VX_ahb_adapter #(
 );
 
     logic [3:0] count;
-    localparam size = $clog2(VX_DATA_WIDTH/8);
-    localparam num_cycles = (512/VX_DATA_WIDTH);
+    //localparam size = $clog2(VX_DATA_WIDTH/8);
+    //localparam num_cycles = (512/VX_DATA_WIDTH);
 
     typedef enum logic [2:0] {IDLE, DATA, START, COMPLETE, ERROR} states;
 

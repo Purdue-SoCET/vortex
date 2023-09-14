@@ -18,7 +18,7 @@ VX_TB := VX_ahb_local_mem_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
 
 WAVE_DIR := $(TB_DIR)/scripts
-WAVE:= $(WAVE_DIR)/ahb.do
+WAVE:= $(WAVE_DIR)/ahb_tb_wave.do
 
 # Additional files 
 ADD_INCL += $(INCL)
@@ -101,7 +101,7 @@ all_gui: $(WORKDIR) compile run_gui
 all_debug: $(WORKDIR) compile run_debug
 
 compile: $(WORKDIR)
-		#@vlog $(VLOGOPTS) $(wildcard $(INCL)/*_pkg.sv)
+		# @vlog $(VLOGOPTS) $(wildcard $(INCL)/*_pkg.sv)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(INTF_FILES) 
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(AHB_INTF_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(AHB_RTL_FILES)

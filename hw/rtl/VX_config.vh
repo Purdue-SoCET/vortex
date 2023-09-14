@@ -49,7 +49,8 @@
 `endif
 
 `ifndef STARTUP_ADDR
-`define STARTUP_ADDR 32'h80000000
+//`define STARTUP_ADDR 32'h80000000
+`define STARTUP_ADDR 32'hF0000000
 `endif
 
 `ifndef IO_BASE_ADDR
