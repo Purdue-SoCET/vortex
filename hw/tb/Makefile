@@ -13,6 +13,11 @@ VX_AHB_ADAPTER_DEF := ../include/VX_ahb_adapter.vh
 VX_AHB_ADAPTER_RTL_FILES := ../rtl/libs/VX_ahb_adapter.sv ../rtl/interfaces/VX_mem_rsp_if.sv ../rtl/interfaces/VX_mem_req_if.sv ../rtl/libs/counter.sv
 VX_AHB_ADAPTER_TB := VX_ahb_adapter_tb.sv
 
+# VORTEX_WRAPPER_NO_VORTEX
+VORTEX_WRAPPER_NO_VORTEX_DEF := 
+VORTEX_WRAPPER_NO_VORTEX_RTL_FILES := Vortex_wrapper_no_Vortex.sv
+VORTEX_WRAPPER_NO_VORTEX_TB := Vortex_wrapper_no_Vortex_tb.sv
+
 # DIR's
 INCL := ../include
 WORKDIR := work
@@ -82,10 +87,33 @@ Vortex_mem_slave.sim: compile_Vortex_mem_slave
 		-coverage \
 		-do "run $(SIMTIME);"
 
+compile_Vortex_mem_slave: $(WORKDIR)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_DEF)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_TB)
+
+compile_Vortex_wrapper_no_Vortex: $(WORKDIR) compile_Vortex_mem_slave compile_VX_ahb_adapter
+#		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_WRAPPER_NO_VORTEX_DEF)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_WRAPPER_NO_VORTEX_RTL_FILES)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_WRAPPER_NO_VORTEX_TB)
+
+Vortex_wrapper_no_Vortex.wav: compile_Vortex_wrapper_no_Vortex
+		vsim $(VSIMOPTS) -gui \
+		Vortex_mem_slave_tb \
+		-coverage -voptargs=+acc \
+		-do $(VORTEX_MEM_SLAVE_SIMDO)
+
+Vortex_wrapper_no_Vortex.sim: compile_Vortex_wrapper_no_Vortex
+		vsim $(VSIMOPTS) -c \
+		Vortex_wrapper_no_Vortex_tb \
+		-coverage \
+		-do "run $(SIMTIME);"
+
+
 compile_VX_ahb_adapter: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_DEF)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_RTL_FILES)
-		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_TB)
+#		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VX_AHB_ADAPTER_TB)
 
 VX_ahb_adapter.wav: compile_VX_ahb_adapter
 		vsim $(VSIMOPTS) -gui \

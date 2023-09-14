@@ -91,7 +91,7 @@ module Vortex_wrapper_no_Vortex #(
     // AHB Manager for Vortex_... : //
     //////////////////////////////////
 
-    ahb_if.manager ahb_manager_ahbif
+    ahb_if.manager ahb_manager_ahbif,
 
     /////////////////////////////////
     // CTRL/STATUS to/from Vortex: //
@@ -175,7 +175,7 @@ module Vortex_wrapper_no_Vortex #(
     // ctrl/status reg
     logic ctrl_status_busy, next_ctrl_status_busy;  // busy reg
     logic ctrl_status_start_triggered;              // detector for start write, will allow FSM transition
-    logic ctrl_status_PC_reset_val, next_ctrl_status_PC_reset_val;  // PC reset val reg
+    logic [32-1:0] ctrl_status_PC_reset_val, next_ctrl_status_PC_reset_val;  // PC reset val reg
     logic ctrl_status_reset_state, next_ctrl_status_reset_state;    // FSM state
 
     /////////////////////
@@ -452,7 +452,7 @@ module Vortex_wrapper_no_Vortex #(
         // AHB read logic: 
 
         // busy reg read
-        if (bpif.addr[LOCAL_MEM_SIZE-1:2] == BUSY_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+        if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == BUSY_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
         begin
             bpif.rdata = {31'h0, ctrl_status_busy};
         end
@@ -460,7 +460,7 @@ module Vortex_wrapper_no_Vortex #(
         // start reg read --> default/0
     
         // PC reg read
-        else if (bpif.addr[LOCAL_MEM_SIZE-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+        else if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
         begin
             bpif.rdata = ctrl_status_PC_reset_val;
         end
@@ -474,14 +474,14 @@ module Vortex_wrapper_no_Vortex #(
 
             // start reg write 1
             if (bpif.strobe[0] & 
-                bpif.addr[LOCAL_MEM_SIZE-1:2] == START_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2] &
+                bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == START_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2] &
                 bpif.wdata[0])
             begin
                 ctrl_status_start_triggered = 1'b1;
             end
 
             // PC reg write
-            if (bpif.addr[LOCAL_MEM_SIZE-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[LOCAL_MEM_SIZE-1:2])
+            if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
             begin
                 if (bpif.strobe[0]) next_ctrl_status_PC_reset_val[7:0] = bpif.wdata[7:0];
                 if (bpif.strobe[1]) next_ctrl_status_PC_reset_val[15:8] = bpif.wdata[15:8];
