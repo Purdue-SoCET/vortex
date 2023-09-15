@@ -15,6 +15,8 @@
 
 module Vortex_wrapper_no_Vortex_tb ();
 
+    logic clk, reset;
+
     logic                             Vortex_mem_req_valid;
     logic                             Vortex_mem_req_rw;
     logic [`VX_MEM_BYTEEN_WIDTH-1:0]  Vortex_mem_req_byteen; // 64 (512 / 8)

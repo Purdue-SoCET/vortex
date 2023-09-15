@@ -17,6 +17,14 @@
 `include "../include/VX_define.vh"
 
 module Vortex_mem_slave #(
+    /////////////////
+    // parameters: //
+    /////////////////
+
+    // parameter VORTEX_START_PC_ADDR = 32'h80000000;
+    parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
+    // parameter LOCAL_MEM_SIZE = 12;
+	parameter LOCAL_MEM_SIZE = 14
 )(
     /////////////////
     // Sequential: //
@@ -69,14 +77,6 @@ module Vortex_mem_slave #(
         //     output rdata, error, request_stall
         // );
 );
-    /////////////////
-    // parameters: //
-    /////////////////
-
-    // parameter VORTEX_START_PC_ADDR = 32'h80000000;
-    parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
-    // parameter LOCAL_MEM_SIZE = 12;
-	parameter LOCAL_MEM_SIZE = 14;
 
     ///////////////////////
     // internal signals: //
