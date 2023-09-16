@@ -91,7 +91,7 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
 
     # set LOCAL_MEM_SIZE parameter line
     local_mem_size_lines = [
-        f"\tparameter LOCAL_MEM_SIZE = {LOCAL_MEM_NUM_BITS};\n"
+        f"\tparameter LOCAL_MEM_SIZE = {LOCAL_MEM_NUM_BITS}\n"
     ]
 
     ###########################
