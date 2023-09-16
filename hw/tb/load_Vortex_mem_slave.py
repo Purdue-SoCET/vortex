@@ -302,6 +302,8 @@ def intelhex_to_Vortex_mem_slave_sv(hex_file_name, Vortex_mem_slave_sv_name):
         local_mem_sv_fp.writelines(Vortex_mem_slave_sv_lines)
         local_mem_sv_fp.close()
 
+        print("SUCCESS: Vortex_mem_slave.sv loaded")
+
     except:
         print("ERROR: couldn't write .sv file")
         quit()
