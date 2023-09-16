@@ -40,7 +40,7 @@ module VX_ahb_adapter #(
     // output logic [3:0] ahb.HWSTRB,
     // output logic ahb.HSEL
 
-    ahb_if.manager ahb,
+    ahb_if.manager ahb
     // VX_mem_req_if.slave req,
     // VX_mem_rsp_if.master rsp
     

@@ -321,13 +321,13 @@ if __name__ == "__main__":
     if ("-p" in sys.argv):
         DO_PRINTS = True
 
-    if ("-zero" in sys.argv):
-        LOAD_ZEROS = True
-
     if ("-size" in sys.argv):
         size_index = sys.argv.index("-size") + 1
         LOCAL_MEM_NUM_BITS = int(sys.argv[size_index])
         LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
+
+    if ("-zero" in sys.argv):
+        LOAD_ZEROS = True
 
     elif (not sys.argv[1].endswith(".hex")):
         print("ERROR: input must be intel hex file")

@@ -97,7 +97,7 @@ WORKDIR := work
 
 # Compiler/simulator options
 VSIMOPTS := -lib $(WORKDIR)
-VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt $(MACROS)
+VLOGOPTS := -sv -work $(WORKDIR) -suppress 13389 -incr -vopt $(MACROS)
 
 # Note: C-functions in SV 
 #VLOGOPTS_DPI := -dpiheader dpi_header_file.h -dpicpppath /usr/bin/g++ -ccflags "-std=c++11 -Wall -Wextra -Wfatal-errors" +define+UTIL_DPI +define+FLOAT_DPI
