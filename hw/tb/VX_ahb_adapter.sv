@@ -11,7 +11,7 @@ module VX_ahb_adapter #(
     parameter AHB_STROBE_WIDTH = 4
 ) (
     input  logic                         clk,
-    input  logic                         reset,
+    input  logic                         nRST,
 
     // Vortex request
     input logic                          mem_req_valid,
@@ -67,8 +67,8 @@ module VX_ahb_adapter #(
     logic [31:0] nxt_addr, addr;
     logic [63:0] nxt_byteen, byteen;
     
-    always_ff @(posedge clk) begin : STATE_TRANSITIONS
-        if (!reset) begin
+    always_ff @(posedge clk, negedge nRST) begin : STATE_TRANSITIONS
+        if (~nRST) begin
             state <= IDLE;
             data <= '0;
             addr <= '0;

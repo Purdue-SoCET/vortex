@@ -6,7 +6,7 @@
     logic to serve as interface between AFTx07 and Vortex
 
     assumptions:
-        synchronous, active-high reset
+        Vortex wrapper is on AFTx07 clock/reset domain --> async, active low nRST
         AHB only references word addresses
         mem_slave and ahb_manager can respond in same cycle but will not respond in successive cycles
         it is safe to use reset as start/stop for Vortex
@@ -24,7 +24,7 @@ module Vortex_wrapper_no_Vortex #(
     /////////////////
     // Sequential: //
     /////////////////
-    input clk, reset,
+    input clk, nRST,
 
     //////////////////////////////
     // Vortex Memory Interface: //
@@ -192,7 +192,7 @@ module Vortex_wrapper_no_Vortex #(
         // Sequential: //
         /////////////////
         .clk(clk), 
-        .reset(reset),
+        .nRST(nRST),
 
         ///////////////////////
         // Memory Interface: //
@@ -238,7 +238,7 @@ module Vortex_wrapper_no_Vortex #(
         // Sequential: //
         /////////////////
         .clk(clk),
-        .reset(reset),
+        .nRST(nRST),
 
         ///////////////////////
         // Memory Interface: //
@@ -318,8 +318,8 @@ module Vortex_wrapper_no_Vortex #(
     // mem_rsp_buffer logic: //
     ///////////////////////////
 
-    always_ff @ (posedge clk) begin : mem_rsp_buffer_reg_logic
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : mem_rsp_buffer_reg_logic
+        if (~nRST)
         begin
             mem_rsp_valid_buffer <= DEF_MEM_RSP_VALID;
             mem_rsp_data_buffer <= DEF_MEM_RSP_DATA;
@@ -389,8 +389,8 @@ module Vortex_wrapper_no_Vortex #(
     // ctrl_status_FSM logic: //
     ////////////////////////////
 
-    always_ff @ (posedge clk) begin : ctrl_status_FSM_reg_logic
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : ctrl_status_FSM_reg_logic
+        if (~nRST)
         begin
             ctrl_status_reset_state <= 1'b1;
             ctrl_status_busy <= 1'b0;
@@ -436,57 +436,57 @@ module Vortex_wrapper_no_Vortex #(
         endcase
 
         // output logic
-        Vortex_reset = reset | ctrl_status_reset_state; // reset follows reg reset OR logic reset
+        Vortex_reset = ~nRST | ctrl_status_reset_state; // reset follows register reset val OR logic reset
     end
 
     always_comb begin : ctrl_status_ahb_subordinate_comb_logic
 
         // hardwired vals
-        bpif.request_stall = 1'b0;
-        bpif.error = 1'b0;
+        ctrl_status_bpif.request_stall = 1'b0;
+        ctrl_status_bpif.error = 1'b0;
 
         // default vals
-        bpif.rdata = 32'h0;
+        ctrl_status_bpif.rdata = 32'h0;
         ctrl_status_start_triggered = 1'b0;
 
         // AHB read logic: 
 
         // busy reg read
-        if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == BUSY_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+        if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == BUSY_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
         begin
-            bpif.rdata = {31'h0, ctrl_status_busy};
+            ctrl_status_bpif.rdata = {31'h0, ctrl_status_busy};
         end
 
         // start reg read --> default/0
     
         // PC reg read
-        else if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+        else if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
         begin
-            bpif.rdata = ctrl_status_PC_reset_val;
+            ctrl_status_bpif.rdata = ctrl_status_PC_reset_val;
         end
 
         // AHB write logic:
 
         // only care about writes to start reg and PC reg
-        if (bpif.wen)
+        if (ctrl_status_bpif.wen)
         begin
             // busy reg write --> no good
 
             // start reg write 1
-            if (bpif.strobe[0] & 
-                bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == START_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2] &
-                bpif.wdata[0])
+            if (ctrl_status_bpif.strobe[0] & 
+                ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == START_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2] &
+                ctrl_status_bpif.wdata[0])
             begin
                 ctrl_status_start_triggered = 1'b1;
             end
 
             // PC reg write
-            if (bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+            if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
             begin
-                if (bpif.strobe[0]) next_ctrl_status_PC_reset_val[7:0] = bpif.wdata[7:0];
-                if (bpif.strobe[1]) next_ctrl_status_PC_reset_val[15:8] = bpif.wdata[15:8];
-                if (bpif.strobe[2]) next_ctrl_status_PC_reset_val[23:16] = bpif.wdata[23:16];
-                if (bpif.strobe[3]) next_ctrl_status_PC_reset_val[31:24] = bpif.wdata[31:24]; 
+                if (ctrl_status_bpif.strobe[0]) next_ctrl_status_PC_reset_val[7:0] = ctrl_status_bpif.wdata[7:0];
+                if (ctrl_status_bpif.strobe[1]) next_ctrl_status_PC_reset_val[15:8] = ctrl_status_bpif.wdata[15:8];
+                if (ctrl_status_bpif.strobe[2]) next_ctrl_status_PC_reset_val[23:16] = ctrl_status_bpif.wdata[23:16];
+                if (ctrl_status_bpif.strobe[3]) next_ctrl_status_PC_reset_val[31:24] = ctrl_status_bpif.wdata[31:24]; 
             end
         end
     end

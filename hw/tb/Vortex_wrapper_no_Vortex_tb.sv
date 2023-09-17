@@ -15,7 +15,7 @@
 
 module Vortex_wrapper_no_Vortex_tb ();
 
-    logic clk, reset;
+    logic clk, nRST;
 
     logic                             Vortex_mem_req_valid;
     logic                             Vortex_mem_req_rw;
@@ -76,7 +76,12 @@ module Vortex_wrapper_no_Vortex_tb ();
     // AHB Manager for Vortex_... : //
     //////////////////////////////////
 
-    ahb_if ahb_manager_ahbif();
+    ahb_if #(
+        // .DATA_WIDTH(AHB_DATA_WIDTH),
+        .DATA_WIDTH(32),
+        // .ADDR_WIDTH(AHB_ADDR_WIDTH)
+        .ADDR_WIDTH(32)
+    ) ahb_manger_if (.HCLK(clk), .HRESETn(nRST));
 
     /////////////////////////////////
     // CTRL/STATUS to/from Vortex: //
