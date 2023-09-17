@@ -15,6 +15,12 @@
 
 parameter ADDR_WIDTH = 32;
 parameter DATA_WIDTH = 32;
+parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
+parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
+parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;;
+parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
+parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
+parameter BUFFER_WIDTH = 1;
 
 module Vortex_wrapper_no_Vortex_tb ();
 
@@ -121,15 +127,15 @@ module Vortex_wrapper_no_Vortex_tb ();
     //////////////////////////////////////
 
     Vortex_wrapper_no_Vortex #(
-        .ADDR_WIDTH(32),
-        .DATA_WIDTH(32),
-        .MEM_SLAVE_AHB_BASE_ADDR(32'hF000_0000),
-        .BUSY_REG_AHB_BASE_ADDR(32'hF000_8000),
-        .START_REG_AHB_BASE_ADDR(32'hF000_8004),
-        .PC_RESET_VAL_REG_AHB_BASE_ADDR(32'hF000_8008),
-        .MEM_SLAVE_ADDR_SPACE_BITS(14),
-        .BUFFER_WIDTH(1)
-        ) DUT (.*);
+        .ADDR_WIDTH(ADDR_WIDTH),
+        .DATA_WIDTH(DATA_WIDTH),
+        .MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
+        .BUSY_REG_AHB_BASE_ADDR(BUSY_REG_AHB_BASE_ADDR),
+        .START_REG_AHB_BASE_ADDR(START_REG_AHB_BASE_ADDR),
+        .PC_RESET_VAL_REG_AHB_BASE_ADDR(PC_RESET_VAL_REG_AHB_BASE_ADDR),
+        .MEM_SLAVE_ADDR_SPACE_BITS(MEM_SLAVE_ADDR_SPACE_BITS),
+        .BUFFER_WIDTH(BUFFER_WIDTH)
+    ) DUT (.*);
 
     /////////////////////////////
     // Testbench Info Signals: //
@@ -138,6 +144,7 @@ module Vortex_wrapper_no_Vortex_tb ();
     // testbench info signal declarations
     string test_case;
     string sub_test_case;
+    int num_errors;
     localparam PERIOD = 20;
 
     /////////////////////////////////
@@ -205,6 +212,7 @@ module Vortex_wrapper_no_Vortex_tb ();
                 real_val,
                 expected_val
             ));
+            num_errors++;
         end
     end
     endtask
@@ -251,6 +259,9 @@ module Vortex_wrapper_no_Vortex_tb ();
     //////////////////////////////
 
     initial begin
+
+        $display();
+        $display("Testing with MEM_SLAVE_ADDR_SPACE_BITS = ", MEM_SLAVE_ADDR_SPACE_BITS);
 
         /* --------------------------------------------------------------------------------------------- */
         // Reset Testing
@@ -360,6 +371,23 @@ module Vortex_wrapper_no_Vortex_tb ();
         $display();
         test_case = "FSM, Mem-Mapped Reg Testing";
         $display("test_case: ", test_case);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // End of Testbench
+        $display();
+        test_case = "End of Testbench";
+        $display("test_case: ", test_case);
+        #(PERIOD);
+
+        // check for errors
+        if (num_errors)
+        begin
+            $display($sformatf("\nERROR: %d Errors in Testbench", num_errors));
+        end
+        else
+        begin
+            $display("\nSUCCESS: No Errors in Testbench");
+        end
 
         $display();
         $finish();
