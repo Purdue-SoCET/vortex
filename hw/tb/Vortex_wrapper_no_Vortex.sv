@@ -19,7 +19,21 @@
 // include for Vortex widths
 `include "../include/VX_define.vh"
 
-module Vortex_wrapper_no_Vortex #(
+module Vortex_wrapper_no_Vortex 
+#(
+    /////////////////
+    // parameters: //
+    /////////////////
+
+    parameter ADDR_WIDTH = 32,
+    parameter DATA_WIDTH = 32,
+    parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
+    parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000,
+    parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004,
+    parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008,
+    parameter PC_RESET_VAL_RESET_VAL = 32'hF000_0000,
+    parameter MEM_SLAVE_ADDR_SPACE_BITS = 14,
+    parameter BUFFER_WIDTH = 1
 )(
     /////////////////
     // Sequential: //
@@ -92,6 +106,28 @@ module Vortex_wrapper_no_Vortex #(
     //////////////////////////////////
 
     ahb_if.manager ahb_manager_ahbif,
+        // logic HSEL;
+        // logic HREADY;
+        // logic HREADYOUT;
+        // logic HWRITE;
+        // logic HMASTLOCK;
+        // logic HRESP;
+        // logic [1:0] HTRANS;
+        // logic [2:0] HBURST;
+        // logic [2:0] HSIZE;
+        // logic [ADDR_WIDTH - 1:0] HADDR;
+        // logic [DATA_WIDTH - 1:0] HWDATA;
+        // logic [DATA_WIDTH - 1:0] HRDATA;
+        // logic [(DATA_WIDTH/8) - 1:0] HWSTRB;
+
+        // assign HREADY = HREADYOUT;
+
+        // modport manager(
+        //     input HCLK, HRESETn,
+        //     input HREADY, HRESP, HRDATA,
+        //     output HWRITE, HMASTLOCK, HTRANS,
+        //     HBURST, HSIZE, HADDR, HWDATA, HWSTRB, HSEL
+        // );
 
     /////////////////////////////////
     // CTRL/STATUS to/from Vortex: //
@@ -99,15 +135,8 @@ module Vortex_wrapper_no_Vortex #(
 
     input logic Vortex_busy,
     output logic Vortex_reset,
-    output logic Vortex_PC_reset_val
+    output logic [32-1:0] Vortex_PC_reset_val
 );
-
-    parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
-    parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
-    parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
-    parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-    parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
-    parameter BUFFER_WIDTH = 1;
 
     ////////////////
     // constants: //
@@ -394,7 +423,7 @@ module Vortex_wrapper_no_Vortex #(
         begin
             ctrl_status_reset_state <= 1'b1;
             ctrl_status_busy <= 1'b0;
-            ctrl_status_PC_reset_val <= 32'hF000_0000;
+            ctrl_status_PC_reset_val <= PC_RESET_VAL_RESET_VAL;
         end
         else
         begin
