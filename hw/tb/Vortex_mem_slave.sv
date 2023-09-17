@@ -7,7 +7,6 @@
 
     assumptions:
         AHB only references word addresses
-        Vortex always ready for response
 */
 
 // temporary include to have defined vals
@@ -21,15 +20,15 @@ module Vortex_mem_slave #(
     // parameters: //
     /////////////////
 
-    // parameter VORTEX_START_PC_ADDR = 32'h80000000;
+    // parameter VORTEX_START_PC_ADDR = 32'h80000000,
     parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
-    // parameter LOCAL_MEM_SIZE = 12;
+    // parameter LOCAL_MEM_SIZE = 12
 	parameter LOCAL_MEM_SIZE = 14
 )(
     /////////////////
     // Sequential: //
     /////////////////
-    input clk, reset,
+    input clk, nRST,
 
     ///////////////////////
     // Memory Interface: //
@@ -56,7 +55,7 @@ module Vortex_mem_slave #(
 
     // Status:
     // vortex outputs
-    // input logic                             busy,
+    input logic                             busy,
 
     //////////////////////////////////
     // Generic Bus Interface (AHB): //
@@ -102,8 +101,8 @@ module Vortex_mem_slave #(
     ////////////////
 
     // output buffer registers
-    always_ff @ (posedge clk) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
+        if (~nRST)
         begin
             mem_rsp_valid <= 1'b0;
             mem_rsp_data <= 512'd0;
@@ -118,8 +117,8 @@ module Vortex_mem_slave #(
     end
 
     // reg file instance
-    always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : REG_FILE_FF_LOGIC
+        if (~nRST)
         begin
             reg_file[0] <= 8'h6F;
             reg_file[1] <= 8'h00;

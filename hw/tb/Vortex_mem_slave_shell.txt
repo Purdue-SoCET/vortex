@@ -28,7 +28,7 @@ module Vortex_mem_slave #(
     /////////////////
     // Sequential: //
     /////////////////
-    input clk, reset,
+    input clk, nRST,
 
     ///////////////////////
     // Memory Interface: //
@@ -101,8 +101,8 @@ module Vortex_mem_slave #(
     ////////////////
 
     // output buffer registers
-    always_ff @ (posedge clk) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : VORTEX_MEM_INTERFACE_OUTPUT_BUFFER_FF_LOGIC
+        if (~nRST)
         begin
             mem_rsp_valid <= 1'b0;
             mem_rsp_data <= 512'd0;
@@ -117,8 +117,8 @@ module Vortex_mem_slave #(
     end
 
     // reg file instance
-    always_ff @ (posedge clk) begin : REG_FILE_FF_LOGIC
-        if (reset)
+    always_ff @ (posedge clk, negedge nRST) begin : REG_FILE_FF_LOGIC
+        if (~nRST)
         begin
 < reset vals here >
         end

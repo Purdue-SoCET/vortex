@@ -17,7 +17,7 @@ module Vortex_mem_slave_tb ();
 
     // testbench signals
     parameter PERIOD = 10;
-    logic clk = 0, reset;
+    logic clk = 0, nRST;
 
     // parameters
     // `VX_MEM_BYTEEN_WIDTH    // 64 (512 / 8)
@@ -64,7 +64,7 @@ module Vortex_mem_slave_tb ();
 
 	test #(.PERIOD(PERIOD)) PROG (
         .clk            (clk),
-        .reset          (reset),
+        .nRST           (nRST),
 
         .mem_req_valid  (mem_req_valid),
         .mem_req_rw     (mem_req_rw),
@@ -89,7 +89,7 @@ module Vortex_mem_slave_tb ();
 
 	Vortex_mem_slave DUT (
         .clk            (clk),
-        .reset          (reset),
+        .nRST           (nRST),
 
         .mem_req_valid  (mem_req_valid),
         .mem_req_rw     (mem_req_rw),
@@ -115,7 +115,7 @@ program test
 (
     // seq
     input clk,
-    output logic reset,
+    output logic nRST,
 
     // Vortex
     // Memory request
@@ -310,14 +310,14 @@ program test
             bpif.wdata = 32'h00000000;
             bpif.strobe = 4'b0000;
 
-            reset = 1'b1;
+            nRST = 1'b0;
             
             #(PERIOD);
             @(negedge clk);
             task_string = "deassert nRST";
             $display("\n-> testing %s", task_string);
 
-            reset = 1'b0;
+            nRST = 1'b1;
 
             // expected outputs (this clock cycle):
             #(PERIOD / 4);
