@@ -15,7 +15,8 @@ module VX_local_mem_tb;
     parameter PERIOD = 2;
     parameter RSP_DELAY = 2 * PERIOD; 
     logic clk = 0;
-    logic reset; 
+    logic reset;
+    logic nRST; 
 
     // parameters
     // parameter WORD_W = 32;
@@ -110,7 +111,7 @@ module VX_local_mem_tb;
     // ); 
 
     Vortex_mem_slave MEM(.clk(clk), 
-                  .reset(reset), 
+                  .nRST(nRST), 
                   .mem_req_valid(mem_req_valid), 
                   .mem_req_rw(mem_req_rw), 
                   .mem_req_byteen(mem_req_byteen),
@@ -231,8 +232,10 @@ module VX_local_mem_tb;
 
         // Reset
         reset = 1'b1; 
+        nRST = 1'b0;
         #(PERIOD * 13); 
         reset = 1'b0; 
+        nRST = 1'b1;
 
         fork 
             // check for busy low
