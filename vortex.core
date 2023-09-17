@@ -1,0 +1,280 @@
+CAPI=2:
+name: socet:aft:vortex:0.1.0
+description: Vortex 
+
+filesets:
+    rtl:
+        depend:
+            - "socet:bus-components:bus_protocol_if"
+            - "socet:bus-components:ahb_if"
+            - "pulp-platform.org::common_cells:1.20.0"
+        files:
+            # include files - ahb_pkg.vh already in dependency list
+            - hw/include/VX_ahb_adapter.vh : { is_include_file : true }
+            - hw/include/VX_cache_define.vh : { is_include_file : true }
+            - hw/include/VX_config.vh : { is_include_file : true }
+            - hw/include/VX_define.vh : { is_include_file : true }
+            - hw/include/VX_fpu_define.vh : { is_include_file : true }
+            - hw/include/VX_fpu_types.vh : { is_include_file : true }
+            - hw/include/VX_gpu_types.vh : { is_include_file : true }
+            - hw/include/VX_platform.vh : { is_include_file : true }
+            - hw/include/VX_scope.vh : { is_include_file : true }
+            - hw/include/VX_sv_trace.vh : { is_include_file : true }
+            - hw/include/VX_sv_trace_instr.vh : { is_include_file : true }
+            - hw/include/ccip_if_pkg.sv : { is_include_file : true }
+            - hw/include/fpnew_pkg.sv : { is_include_file : true }
+            - hw/include/local_mem_cfg_pkg.sv : { is_include_file : true }
+            - hw/include/vortex_afu.vh : { is_include_file : true }
+            - hw/include/ccip_if_pkg.sv : { is_include_file : true }
+            - hw/include/defs_div_sqrt_mvp.sv : { is_include_file : true }
+            - hw/include/VX_tex_define.vh : { is_include_file : true }
+            ### RTL files 
+            # Caches
+            - hw/rtl/cache/VX_bank.sv
+            - hw/rtl/cache/VX_cache.sv
+            - hw/rtl/cache/VX_core_req_bank_sel.sv
+            - hw/rtl/cache/VX_core_rsp_merge.sv
+            - hw/rtl/cache/VX_data_access.sv
+            - hw/rtl/cache/VX_flush_ctrl.sv
+            - hw/rtl/cache/VX_miss_resrv.sv
+            - hw/rtl/cache/VX_nc_bypass.sv
+            - hw/rtl/cache/VX_shared_mem.sv
+            - hw/rtl/cache/VX_tag_access.sv
+            - hw/rtl/cache/VX_cache_define.vh : { is_include_file : true }
+            # Interfaces
+            - hw/rtl/interfaces/VX_alu_req_if.sv
+            - hw/rtl/interfaces/VX_branch_ctl_if.sv
+            - hw/rtl/interfaces/VX_cmt_to_csr_if.sv
+            - hw/rtl/interfaces/VX_commit_if.sv
+            - hw/rtl/interfaces/VX_csr_req_if.sv
+            - hw/rtl/interfaces/VX_dcache_req_if.sv
+            - hw/rtl/interfaces/VX_dcache_rsp_if.sv
+            - hw/rtl/interfaces/VX_decode_if.sv
+            - hw/rtl/interfaces/VX_fetch_to_csr_if.sv
+            - hw/rtl/interfaces/VX_fpu_req_if.sv
+            - hw/rtl/interfaces/VX_fpu_to_csr_if.sv
+            - hw/rtl/interfaces/VX_gpr_req_if.sv
+            - hw/rtl/interfaces/VX_gpr_rsp_if.sv
+            - hw/rtl/interfaces/VX_gpu_req_if.sv
+            - hw/rtl/interfaces/VX_ibuffer_if.sv
+            - hw/rtl/interfaces/VX_icache_req_if.sv
+            - hw/rtl/interfaces/VX_icache_rsp_if.sv
+            - hw/rtl/interfaces/VX_ifetch_req_if.sv
+            - hw/rtl/interfaces/VX_ifetch_rsp_if.sv
+            - hw/rtl/interfaces/VX_join_if.sv
+            - hw/rtl/interfaces/VX_lsu_req_if.sv
+            - hw/rtl/interfaces/VX_mem_req_if.sv
+            - hw/rtl/interfaces/VX_mem_rsp_if.sv
+            - hw/rtl/interfaces/VX_perf_cache_if.sv
+            - hw/rtl/interfaces/VX_perf_memsys_if.sv
+            - hw/rtl/interfaces/VX_perf_pipeline_if.sv
+            - hw/rtl/interfaces/VX_perf_tex_if.sv
+            - hw/rtl/interfaces/VX_tex_csr_if.sv
+            - hw/rtl/interfaces/VX_tex_req_if.sv
+            - hw/rtl/interfaces/VX_tex_rsp_if.sv
+            - hw/rtl/interfaces/VX_warp_ctl_if.sv
+            - hw/rtl/interfaces/VX_writeback_if.sv
+            - hw/rtl/interfaces/VX_wstall_if.sv
+            # Libs files 
+            - hw/rtl/libs/VX_axi_adapter.sv
+            - hw/rtl/libs/VX_bits_insert.sv
+            - hw/rtl/libs/VX_bits_remove.sv
+            - hw/rtl/libs/VX_bypass_buffer.sv
+            - hw/rtl/libs/VX_divider.sv
+            - hw/rtl/libs/VX_dp_ram.sv
+            - hw/rtl/libs/VX_elastic_buffer.sv
+            - hw/rtl/libs/VX_fair_arbiter.sv
+            - hw/rtl/libs/VX_fifo_queue.sv
+            - hw/rtl/libs/VX_find_first.sv
+            - hw/rtl/libs/VX_fixed_arbiter.sv
+            - hw/rtl/libs/VX_index_buffer.sv
+            - hw/rtl/libs/VX_index_queue.sv
+            - hw/rtl/libs/VX_lzc.sv
+            - hw/rtl/libs/VX_matrix_arbiter.sv
+            - hw/rtl/libs/VX_multiplier.sv
+            - hw/rtl/libs/VX_mux.sv
+            - hw/rtl/libs/VX_onehot_encoder.sv
+            - hw/rtl/libs/VX_onehot_mux.sv
+            - hw/rtl/libs/VX_pending_size.sv
+            - hw/rtl/libs/VX_pipe_register.sv
+            - hw/rtl/libs/VX_popcount.sv
+            - hw/rtl/libs/VX_priority_encoder.sv
+            - hw/rtl/libs/VX_reset_relay.sv
+            - hw/rtl/libs/VX_rr_arbiter.sv
+            - hw/rtl/libs/VX_scan.sv
+            - hw/rtl/libs/VX_scope.sv
+            - hw/rtl/libs/VX_serial_div.sv
+            - hw/rtl/libs/VX_shift_register.sv
+            - hw/rtl/libs/VX_skid_buffer.sv
+            - hw/rtl/libs/VX_sp_ram.sv
+            - hw/rtl/libs/VX_stream_arbiter.sv
+            - hw/rtl/libs/VX_stream_demux.sv
+            #- hw/rtl/libs/counter.sv
+            # TEX unit
+            - hw/rtl/tex_unit/VX_tex_addr.sv
+            - hw/rtl/tex_unit/VX_tex_format.sv
+            - hw/rtl/tex_unit/VX_tex_lerp.sv
+            - hw/rtl/tex_unit/VX_tex_mem.sv
+            - hw/rtl/tex_unit/VX_tex_sampler.sv
+            - hw/rtl/tex_unit/VX_tex_sat.sv
+            - hw/rtl/tex_unit/VX_tex_stride.sv
+            - hw/rtl/tex_unit/VX_tex_unit.sv
+            - hw/rtl/tex_unit/VX_tex_wrap.sv
+            # FP Unit
+            - hw/rtl/fp_cores/VX_fp_class.sv
+            - hw/rtl/fp_cores/VX_fp_cvt.sv
+            - hw/rtl/fp_cores/VX_fp_div.sv
+            - hw/rtl/fp_cores/VX_fp_fma.sv
+            - hw/rtl/fp_cores/VX_fp_ncomp.sv
+            - hw/rtl/fp_cores/VX_fp_rounding.sv
+            - hw/rtl/fp_cores/VX_fp_sqrt.sv
+            - hw/rtl/fp_cores/VX_fpu_dpi.sv
+            - hw/rtl/fp_cores/VX_fpu_fpga.sv
+            - hw/rtl/fp_cores/VX_fpu_fpnew.sv
+            # FPNEW
+            - third_party/fpnew/src/fpnew_fma.sv
+            - third_party/fpnew/src/fpnew_opgroup_fmt_slice.sv
+            - third_party/fpnew/src/fpnew_divsqrt_multi.sv
+            - third_party/fpnew/src/fpnew_fma_multi.sv
+            - third_party/fpnew/src/fpnew_opgroup_multifmt_slice.sv
+            - third_party/fpnew/src/fpnew_classifier.sv
+            - third_party/fpnew/src/fpnew_noncomp.sv
+            - third_party/fpnew/src/fpnew_cast_multi.sv
+            - third_party/fpnew/src/fpnew_opgroup_block.sv
+            #- third_party/fpnew/src/fpnew_pkg.sv
+            - third_party/fpnew/src/fpnew_rounding.sv
+            - third_party/fpnew/src/fpnew_top.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv : { is_include_file : true }
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/iteration_div_sqrt_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/nrbd_nrsc_mvp.sv
+            #- third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/defs_div_sqrt_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/div_sqrt_top_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/preprocess_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/control_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/norm_div_sqrt_mvp.sv
+            - third_party/fpnew/src/fpu_div_sqrt_mvp/hdl/div_sqrt_mvp_wrapper.sv
+            # Main pipeline files
+            - hw/rtl/VX_alu_unit.sv
+            - hw/rtl/VX_cache_arb.sv
+            - hw/rtl/VX_cluster.sv
+            - hw/rtl/VX_commit.sv
+            - hw/rtl/VX_core.sv
+            - hw/rtl/VX_csr_data.sv
+            - hw/rtl/VX_csr_unit.sv
+            - hw/rtl/VX_decode.sv
+            - hw/rtl/VX_dispatch.sv
+            - hw/rtl/VX_execute.sv
+            - hw/rtl/VX_fetch.sv
+            - hw/rtl/VX_fpu_unit.sv
+            - hw/rtl/VX_gpr_stage.sv
+            - hw/rtl/VX_gpu_unit.sv
+            - hw/rtl/VX_ibuffer.sv
+            - hw/rtl/VX_icache_stage.sv
+            - hw/rtl/VX_ipdom_stack.sv
+            - hw/rtl/VX_issue.sv
+            - hw/rtl/VX_lsu_unit.sv
+            - hw/rtl/VX_mem_arb.sv
+            - hw/rtl/VX_mem_unit.sv
+            - hw/rtl/VX_muldiv.sv
+            - hw/rtl/VX_pipeline.sv
+            - hw/rtl/VX_scoreboard.sv
+            - hw/rtl/VX_smem_arb.sv
+            - hw/rtl/VX_warp_sched.sv
+            - hw/rtl/VX_writeback.sv
+            - hw/rtl/Vortex.sv    
+            - hw/rtl/vortex_gpu_ahb_dummy.sv        
+        file_type: systemVerilogSource
+
+    tb:
+        files:
+            - tb/VX_local_mem_tb.sv
+        file_type: systemVerilogSource
+
+    #verilator_tb:
+    #    files:
+    #        - tb/tb_vortex.cc : { fileType: cppSource }
+    #    file_type: systemVerilogSource
+
+targets:
+    default: &default
+        filesets:
+            - rtl
+        toplevel: Vortex
+    
+    sim:
+        <<: *default
+        description: Simulate w/TB
+        default_tool: xcelium
+        filesets_append:
+            - tb
+        toplevel: 
+            - "!tool_verilator? (VX_local_mem_tb)"
+            - "tool_verilator? (Vortex)"
+        #parameters:
+        #    - NUM_PINS=8
+        #toplevel: 
+        #    - "tool_verilator? (Vortex)"
+        #    - "!tool_verilator? (tb_verilator)"
+        tools:
+            xcelium:
+                xrun_options:
+                    - +xmtimescale+1ns/100ps
+                    - +define+SYNTHESIS +define+FPU_FPNEW
+            modelsim:
+                vsim_options:
+                    - -vopt
+                    - -voptargs='+acc'
+                    - -t ps
+            vcs:
+                vcs_options:
+                    - -assert svaext
+            verilator:
+                verilator_options:
+                    - --trace
+                    - --trace-fst
+                    - --trace-structs
+                    - +define+SYNTHESIS +define+FPU_FPNEW
+
+    fpga:
+        <<: *default
+        description: Synthesize for FPGA
+        default_tool: quartus
+        toplevel:
+            - Vortex
+        parameters:
+            - NUM_PINS=8
+            - SYNTHESIS=true
+        tools:
+            quartus:
+                family: Cyclone IV E
+                device: EP4CE115F29C7 
+                
+
+    lint:
+        filesets:
+            - lint_files
+        description: Linting
+        default_tool: veriblelint
+        toplevel: VX_local_mem_tb
+        tools:
+            veriblelint:
+                verible_lint_args: ['--autofix=inplace-interactive', '--rules_config_search']
+
+    format:
+        filesets:
+            - lint_files
+        description: Formatting
+        default_tool: veribleformat
+        toplevel: VX_local_mem_tb
+        tools:
+            veribleformat:
+                verible_format_args: ['--indentation_spaces=4', '--inplace']
+
+parameters:
+    NUM_PINS:
+        datatype: int
+        description: Number of pins, 1 <= NUM_PINS <= 32
+        paramtype: vlogparam
+    SYNTHESIS:
+        datatype: bool
+        paramtype: vlogdefine
