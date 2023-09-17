@@ -3,7 +3,7 @@ module counter
     parameter NUM_CNT_BITS = 4
 )
 (
-    input logic clk,rst,clear,count_enable,
+    input logic clk,nRST,clear,count_enable,
     input logic [NUM_CNT_BITS-1:0] rollover_val,
     output reg rollover_flag,
     output reg [NUM_CNT_BITS-1:0] count_out
@@ -11,8 +11,8 @@ module counter
     reg [NUM_CNT_BITS-1:0] nxt_count;
     reg roll_f;
 
-    always_ff @ (posedge clk) begin : REG_LOGIC
-        if (!rst)
+    always_ff @ (posedge clk, negedge nRST) begin : REG_LOGIC
+        if (!nRST)
         begin
             count_out <= 'b0;
             rollover_flag <= 'b0;

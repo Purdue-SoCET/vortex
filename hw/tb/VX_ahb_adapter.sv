@@ -346,7 +346,7 @@ module VX_ahb_adapter #(
     counter
     SIXTEEN(
         .clk(clk),
-        .rst(reset),
+        .nRST(~nRST),
         .clear(clear),
         .count_enable(count_en),
         .rollover_val(4'd15),

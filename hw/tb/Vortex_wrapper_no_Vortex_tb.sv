@@ -81,7 +81,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         .DATA_WIDTH(32),
         // .ADDR_WIDTH(AHB_ADDR_WIDTH)
         .ADDR_WIDTH(32)
-    ) ahb_manger_if (.HCLK(clk), .HRESETn(nRST));
+    ) ahb_manager_ahbif (.HCLK(clk), .HRESETn(nRST));
 
     /////////////////////////////////
     // CTRL/STATUS to/from Vortex: //

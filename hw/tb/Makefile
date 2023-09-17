@@ -10,7 +10,7 @@ VORTEX_MEM_SLAVE_TB := Vortex_mem_slave_tb.sv
 
 # VX_AHB_ADAPTER
 VX_AHB_ADAPTER_DEF := ../include/VX_ahb_adapter.vh
-VX_AHB_ADAPTER_RTL_FILES := VX_ahb_adapter.sv ../rtl/interfaces/VX_mem_rsp_if.sv ../rtl/interfaces/VX_mem_req_if.sv ../rtl/libs/counter.sv
+VX_AHB_ADAPTER_RTL_FILES := VX_ahb_adapter.sv counter.sv
 VX_AHB_ADAPTER_TB := VX_ahb_adapter_tb.sv
 
 # VORTEX_WRAPPER_NO_VORTEX
