@@ -448,6 +448,7 @@ module Vortex_wrapper_no_Vortex #(
         // default vals
         ctrl_status_bpif.rdata = 32'h0;
         ctrl_status_start_triggered = 1'b0;
+        next_ctrl_status_PC_reset_val = ctrl_status_PC_reset_val;
 
         // AHB read logic: 
 

@@ -39,6 +39,10 @@ VX_AHB_ADAPTER_DOFILE	= VX_ahb_adapter
 VX_AHB_ADAPTER_WAVDO	= do $(SCRDIR)/$(VX_AHB_ADAPTER_DOFILE).do
 VX_AHB_ADAPTER_SIMDO	= "view objects; $(VX_AHB_ADAPTER_WAVDO); run $(SIMTIME);" -onfinish stop
 
+VORTEX_WRAPPER_NO_VORTEX_DOFILE	= Vortex_wrapper_no_Vortex
+VORTEX_WRAPPER_NO_VORTEX_WAVDO	= do $(SCRDIR)/$(VORTEX_WRAPPER_NO_VORTEX_DOFILE).do
+VORTEX_WRAPPER_NO_VORTEX_SIMDO	= "view objects; $(VORTEX_WRAPPER_NO_VORTEX_WAVDO); run $(SIMTIME);" -onfinish stop
+
 # SIM_UI_OPT := -gui
 # SIM_UI_OPT := -c
 
@@ -94,9 +98,9 @@ compile_Vortex_wrapper_no_Vortex: $(WORKDIR) compile_Vortex_mem_slave compile_VX
 
 Vortex_wrapper_no_Vortex.wav: compile_Vortex_wrapper_no_Vortex
 		vsim $(VSIMOPTS) -gui \
-		Vortex_mem_slave_tb \
+		Vortex_wrapper_no_Vortex_tb \
 		-coverage -voptargs=+acc \
-		-do $(VORTEX_MEM_SLAVE_SIMDO)
+		-do $(VORTEX_WRAPPER_NO_VORTEX_SIMDO)
 
 Vortex_wrapper_no_Vortex.sim: compile_Vortex_wrapper_no_Vortex
 		vsim $(VSIMOPTS) -c \
