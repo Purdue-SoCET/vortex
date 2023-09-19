@@ -77,9 +77,58 @@ add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/expected_ahb_manager_ahbif_HWDATA
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/ahb_manager_ahbif/HWSTRB
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/expected_ahb_manager_ahbif_HWSTRB
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_rw
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_byteen
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_addr
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_rsp_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_rsp_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_rsp_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_busy
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_reset
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_PC_reset_val
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_rw
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_byteen
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_addr
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_req_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_rsp_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_rsp_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_rsp_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_slave_mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_rw
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_byteen
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_addr
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_req_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_valid
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_data
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_tag
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_rsp_valid_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_mem_rsp_valid_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_rsp_data_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_mem_rsp_data_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_rsp_tag_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_mem_rsp_tag_buffer
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/double_mem_rsp
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ctrl_status_busy
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_ctrl_status_busy
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ctrl_status_start_triggered
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ctrl_status_PC_reset_val
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_ctrl_status_PC_reset_val
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ctrl_status_reset_state
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_ctrl_status_reset_state
 TreeUpdate [SetDefaultTree]
-quietly WaveActivateNextPane
-WaveRestoreCursors {{Cursor 1} {56 ns} 0}
+WaveRestoreCursors {{Cursor 1} {91 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 322
 configure wave -valuecolwidth 100
@@ -95,4 +144,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {63 ns}
+WaveRestoreZoom {81 ns} {144 ns}

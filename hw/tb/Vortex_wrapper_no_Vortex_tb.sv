@@ -217,30 +217,50 @@ module Vortex_wrapper_no_Vortex_tb ();
     end
     endtask
 
-    task check_outputs();
+    task check_Vortex_wrapper_req_outputs();
     begin
         // Vortex req wrapper outputs
         check_signal("Vortex_mem_req_ready", Vortex_mem_req_ready, expected_Vortex_mem_req_ready);
+    end
+    endtask
 
+    task check_Vortex_wrapper_rsp_outputs();
+    begin
         // Vortex rsp wrapper outputs
         check_signal("Vortex_mem_rsp_valid", Vortex_mem_rsp_valid, expected_Vortex_mem_rsp_valid);
         check_signal("Vortex_mem_rsp_data", Vortex_mem_rsp_data, expected_Vortex_mem_rsp_data);
         check_signal("Vortex_mem_rsp_tag", Vortex_mem_rsp_tag, expected_Vortex_mem_rsp_tag);
+    end
+    endtask
 
+    task check_Vortex_mem_slave_bpif_outputs();
+    begin
         // Vortex_mem_slave bpif outputs
         check_signal("mem_slave_bpif.rdata", mem_slave_bpif.rdata, expected_mem_slave_bpif_rdata);
         check_signal("mem_slave_bpif.error", mem_slave_bpif.error, expected_mem_slave_bpif_error);
         check_signal("mem_slave_bpif.request_stall", mem_slave_bpif.request_stall, expected_mem_slave_bpif_request_stall);
+    end
+    endtask
 
+    task check_ctrl_status_reg_bpif_outputs();
+    begin
         // CTRL/Status reg bpif outputs
         check_signal("ctrl_status_bpif.rdata", ctrl_status_bpif.rdata, expected_ctrl_status_bpif_rdata);
         check_signal("ctrl_status_bpif.error", ctrl_status_bpif.error, expected_ctrl_status_bpif_error);
         check_signal("ctrl_status_bpif.request_stall", ctrl_status_bpif.request_stall, expected_ctrl_status_bpif_request_stall);
+    end
+    endtask
 
+    task check_Vortex_wrapper_ctrl_status_outputs();
+    begin
         // CTRL/Status outputs
         check_signal("Vortex_reset", Vortex_reset, expected_Vortex_reset);
         check_signal("Vortex_PC_reset_val", Vortex_PC_reset_val, expected_Vortex_PC_reset_val);
+    end
+    endtask
 
+    task check_ahb_manager_ahbif_outputs();
+    begin
         // VX_ahb_manager ahbif outputs
         check_signal("ahb_manager_ahbif.HWRITE", ahb_manager_ahbif.HWRITE, expected_ahb_manager_ahbif_HWRITE);
         // check_signal("ahb_manager_ahbif.HMASTLOCK", ahb_manager_ahbif.HMASTLOCK, expected_ahb_manager_ahbif_HMASTLOCK); // UNUSED
@@ -252,25 +272,53 @@ module Vortex_wrapper_no_Vortex_tb ();
         check_signal("ahb_manager_ahbif.HWSTRB", ahb_manager_ahbif.HWSTRB, expected_ahb_manager_ahbif_HWSTRB);
         check_signal("ahb_manager_ahbif.HSEL", ahb_manager_ahbif.HSEL, expected_ahb_manager_ahbif_HSEL);
     end
+    endtask
+
+    task check_outputs();
+    begin
+        // // Vortex req wrapper outputs
+        // check_signal("Vortex_mem_req_ready", Vortex_mem_req_ready, expected_Vortex_mem_req_ready);
+        check_Vortex_wrapper_req_outputs();
+
+        // // Vortex rsp wrapper outputs
+        // check_signal("Vortex_mem_rsp_valid", Vortex_mem_rsp_valid, expected_Vortex_mem_rsp_valid);
+        // check_signal("Vortex_mem_rsp_data", Vortex_mem_rsp_data, expected_Vortex_mem_rsp_data);
+        // check_signal("Vortex_mem_rsp_tag", Vortex_mem_rsp_tag, expected_Vortex_mem_rsp_tag);
+        check_Vortex_wrapper_rsp_outputs();
+
+        // // Vortex_mem_slave bpif outputs
+        // check_signal("mem_slave_bpif.rdata", mem_slave_bpif.rdata, expected_mem_slave_bpif_rdata);
+        // check_signal("mem_slave_bpif.error", mem_slave_bpif.error, expected_mem_slave_bpif_error);
+        // check_signal("mem_slave_bpif.request_stall", mem_slave_bpif.request_stall, expected_mem_slave_bpif_request_stall);
+        check_Vortex_mem_slave_bpif_outputs();
+
+        // // CTRL/Status reg bpif outputs
+        // check_signal("ctrl_status_bpif.rdata", ctrl_status_bpif.rdata, expected_ctrl_status_bpif_rdata);
+        // check_signal("ctrl_status_bpif.error", ctrl_status_bpif.error, expected_ctrl_status_bpif_error);
+        // check_signal("ctrl_status_bpif.request_stall", ctrl_status_bpif.request_stall, expected_ctrl_status_bpif_request_stall);
+        check_ctrl_status_reg_bpif_outputs();
+
+        // // CTRL/Status outputs
+        // check_signal("Vortex_reset", Vortex_reset, expected_Vortex_reset);
+        // check_signal("Vortex_PC_reset_val", Vortex_PC_reset_val, expected_Vortex_PC_reset_val);
+        check_Vortex_wrapper_ctrl_status_outputs();
+
+        // // VX_ahb_manager ahbif outputs
+        // check_signal("ahb_manager_ahbif.HWRITE", ahb_manager_ahbif.HWRITE, expected_ahb_manager_ahbif_HWRITE);
+        // // check_signal("ahb_manager_ahbif.HMASTLOCK", ahb_manager_ahbif.HMASTLOCK, expected_ahb_manager_ahbif_HMASTLOCK); // UNUSED
+        // check_signal("ahb_manager_ahbif.HTRANS", ahb_manager_ahbif.HTRANS, expected_ahb_manager_ahbif_HTRANS);
+        // // check_signal("ahb_manager_ahbif.HBURST", ahb_manager_ahbif.HBURST, expected_ahb_manager_ahbif_HBURST); // UNUSED
+        // check_signal("ahb_manager_ahbif.HSIZE", ahb_manager_ahbif.HSIZE, expected_ahb_manager_ahbif_HSIZE);
+        // check_signal("ahb_manager_ahbif.HADDR", ahb_manager_ahbif.HADDR, expected_ahb_manager_ahbif_HADDR);
+        // check_signal("ahb_manager_ahbif.HWDATA", ahb_manager_ahbif.HWDATA, expected_ahb_manager_ahbif_HWDATA);
+        // check_signal("ahb_manager_ahbif.HWSTRB", ahb_manager_ahbif.HWSTRB, expected_ahb_manager_ahbif_HWSTRB);
+        // check_signal("ahb_manager_ahbif.HSEL", ahb_manager_ahbif.HSEL, expected_ahb_manager_ahbif_HSEL);
+        check_ahb_manager_ahbif_outputs();
+    end
     endtask;
 
-    //////////////////////////////
-    // Testbench initial block: //
-    //////////////////////////////
-
-    initial begin
-
-        $display();
-        $display("Testing with MEM_SLAVE_ADDR_SPACE_BITS = ", MEM_SLAVE_ADDR_SPACE_BITS);
-
-        /* --------------------------------------------------------------------------------------------- */
-        // Reset Testing
-        $display();
-        test_case = "Reset Testing";
-        $display("test_case: ", test_case);
-
-        // default wrapper inputs:
-
+    task set_default_inputs();
+    begin
         // Vortex req wrapper inputs
         Vortex_mem_req_valid = 1'b0;
         Vortex_mem_req_rw = 1'b0;
@@ -302,17 +350,11 @@ module Vortex_wrapper_no_Vortex_tb ();
         // VX_ahb_manager ahbif inputs
         ahb_manager_ahbif.HRESP = 1'b0;
         ahb_manager_ahbif.HRDATA = 32'h0;
+    end
+    endtask
 
-        nRST = 1'b0;
-        sub_test_case = "reset asserted";
-        $display("\tsub_test_case: ", sub_test_case);
-        #(PERIOD/2);
-
-        sub_test_case = "checking values during reset";
-        $display("\tsub_test_case: ", sub_test_case);
-
-        // default wrapper outputs:
-
+    task set_default_outputs();
+    begin
         // Vortex req wrapper outputs
         expected_Vortex_mem_req_ready = 1'b1;
 
@@ -345,6 +387,37 @@ module Vortex_wrapper_no_Vortex_tb ();
         expected_ahb_manager_ahbif_HWDATA = 32'h0;
         expected_ahb_manager_ahbif_HWSTRB = 4'b0;
         expected_ahb_manager_ahbif_HSEL = 1'b0;
+    end
+    endtask
+
+    //////////////////////////////
+    // Testbench initial block: //
+    //////////////////////////////
+
+    initial begin
+
+        $display();
+        $display("Testing with MEM_SLAVE_ADDR_SPACE_BITS = ", MEM_SLAVE_ADDR_SPACE_BITS);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Reset Testing
+        $display();
+        test_case = "Reset Testing";
+        $display("test_case: ", test_case);
+
+        // default wrapper inputs:
+        set_default_inputs();
+
+        nRST = 1'b0;
+        sub_test_case = "reset asserted";
+        $display("\tsub_test_case: ", sub_test_case);
+        #(PERIOD/2);
+
+        sub_test_case = "checking values during reset";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // default wrapper outputs:
+        set_default_outputs();
 
         // do checks
         check_outputs();
@@ -371,6 +444,205 @@ module Vortex_wrapper_no_Vortex_tb ();
         test_case = "FSM, Mem-Mapped Reg Testing";
         $display("test_case: ", test_case);
 
+        ////////////////////////////////////
+        // check ctrl/status reset state: //
+        ////////////////////////////////////
+        
+        // make AHB side read req to busy reg:
+        sub_test_case = "AHB req to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1; // read req
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+
+        #(PERIOD/2);
+
+        // check rsp (read busy reg = 0):
+        sub_test_case = "check AHB rsp busy reg = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        check_outputs();
+
+        #(PERIOD/2);
+
+        // make AHB side read req to PC reg:
+        sub_test_case = "AHB read to PC reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1; // read req
+        ctrl_status_bpif.addr = 32'h8; // 0xF000_8008 truncated -> 0x8
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+
+        #(PERIOD/2);
+
+        // check rsp (read PC reg = 0xF000_0000):
+        sub_test_case = "check AHB rsp PC reg = 0xF000_0000";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'hF000_0000; // PC reg = 0xF000_0000
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        check_outputs();
+
+        #(PERIOD/2);
+
+        //////////////////////////
+        // set PC register val: //
+        //////////////////////////
+
+        #(PERIOD/2);
+
+        // make AHB side write req to PC reg:
+        sub_test_case = "AHB write to PC reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b1; // write req
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h8; // 0xF000_8008 truncated -> 0x8
+        ctrl_status_bpif.wdata = 32'hABCD3210; // write val
+        ctrl_status_bpif.strobe = 4'b1101; // write mask (expect ABCD0010)
+
+        // wait for write to occur
+        #(PERIOD);
+        #(PERIOD/2);
+
+        // make AHB side read req to PC reg:
+        sub_test_case = "AHB read to PC reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1; // read req
+        ctrl_status_bpif.addr = 32'h8; // 0xF000_8008 truncated -> 0x8
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+
+        #(PERIOD/2);
+
+        // check rsp (read PC reg = 0xABCD_0010):
+        sub_test_case = "check AHB rsp PC reg = 0xABCD_0010";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'hABCD_0010; // PC reg = 0xABCD_0010
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        expected_Vortex_PC_reset_val = 32'hABCD_0010;
+        check_outputs();
+
+        #(PERIOD/2);
+
+        /////////////////////
+        // read busy high: //
+        ///////////////////// 
+
+        #(PERIOD/2);
+
+        // set busy high
+        sub_test_case = "set busy high";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h0;
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        Vortex_busy = 1'b1;
+
+        // wait for busy to propagate
+        #(PERIOD);
+
+        // read busy reg
+        sub_test_case = "AHB read to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1;
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        Vortex_busy = 1'b1;
+
+        #(PERIOD/2);
+
+        // check rsp (read busy reg = 1):
+        sub_test_case = "check AHB rsp busy reg = 1";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        expected_Vortex_PC_reset_val = 32'hABCD_0010;
+        check_outputs();
+
+        ////////////////////////
+        // set start reg val: //
+        ////////////////////////
+
+        #(PERIOD/2);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "AHB write to start reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b1; // write req
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h4; // 0xF000_8004 truncated -> 0x4
+        ctrl_status_bpif.wdata = 32'h1; // write val
+        ctrl_status_bpif.strobe = 4'b0001; // write mask (expect 00000001)
+
+        // wait for write to occur
+        #(PERIOD);
+
+        // deassert write
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h0; 
+        ctrl_status_bpif.wdata = 32'h0; 
+        ctrl_status_bpif.strobe = 4'b0; 
+
+        #(PERIOD/2);
+
+        // check reset = 0
+        sub_test_case = "check reset = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h1; // defaulting to read busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b0; // reset should go low since wrote to start reg, busy high
+        expected_Vortex_PC_reset_val = 32'hABCD_0010;
+        check_outputs();
+
+        #(PERIOD/2);
+
         /* --------------------------------------------------------------------------------------------- */
         // End of Testbench
         $display();
@@ -388,6 +660,7 @@ module Vortex_wrapper_no_Vortex_tb ();
             $display("\nSUCCESS: No Errors in Testbench");
         end
 
+        // finish
         $display();
         $finish();
     end
