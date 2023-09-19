@@ -92,8 +92,8 @@ module Vortex_wrapper_no_Vortex_tb ();
         .ADDR_WIDTH(32)
     ) ahb_manager_ahbif (.HCLK(clk), .HRESETn(nRST));
         // logic HSEL;
-        // logic HREADY;
-        // logic HREADYOUT;
+        // logic HREADY; // UNUSED?
+        // logic HREADYOUT; // UNUSED?
         // logic HWRITE;
         // logic HMASTLOCK; // UNUSED
         // logic HRESP;
@@ -300,7 +300,6 @@ module Vortex_wrapper_no_Vortex_tb ();
         Vortex_busy = 1'b0;
 
         // VX_ahb_manager ahbif inputs
-        // ahb_manager_ahbif.HREADY = 1'b1;
         ahb_manager_ahbif.HRESP = 1'b0;
         ahb_manager_ahbif.HRDATA = 32'h0;
 
