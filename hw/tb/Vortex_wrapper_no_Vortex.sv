@@ -157,6 +157,9 @@ module Vortex_wrapper_no_Vortex
     localparam DEF_MEM_RSP_TAG = 56'h0;
     localparam DEF_MEM_RSP_READY = 1'b1;
 
+    // instantiation flag for Vortex_mem_slave
+    localparam VORTEX_MEM_SLAVE_INSTANTIATED = MEM_SLAVE_ADDR_SPACE_BITS >= 6; // check for too small Vortex_mem_slave
+
     ///////////////////////
     // internal signals: //
     ///////////////////////
@@ -194,6 +197,7 @@ module Vortex_wrapper_no_Vortex
     logic                               ahb_manager_mem_rsp_ready;
 
     // req arbiter
+    logic intermediate_mem_req_addr;
 
     // rsp buffer
     logic                               mem_rsp_valid_buffer, next_mem_rsp_valid_buffer;        
@@ -211,51 +215,83 @@ module Vortex_wrapper_no_Vortex
     // instantiations: //
     /////////////////////
 
-    // mem_slave
-    Vortex_mem_slave #(
-        .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
-        .LOCAL_MEM_SIZE(MEM_SLAVE_ADDR_SPACE_BITS)  // 32 KB local mem
-    ) mem_slave (
+    if (VORTEX_MEM_SLAVE_INSTANTIATED)
+    begin
+        // mem_slave
+        Vortex_mem_slave #(
+            .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
+            .LOCAL_MEM_SIZE(MEM_SLAVE_ADDR_SPACE_BITS) // 14-bits for 32 KB local mem
+        ) mem_slave (
+        
+            /////////////////
+            // Sequential: //
+            /////////////////
+            .clk(clk), 
+            .nRST(nRST),
+
+            ///////////////////////
+            // Memory Interface: //
+            ///////////////////////
+
+            // Memory Request:
+            // vortex outputs
+            .mem_req_valid(mem_slave_mem_req_valid),
+            .mem_req_rw(mem_slave_mem_req_rw),
+            .mem_req_byteen(mem_slave_mem_req_byteen),  // 64 (512 / 8)
+            .mem_req_addr(mem_slave_mem_req_addr),      // 26
+            .mem_req_data(mem_slave_mem_req_data),      // 512
+            .mem_req_tag(mem_slave_mem_req_tag),        // 56 (55 for SM disabled)
+            // vortex inputs
+            .mem_req_ready(mem_slave_mem_req_ready),
+
+            // Memory response:
+            // vortex inputs
+            .mem_rsp_valid(mem_slave_mem_rsp_valid),        
+            .mem_rsp_data(mem_slave_mem_rsp_data),      // 512
+            .mem_rsp_tag(mem_slave_mem_rsp_tag),        // 56 (55 for SM disabled)
+            // vortex outputs
+            .mem_rsp_ready(mem_slave_mem_rsp_ready),
+
+            // Status:
+            // vortex outputs
+            // input logic                             busy,
+            .busy(Vortex_busy),
+
+            //////////////////////////////////
+            // Generic Bus Interface (AHB): //
+            //////////////////////////////////
+
+            .bpif(mem_slave_bpif)
+                // // Vital signals
+                // logic wen; // request is a data write
+                // logic ren; // request is a data read
+                // logic request_stall; // High when protocol should insert wait states in transaction
+                // logic [ADDR_WIDTH-1 : 0] addr; // *offset* address of request TODO: Is this good for general use?
+                // logic error; // Indicate error condition to bus
+                // logic [(DATA_WIDTH/8)-1 : 0] strobe; // byte enable for writes
+                // logic [DATA_WIDTH-1 : 0] wdata, rdata; // data lines -- from perspective of bus master. rdata should be data read from peripheral.
+
+                // modport peripheral_vital (
+                //     input wen, ren, addr, wdata, strobe,
+                //     output rdata, error, request_stall
+                // );
+        );
+    end
     
-        /////////////////
-        // Sequential: //
-        /////////////////
-        .clk(clk), 
-        .nRST(nRST),
+    // otherwise, don't instantiate mem slave
+    else
+    begin
+        $info("Vortex_mem_slave not instantiated");
 
-        ///////////////////////
-        // Memory Interface: //
-        ///////////////////////
-
-        // Memory Request:
-        // vortex outputs
-        .mem_req_valid(mem_slave_mem_req_valid),
-        .mem_req_rw(mem_slave_mem_req_rw),
-        .mem_req_byteen(mem_slave_mem_req_byteen),  // 64 (512 / 8)
-        .mem_req_addr(mem_slave_mem_req_addr),      // 26
-        .mem_req_data(mem_slave_mem_req_data),      // 512
-        .mem_req_tag(mem_slave_mem_req_tag),        // 56 (55 for SM disabled)
-        // vortex inputs
-        .mem_req_ready(mem_slave_mem_req_ready),
-
-        // Memory response:
-        // vortex inputs
-        .mem_rsp_valid(mem_slave_mem_rsp_valid),        
-        .mem_rsp_data(mem_slave_mem_rsp_data),      // 512
-        .mem_rsp_tag(mem_slave_mem_rsp_tag),        // 56 (55 for SM disabled)
-        // vortex outputs
-        .mem_rsp_ready(mem_slave_mem_rsp_ready),
-
-        // Status:
-        // vortex outputs
-        // input logic                             busy,
-
-        //////////////////////////////////
-        // Generic Bus Interface (AHB): //
-        //////////////////////////////////
-
-        .bpif(mem_slave_bpif)
-    );
+        // fake mem slave (safe, inactive outputs)
+        assign mem_slave_mem_req_ready = 1'b1;
+        assign mem_slave_mem_rsp_valid = 1'b0;
+        assign mem_slave_mem_rsp_data = 512'h0;
+        assign mem_slave_mem_rsp_tag = 56'h0;
+        assign mem_slave_bpif.rdata = 32'h0;
+        assign mem_slave_bpif.error = 1'b0;
+        assign mem_slave_bpif.request_stall = 1'b0;
+    end
 
     // ahb_manager
     VX_ahb_adapter #(
@@ -307,40 +343,79 @@ module Vortex_wrapper_no_Vortex
     // mem_req_arbiter logic: //
     ////////////////////////////
 
-    always_comb begin : mem_req_arbiter_comb_logic
-        
-        // only need to mux valid signal based on address
-        mem_slave_mem_req_valid = 1'b0;
-        ahb_manager_mem_req_valid = 1'b0;
-        if (Vortex_mem_req_valid)
-        begin
-            if (Vortex_mem_req_addr[32-6-1:MEM_SLAVE_ADDR_SPACE_BITS-6] == 
-                MEM_SLAVE_AHB_BASE_ADDR[32-1:MEM_SLAVE_ADDR_SPACE_BITS])
+    if (VORTEX_MEM_SLAVE_INSTANTIATED)
+    begin
+        always_comb begin : mem_req_arbiter_comb_logic
+            
+            // only need to mux valid signal based on address
+            mem_slave_mem_req_valid = 1'b0;
+            ahb_manager_mem_req_valid = 1'b0;
+            intermediate_mem_req_addr = 1'b0;
+            if (Vortex_mem_req_valid)
             begin
-                mem_slave_mem_req_valid = 1'b1;
+                if (Vortex_mem_req_addr[32-6-1:MEM_SLAVE_ADDR_SPACE_BITS-6] == 
+                    MEM_SLAVE_AHB_BASE_ADDR[32-1:MEM_SLAVE_ADDR_SPACE_BITS])
+                begin
+                    mem_slave_mem_req_valid = 1'b1;
+                end
+                // check for top 17 bits != top 17 bits of 32'hF000_0000
+                else if (Vortex_mem_req_addr[32-6-1:32-6-17] != MEM_SLAVE_AHB_BASE_ADDR[32-1:32-17])
+                begin
+                    ahb_manager_mem_req_valid = 1'b1;
+                end
+                else
+                begin
+                    intermediate_mem_req_addr = 1'b1;
+                end
             end
-            else
-            begin
-                ahb_manager_mem_req_valid = 1'b1;
-            end
+
+            // ready if both mem_slave and ahb_manager ready
+            Vortex_mem_req_ready = mem_slave_mem_req_ready & ahb_manager_mem_req_ready;
+
+            // hardwire all other signals
+            mem_slave_mem_req_rw = Vortex_mem_req_rw;
+            mem_slave_mem_req_byteen = Vortex_mem_req_byteen;       // 64 (512 / 8)
+            mem_slave_mem_req_addr = Vortex_mem_req_addr;           // 26
+            mem_slave_mem_req_data = Vortex_mem_req_data;           // 512
+            mem_slave_mem_req_tag = Vortex_mem_req_tag;             // 56 (55 for SM disabled)
+
+            ahb_manager_mem_req_rw = Vortex_mem_req_rw; 
+            ahb_manager_mem_req_byteen = Vortex_mem_req_byteen;     // 64 (512 / 8)
+            ahb_manager_mem_req_addr = Vortex_mem_req_addr;         // 26
+            ahb_manager_mem_req_data = Vortex_mem_req_data;         // 512
+            ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled) 
         end
+    end
 
-        // ready if both mem_slave and ahb_manager ready
-        Vortex_mem_req_ready = mem_slave_mem_req_ready & ahb_manager_mem_req_ready;
+    // arbiter always chooses ahb_manager if mem_slave not instantiated
+    else
+    begin
+        always_comb begin : mem_req_arbiter_no_mem_slave_comb_logic
 
-        // hardwire all other signals
-        mem_slave_mem_req_rw = Vortex_mem_req_rw;
-        mem_slave_mem_req_byteen = Vortex_mem_req_byteen;       // 64 (512 / 8)
-        mem_slave_mem_req_addr = Vortex_mem_req_addr;           // 26
-        mem_slave_mem_req_data = Vortex_mem_req_data;           // 512
-        mem_slave_mem_req_tag = Vortex_mem_req_tag;             // 56 (55 for SM disabled)
+            // all req's valid for ahb_manager
+            ahb_manager_mem_req_valid = Vortex_mem_req_valid;
+            mem_slave_mem_req_valid = 1'b0;
 
-        ahb_manager_mem_req_rw = Vortex_mem_req_rw; 
-        ahb_manager_mem_req_byteen = Vortex_mem_req_byteen;     // 64 (512 / 8)
-        ahb_manager_mem_req_addr = Vortex_mem_req_addr;         // 26
-        ahb_manager_mem_req_data = Vortex_mem_req_data;         // 512
-        ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled)
-        
+            // ready if ahb_manager ready
+            Vortex_mem_req_ready = ahb_manager_mem_req_ready;
+
+            // hardwire all other signals
+
+            // ready if both mem_slave and ahb_manager ready
+            Vortex_mem_req_ready = ahb_manager_mem_req_ready;
+
+            mem_slave_mem_req_rw = Vortex_mem_req_rw;
+            mem_slave_mem_req_byteen = Vortex_mem_req_byteen;       // 64 (512 / 8)
+            mem_slave_mem_req_addr = Vortex_mem_req_addr;           // 26
+            mem_slave_mem_req_data = Vortex_mem_req_data;           // 512
+            mem_slave_mem_req_tag = Vortex_mem_req_tag;             // 56 (55 for SM disabled)
+
+            ahb_manager_mem_req_rw = Vortex_mem_req_rw; 
+            ahb_manager_mem_req_byteen = Vortex_mem_req_byteen;     // 64 (512 / 8)
+            ahb_manager_mem_req_addr = Vortex_mem_req_addr;         // 26
+            ahb_manager_mem_req_data = Vortex_mem_req_data;         // 512
+            ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled) 
+        end
     end
 
     ///////////////////////////
@@ -393,7 +468,7 @@ module Vortex_wrapper_no_Vortex
             Vortex_mem_rsp_data = mem_slave_mem_rsp_data;
             Vortex_mem_rsp_tag = mem_slave_mem_rsp_tag;
         end
-        else if (mem_slave_mem_req_valid)
+        else if (ahb_manager_mem_rsp_valid)
         begin
             // take ahb_manager response
             Vortex_mem_rsp_valid = ahb_manager_mem_rsp_valid;
@@ -480,9 +555,10 @@ module Vortex_wrapper_no_Vortex
         next_ctrl_status_PC_reset_val = ctrl_status_PC_reset_val;
 
         // AHB read logic: 
+            // match addr if lower 14:2 bits match
 
         // busy reg read
-        if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == BUSY_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+        if (ctrl_status_bpif.addr[14:2] == BUSY_REG_AHB_BASE_ADDR[14:2])
         begin
             ctrl_status_bpif.rdata = {31'h0, ctrl_status_busy};
         end
@@ -490,12 +566,13 @@ module Vortex_wrapper_no_Vortex
         // start reg read --> default/0
     
         // PC reg read
-        else if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+        else if (ctrl_status_bpif.addr[14:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[14:2])
         begin
             ctrl_status_bpif.rdata = ctrl_status_PC_reset_val;
         end
 
         // AHB write logic:
+            // match addr if lower 14:2 bits match
 
         // only care about writes to start reg and PC reg
         if (ctrl_status_bpif.wen)
@@ -504,14 +581,14 @@ module Vortex_wrapper_no_Vortex
 
             // start reg write 1
             if (ctrl_status_bpif.strobe[0] & 
-                ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == START_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2] &
+                ctrl_status_bpif.addr[14:2] == START_REG_AHB_BASE_ADDR[14:2] &
                 ctrl_status_bpif.wdata[0])
             begin
                 ctrl_status_start_triggered = 1'b1;
             end
 
             // PC reg write
-            if (ctrl_status_bpif.addr[MEM_SLAVE_ADDR_SPACE_BITS-1:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[MEM_SLAVE_ADDR_SPACE_BITS-1:2])
+            if (ctrl_status_bpif.addr[14:2] == PC_RESET_VAL_REG_AHB_BASE_ADDR[14:2])
             begin
                 if (ctrl_status_bpif.strobe[0]) next_ctrl_status_PC_reset_val[7:0] = ctrl_status_bpif.wdata[7:0];
                 if (ctrl_status_bpif.strobe[1]) next_ctrl_status_PC_reset_val[15:8] = ctrl_status_bpif.wdata[15:8];

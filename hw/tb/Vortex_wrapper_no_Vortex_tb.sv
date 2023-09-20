@@ -17,9 +17,9 @@ parameter ADDR_WIDTH = 32;
 parameter DATA_WIDTH = 32;
 parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
-parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;;
+parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
+parameter MEM_SLAVE_ADDR_SPACE_BITS = 0;
 parameter BUFFER_WIDTH = 1;
 
 module Vortex_wrapper_no_Vortex_tb ();
@@ -360,7 +360,7 @@ module Vortex_wrapper_no_Vortex_tb ();
 
         // Vortex rsp wrapper outputs
         expected_Vortex_mem_rsp_valid = 1'b0; 
-        expected_Vortex_mem_rsp_data = 32'h0;
+        expected_Vortex_mem_rsp_data = 512'h0;
         expected_Vortex_mem_rsp_tag = 56'h0;
 
         // Vortex_mem_slave bpif outputs
@@ -389,6 +389,53 @@ module Vortex_wrapper_no_Vortex_tb ();
         expected_ahb_manager_ahbif_HSEL = 1'b0;
     end
     endtask
+
+    function logic [31:0] calculate_min_32_addr_Vortex_mem_slave();
+    begin
+        return 32'h0; // bpif takes care of address offset
+    end
+    endfunction
+    
+    function logic [31:0] calculate_max_32_addr_Vortex_mem_slave();
+    begin
+        if (MEM_SLAVE_ADDR_SPACE_BITS < 6) return 32'h0;
+        else return (1 << MEM_SLAVE_ADDR_SPACE_BITS) - 4;
+    end
+    endfunction
+
+    function logic [25:0] calculate_min_26_addr_Vortex_mem_slave();
+    begin
+        return (MEM_SLAVE_AHB_BASE_ADDR >> 6);
+    end
+    endfunction
+
+    function logic [25:0] calculate_max_26_addr_Vortex_mem_slave();
+    begin
+        // return (MEM_SLAVE_AHB_BASE_ADDR[32-1:32-26] + (1 << (MEM_SLAVE_ADDR_SPACE_BITS - 6)) - 1);
+        if (MEM_SLAVE_ADDR_SPACE_BITS < 6) return 26'h0;
+        else return calculate_min_26_addr_Vortex_mem_slave() + (1 << (MEM_SLAVE_ADDR_SPACE_BITS - 6)) - 1;
+    end
+    endfunction
+
+    function logic [25:0] calculate_min_26_addr_VX_ahb_adapter();
+    begin
+        // return BUSY_REG_AHB_BASE_ADDR[32-1:32-26];
+        return BUSY_REG_AHB_BASE_ADDR >> 6;
+    end
+    endfunction
+
+    function logic [25:0] calculate_min_26_addr_between();
+    begin
+        if (MEM_SLAVE_ADDR_SPACE_BITS < 6) return 26'h0;
+        else return calculate_max_26_addr_Vortex_mem_slave() + 1;
+    end
+    endfunction
+
+    function logic [25:0] calculate_max_26_addr_between();
+    begin
+        return (BUSY_REG_AHB_BASE_ADDR >> 6) - 1;
+    end
+    endfunction
 
     //////////////////////////////
     // Testbench initial block: //
@@ -440,6 +487,7 @@ module Vortex_wrapper_no_Vortex_tb ();
 
         /* --------------------------------------------------------------------------------------------- */
         // FSM, Mem-Mapped Reg Testing
+        @(posedge clk);
         $display();
         test_case = "FSM, Mem-Mapped Reg Testing";
         $display("test_case: ", test_case);
@@ -642,6 +690,460 @@ module Vortex_wrapper_no_Vortex_tb ();
         check_outputs();
 
         #(PERIOD/2);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex_mem_slave Vortex Side Testing
+        @(posedge clk);
+        $display();
+        test_case = "Vortex_mem_slave Vortex Side Testing";
+        $display("test_case: ", test_case);
+
+        $display();
+        $display($sformatf("\tminimum Vortex_mem_slave 32-bit address: %h", calculate_min_26_addr_Vortex_mem_slave()));
+        $display($sformatf("\tmaximum Vortex_mem_slave 32-bit address: %h", calculate_max_26_addr_Vortex_mem_slave()));
+        $display();
+
+        // reset
+        sub_test_case = "reset";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        set_default_inputs();
+        set_default_outputs();
+        #(PERIOD/2);
+        nRST = 1'b0;
+        #(PERIOD);
+        nRST = 1'b1;
+        #(PERIOD/2);
+
+        // check reset values
+        sub_test_case = "check reset values";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        check_outputs();
+        @(posedge clk);
+        #(PERIOD/2);
+
+        ///////////////////////////////////
+        // check read from min addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "read req to min addr";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b0; // read
+        Vortex_mem_req_byteen = 64'h0;
+        Vortex_mem_req_addr = calculate_min_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_tag = 56'habc; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check rsp to min addr req = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+        #(PERIOD/2);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b1; // valid rsp
+        expected_Vortex_mem_rsp_data = 512'h0; // expect read = 0
+        expected_Vortex_mem_rsp_tag = 56'habc;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        ///////////////////////////////////
+        // check read from max addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "read req to max addr";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b0; // read
+        Vortex_mem_req_byteen = 64'h0;
+        Vortex_mem_req_addr = calculate_max_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_tag = 56'hed5608; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check rsp to max addr req = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+        #(PERIOD/2);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b1; // valid rsp
+        expected_Vortex_mem_rsp_data = 512'h0; // expect read = 0
+        expected_Vortex_mem_rsp_tag = 56'hed5608;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        ////////////////////////
+        // write to min addr: //
+        ////////////////////////
+
+        sub_test_case = "write req to min addr";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b1; // write
+        Vortex_mem_req_byteen = 64'hf0f0f0f0f0f0f0f0; // skip some bytes
+        Vortex_mem_req_addr = calculate_min_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = {8 
+            {
+                32'h01234567,
+                32'h89abcdef
+            }};
+        Vortex_mem_req_tag = 56'h4d5f; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        ////////////////////////
+        // write to max addr: //
+        ////////////////////////
+
+        sub_test_case = "write req to max addr";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b1; // write
+        Vortex_mem_req_byteen = 64'h0f0f0f0f0f0f0f0f; // skip some bytes
+        Vortex_mem_req_addr = calculate_max_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = {8 
+            {
+                32'h01234567,
+                32'h89abcdef
+            }};
+        Vortex_mem_req_tag = 56'h00123; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        /////////////////////////////////////////
+        // check read from min addr = written: //
+        /////////////////////////////////////////
+
+        sub_test_case = "read req to min addr after write";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b0; // read
+        Vortex_mem_req_byteen = 64'h0;
+        Vortex_mem_req_addr = calculate_min_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_tag = 56'h327c; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check rsp to min addr req = 8{0x0123456700000000}";
+        $display("\tsub_test_case: ", sub_test_case);
+        #(PERIOD/2);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b1; // valid rsp
+        expected_Vortex_mem_rsp_data = {8 
+            {
+                32'h01234567,
+                32'h0
+            }};
+        expected_Vortex_mem_rsp_tag = 56'h327c;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        /////////////////////////////////////////
+        // check read from max addr = written: //
+        /////////////////////////////////////////
+
+        sub_test_case = "read req to max addr after write";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b0; // read
+        Vortex_mem_req_byteen = 64'h0;
+        Vortex_mem_req_addr = calculate_max_26_addr_Vortex_mem_slave(); // min addr
+        Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_tag = 56'h204; // random tag
+
+        // Vortex rsp wrapper inputs        
+        Vortex_mem_rsp_ready = 1'b1;
+
+        @(posedge clk);
+        set_default_inputs();
+
+        sub_test_case = "check rsp to min addr req = 8{0x0000000089abcdef}";
+        $display("\tsub_test_case: ", sub_test_case);
+        #(PERIOD/2);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b1; // valid rsp
+        expected_Vortex_mem_rsp_data = {8 
+            {
+                32'h0,
+                32'h89abcdef
+            }};
+        expected_Vortex_mem_rsp_tag = 56'h204;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        sub_test_case = "check idle after rsp";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper outputs
+        expected_Vortex_mem_req_ready = 1'b1;
+
+        // Vortex rsp wrapper outputs
+        expected_Vortex_mem_rsp_valid = 1'b0; 
+        expected_Vortex_mem_rsp_data = 512'h0;
+        expected_Vortex_mem_rsp_tag = 56'h0;
+
+        @(posedge clk);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex_mem_slave AHB Side Testing
+        @(posedge clk);
+        $display();
+        test_case = "Vortex_mem_slave AHB Side Testing";
+        $display("test_case: ", test_case);
+
+        $display();
+        $display($sformatf("\tminimum Vortex_mem_slave 32-bit address: %h", calculate_min_32_addr_Vortex_mem_slave()));
+        $display($sformatf("\tmaximum Vortex_mem_slave 32-bit address: %h", calculate_max_32_addr_Vortex_mem_slave()));
+        $display();
+
+        // reset
+        sub_test_case = "reset";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        set_default_inputs();
+        set_default_outputs();
+        #(PERIOD/2);
+        nRST = 1'b0;
+        #(PERIOD);
+        nRST = 1'b1;
+        #(PERIOD/2);
+        
+        // check reset values
+        sub_test_case = "check reset values";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        check_outputs();
+        @(posedge clk);
+        #(PERIOD/2);
+
+        ///////////////////////////////////
+        // check read from min addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "check read from min addr = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b0;
+        mem_slave_bpif.ren = 1'b1; // read
+        mem_slave_bpif.addr = calculate_min_32_addr_Vortex_mem_slave(); // min addr
+        mem_slave_bpif.wdata = 32'h0;
+        mem_slave_bpif.strobe = 4'b0;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 32'h0; // expect all zeros
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        ///////////////////////////////////
+        // check read from max addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "check read from max addr = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b0;
+        mem_slave_bpif.ren = 1'b1; // read
+        mem_slave_bpif.addr = calculate_max_32_addr_Vortex_mem_slave(); // max addr
+        mem_slave_bpif.wdata = 32'h0;
+        mem_slave_bpif.strobe = 4'b0;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 32'h0; // expect all zeros
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        ///////////////////////////////////////////
+        // check write to min addr = 0x76543210: //
+        ///////////////////////////////////////////
+
+        sub_test_case = "check write to min addr = 0x76543210";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b1; // write
+        mem_slave_bpif.ren = 1'b0;
+        mem_slave_bpif.addr = calculate_min_32_addr_Vortex_mem_slave(); // min addr
+        mem_slave_bpif.wdata = 32'h76543210;
+        mem_slave_bpif.strobe = 4'b1111;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 
+            calculate_max_32_addr_Vortex_mem_slave()? 32'h76543210 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        ///////////////////////////////////////////
+        // check write to max addr = 0xfedcba98: //
+        ///////////////////////////////////////////
+
+        sub_test_case = "check write to max addr = 0xfedcba98";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b1; // write
+        mem_slave_bpif.ren = 1'b0;
+        mem_slave_bpif.addr = calculate_max_32_addr_Vortex_mem_slave(); // max addr
+        mem_slave_bpif.wdata = 32'hfedcba98;
+        mem_slave_bpif.strobe = 4'b1111;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 
+            calculate_max_32_addr_Vortex_mem_slave()? 32'hfedcba98 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
 
         /* --------------------------------------------------------------------------------------------- */
         // End of Testbench

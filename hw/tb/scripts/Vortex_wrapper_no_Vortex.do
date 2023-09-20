@@ -127,11 +127,62 @@ add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrap
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_ctrl_status_PC_reset_val
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ctrl_status_reset_state
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_ctrl_status_reset_state
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/clk
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/nRST
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_valid
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_rw
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_byteen
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_addr
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_data
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_tag
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_req_ready
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_rsp_valid
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_rsp_data
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_rsp_tag
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/mem_rsp_ready
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/busy
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/Vortex_bad_address
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/next_mem_rsp_valid
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/next_mem_rsp_data
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/next_mem_rsp_tag
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/reg_file
+add wave -noupdate -expand -group {Vortex_mem_slave Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/genblk1/mem_slave/next_reg_file
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/clk
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nRST
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_valid
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_rw
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_byteen
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_addr
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_data
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_tag
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_rsp_ready
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_rsp_valid
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_rsp_data
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_rsp_tag
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/mem_req_ready
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/count
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/state
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_state
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/data_read
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_data_read
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/full_addr
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_data
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/data
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_tag
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/tag
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_rw
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/rw
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/clear
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/count_en
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_addr
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/addr
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_byteen
+add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/byteen
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {91 ns} 0}
+WaveRestoreCursors {{Cursor 1} {320 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 322
-configure wave -valuecolwidth 100
+configure wave -valuecolwidth 132
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -144,4 +195,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {81 ns} {144 ns}
+WaveRestoreZoom {0 ns} {510 ns}
