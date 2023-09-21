@@ -77,6 +77,8 @@ add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/expected_ahb_manager_ahbif_HWDATA
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/ahb_manager_ahbif/HWSTRB
 add wave -noupdate -expand -group {AHB Manager AHBIF} /Vortex_wrapper_no_Vortex_tb/expected_ahb_manager_ahbif_HWSTRB
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/clk
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/nRST
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_valid
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_rw
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/Vortex_mem_req_byteen
@@ -113,6 +115,7 @@ add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrap
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_data
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_tag
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager_mem_rsp_ready
+add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/between_mem_req_addr
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_rsp_valid_buffer
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/next_mem_rsp_valid_buffer
 add wave -noupdate -expand -group {Vortex Wrapper Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/mem_rsp_data_buffer
@@ -179,7 +182,7 @@ add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrap
 add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/nxt_byteen
 add wave -noupdate -expand -group {VX_ahb_adapter Internal Signals} /Vortex_wrapper_no_Vortex_tb/DUT/ahb_manager/byteen
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {320 ns} 0}
+WaveRestoreCursors {{Cursor 1} {578 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 322
 configure wave -valuecolwidth 132
@@ -195,4 +198,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ns} {510 ns}
+WaveRestoreZoom {466 ns} {976 ns}

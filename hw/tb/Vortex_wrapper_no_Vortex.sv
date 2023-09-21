@@ -197,7 +197,7 @@ module Vortex_wrapper_no_Vortex
     logic                               ahb_manager_mem_rsp_ready;
 
     // req arbiter
-    logic intermediate_mem_req_addr;
+    logic between_mem_req_addr;
 
     // rsp buffer
     logic                               mem_rsp_valid_buffer, next_mem_rsp_valid_buffer;        
@@ -215,6 +215,7 @@ module Vortex_wrapper_no_Vortex
     // instantiations: //
     /////////////////////
 
+    generate
     if (VORTEX_MEM_SLAVE_INSTANTIATED)
     begin
         // mem_slave
@@ -292,6 +293,7 @@ module Vortex_wrapper_no_Vortex
         assign mem_slave_bpif.error = 1'b0;
         assign mem_slave_bpif.request_stall = 1'b0;
     end
+    endgenerate
 
     // ahb_manager
     VX_ahb_adapter #(
@@ -343,6 +345,7 @@ module Vortex_wrapper_no_Vortex
     // mem_req_arbiter logic: //
     ////////////////////////////
 
+    generate
     if (VORTEX_MEM_SLAVE_INSTANTIATED)
     begin
         always_comb begin : mem_req_arbiter_comb_logic
@@ -350,7 +353,7 @@ module Vortex_wrapper_no_Vortex
             // only need to mux valid signal based on address
             mem_slave_mem_req_valid = 1'b0;
             ahb_manager_mem_req_valid = 1'b0;
-            intermediate_mem_req_addr = 1'b0;
+            between_mem_req_addr = 1'b0;
             if (Vortex_mem_req_valid)
             begin
                 if (Vortex_mem_req_addr[32-6-1:MEM_SLAVE_ADDR_SPACE_BITS-6] == 
@@ -365,7 +368,7 @@ module Vortex_wrapper_no_Vortex
                 end
                 else
                 begin
-                    intermediate_mem_req_addr = 1'b1;
+                    between_mem_req_addr = 1'b1;
                 end
             end
 
@@ -414,9 +417,10 @@ module Vortex_wrapper_no_Vortex
             ahb_manager_mem_req_byteen = Vortex_mem_req_byteen;     // 64 (512 / 8)
             ahb_manager_mem_req_addr = Vortex_mem_req_addr;         // 26
             ahb_manager_mem_req_data = Vortex_mem_req_data;         // 512
-            ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled) 
+            ahb_manager_mem_req_tag = Vortex_mem_req_tag;           // 56 (55 for SM disabled)
         end
     end
+    endgenerate
 
     ///////////////////////////
     // mem_rsp_buffer logic: //
