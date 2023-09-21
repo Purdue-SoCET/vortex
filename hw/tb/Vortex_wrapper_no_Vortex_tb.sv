@@ -19,7 +19,7 @@ parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
 parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-parameter MEM_SLAVE_ADDR_SPACE_BITS = 0;
+parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
 parameter BUFFER_WIDTH = 1;
 
 module Vortex_wrapper_no_Vortex_tb ();
