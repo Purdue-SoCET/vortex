@@ -32,14 +32,68 @@ DO_PRINTS = False
 ###########################################################################################################
 # classes:
 
+# class for simulating effective state of memory
+class MEM_Tracker():
+    # instance vars:
+    #   mem_state
+    # methods:
+    #   __init__()
+    #   write()
+
+    # init
+    def __init__(self):
+        self.mem_state = dict()
+
+    # perform writes using list of Mem_Wr_Req objects
+    def simulate_writes(self, write_object_list):
+
+        # iterate through writes
+        for write_object in write_object_list:
+            self.write(write_object)
+
+    # perform write using MEM_Wr_Req object
+    def write(self, write_object):
+
+        # print(f"addr = {write_object.addr}")
+        # print(f"data = {write_object.data}")
+        # print(f"byteen = {write_object.byteen}")
+
+        # retrieve effective individual bytes writing to
+        addr_int = int(write_object.addr, 16)
+        data_str = write_object.data
+        byteen_int = int(write_object.byteen, 16)
+        for byte_int in list(range(64)):
+
+            # print(f"byteen_int = {byteen_int:x}")
+            # print(f"byte_int = {byte_int:x}")
+            # print(f"byteen_int >> byte_int  = {byteen_int >> byte_int:x}")
+
+            # if byte enabled, track value
+            if ((byteen_int >> byte_int) % 2 == 1):
+
+                # get address of byte
+                byte_addr_int = addr_int + byte_int
+
+                # data string is indexed backward, each character is 1/2 byte
+                byte_str = data_str[64*2 - 2*byte_int - 2 : 64*2 - 2*byte_int]
+                # print(byte_str)
+                
+                assert 'x' not in byte_str, "'x' should never be written"
+
+                # track byte in mem
+                self.mem_state[byte_addr_int] = byte_str
+        
+        if (DO_PRINTS):
+            print(self.mem_state)
+
 # ~struct for mem transactions (UNUSED RIGHT NOW)
 class MEM_Trans():
 
     # instance vars:
     #   string
     # methods:
-    #   __init__
-    #   get_attributes
+    #   __init__()
+    #   get_attributes()
     
     # init
     def __init__(self, string):
@@ -60,9 +114,9 @@ class MEM_Rd_Req():
     #   string
 
     # methods:
-    #   __init__
-    #   get_attributes
-    #   build_string
+    #   __init__()
+    #   get_attributes()
+    #   build_string()
 
     # init
     def __init__(self, string):
@@ -98,9 +152,9 @@ class MEM_Wr_Req():
     #   string
 
     # methods:
-    #   __init__
-    #   get_attributes
-    #   build_string
+    #   __init__()
+    #   get_attributes()
+    #   build_string()
 
     # init
     def __init__(self, string):
@@ -162,9 +216,9 @@ class MEM_Rsp():
     #   string
 
     # methods:
-    #   __init__
-    #   get_attributes
-    #   build_string
+    #   __init__()
+    #   get_attributes()
+    #   build_string()
 
     # init
     def __init__(self, string):
@@ -463,30 +517,49 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
                     f"DIFF: Line {line + 1}: no matching questa line",
                 ]
 
-                print(baadf00d_line)
+                # print(baadf00d_line)
 
     # give final verdict on if mem transactions match
     if (same):
         # traces officially same
-        print_lines += [
+        print_lines = [
             f"",
-            f"MATCH: rtlsim and questa traces match",
+            f"TRACE MATCH: rtlsim and questa traces match",
             f"",
         ]
     else:
         # traces officially not same, notify of differences
-        print_lines += [
+        print_lines = [
             f"",
-            f"NO MATCH: rtlsim and questa traces do not match",
+            f"NO TRACE MATCH: rtlsim and questa traces do not match",
             f"\t{diff_count} differences"
             f"",
         ]
 
-    # TODO:
-    # determine if effectively same program --> same final state of memory --> compare mem writes
+    # create MEM_Tracker object for both scrapes
+    rtlsim_mem = MEM_Tracker()
+    rtlsim_mem.simulate_writes(rtlsim_scrape.MEM_Wr_Req_list)
+    questa_mem = MEM_Tracker()
+    questa_mem.simulate_writes(questa_scrape.MEM_Wr_Req_list)
 
-    # return lines to print
-    return print_lines
+    if (rtlsim_mem.mem_state == questa_mem.mem_state):
+        # mem states officially same
+        print_lines += [
+            f"",
+            f"MEM MATCH: rtlsim and questa memory states match",
+            f"",
+        ]
+    else:
+        # mem state officially not same
+        print_lines += [
+            f"",
+            f"NO MEM MATCH: rtlsim and questa memory states do not match",
+            f"",
+        ]
+
+    # print all final equivalent scrape and mem info lines
+    for line in print_lines:
+        print(line)
 
 # overall function to scrape rtlsim, scrape questa, compare scrapes, and write output files
 def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name):
@@ -558,11 +631,7 @@ def compare_trace_files(rtlsim_trace_file_name, questa_trace_file_name):
         quit()
 
     # compare rtlsim and questa scrapes and print difference information
-    print_lines = compare_scrapes(rtlsim_scrape, questa_scrape)
-
-    if (DO_PRINTS):
-        for line in print_lines:
-            print(line)
+    compare_scrapes(rtlsim_scrape, questa_scrape)
 
     # done program
     return
