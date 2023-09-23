@@ -12,7 +12,7 @@
 #			- ADD_INCL: The file's include directory if one 
 #
 # Macros: 
-#			- SYNTHESIS
+#			- VX_SYNTHESIS
 #           - FPU_FPNEW: FPNEW FPU 
 #			- VX_TOP_TRACE: Creates a logfile with top level transactions
 #			- SV_TRACE_EN: Allows the tracing of relevant VX signals 
@@ -32,7 +32,7 @@ ADD_INCL += $(INCL)
 ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh
 
 #Macros
-MACROS := +define+SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE +define+SV_TRACE_CORE_DCACHE +define+SV_TRACE_CACHE_DATA +define+EXT_TEX_ENABLE
+MACROS := +define+VX_SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE +define+SV_TRACE_CORE_DCACHE +define+SV_TRACE_CACHE_DATA +define+EXT_TEX_ENABLE
 
 ### Directories 
 # Vortex
