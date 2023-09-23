@@ -29,7 +29,7 @@ module VX_ahb_adapter #(
     output logic                         mem_req_ready,
 
     //AHB signals
-    // input logic ahb.HREADY, ahb.HREADY,
+    // input logic ahb.HREADY, ahb.HRESP,
     // input logic [31:0] ahb.HRDATA,
     // output logic ahb.HWRITE,
     // output logic [1:0] ahb.HTRANS,
@@ -103,7 +103,7 @@ module VX_ahb_adapter #(
                 if ((ahb.HREADY == 1) && (count == 4'd15)) begin
                     nxt_state = COMPLETE;
                 end
-                else if (ahb.HREADY == 1)
+                else if (ahb.HRESP == 1)
                     nxt_state = ERROR;
                 else begin
                     nxt_state = DATA;

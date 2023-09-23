@@ -403,6 +403,27 @@ module Vortex_wrapper_no_Vortex_tb ();
     end
     endtask
 
+    task gen_ahb_trans(
+    input rw, 
+    input logic [63:0] byte_en,
+    input logic [25:0] addr,
+    input logic [511:0] req_data,
+    input logic [55:0] req_tag,
+    input logic vx_ready_for_rsp
+    );
+    begin
+        Vortex_mem_req_valid = 1'b1;
+        Vortex_mem_req_rw = rw;
+        Vortex_mem_req_byteen = byte_en;
+        Vortex_mem_req_addr = addr;
+        Vortex_mem_req_data = req_data;
+        Vortex_mem_req_tag = req_tag;
+        Vortex_mem_rsp_ready = vx_ready_for_rsp;
+        #(PERIOD);
+        Vortex_mem_req_valid = 1'b0;
+    end
+    endtask
+
     task set_default_outputs();
     begin
         // Vortex req wrapper outputs
@@ -1700,6 +1721,219 @@ module Vortex_wrapper_no_Vortex_tb ();
         @(posedge clk);
 
         end
+
+        @(posedge clk);
+        ////////////////////////
+        // testing ahb_adapter: //
+        ////////////////////////
+        $display();
+        test_case = "Testing AHB adapter";
+        $display("test_case: ", test_case);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "AHB adapter normal read case";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        //driving HRDATA:
+        gen_ahb_trans(.rw('0), .byte_en(64'hffffffffffffff0f), .addr('hF0800000), .req_data(512'h0), .req_tag(56'h123456789abcde), .vx_ready_for_rsp(1));
+        ahb_manager_ahbif.HRDATA = 32'hdeadbeef;
+        #(PERIOD);
+        // VX_ahb_manager ahbif outputs
+        expected_ahb_manager_ahbif_HWRITE = 1'b0;
+        expected_ahb_manager_ahbif_HTRANS = 2'b10;
+        expected_ahb_manager_ahbif_HSIZE = 3'b010;
+        expected_ahb_manager_ahbif_HADDR = 32'h20000000;
+        expected_ahb_manager_ahbif_HWDATA = 32'h0;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        expected_ahb_manager_ahbif_HSEL = 1'b1;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000004;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000008;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000000c;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000010;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000014;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000018;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000001c;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000020;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000024;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000028;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000002c;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000030;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000034;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000038;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000003c;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000040;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        
+        if ((Vortex_mem_rsp_valid == 1) && (Vortex_mem_rsp_tag == 56'h123456789abcde) && (Vortex_mem_rsp_data == 512'hdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef))
+        begin
+            // fill in?
+        end
+        else
+        begin
+            $display("wrong response and tag signals from ahb master");
+        end
+        
+        ahb_manager_ahbif.HRDATA = '0;
+        #(PERIOD);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "AHB adapter normal write case";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        //driving HRDATA:
+        gen_ahb_trans(.rw('1), .byte_en(64'hffffffffffffff0f), .addr('hF0800000), .req_data(512'h123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678deadbeef), .req_tag(56'h123456789abcde), .vx_ready_for_rsp(1));
+        ahb_manager_ahbif.HRDATA = 32'hdeadbeef;
+        #(PERIOD);
+        // VX_ahb_manager ahbif outputs
+        expected_ahb_manager_ahbif_HWRITE = 1'b1;
+        expected_ahb_manager_ahbif_HTRANS = 2'b10;
+        expected_ahb_manager_ahbif_HSIZE = 3'b010;
+        expected_ahb_manager_ahbif_HADDR = 32'h20000000;
+        expected_ahb_manager_ahbif_HWDATA = 32'h0;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        expected_ahb_manager_ahbif_HSEL = 1'b1;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000004;
+        expected_ahb_manager_ahbif_HWDATA = 32'hdeadbeef;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000008;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000000c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000010;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000014;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000018;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000001c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000020;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000024;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000028;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000002c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000030;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000034;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000038;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000003c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000040;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        
+        if ((Vortex_mem_rsp_valid == 1) && (Vortex_mem_rsp_tag == 56'h123456789abcde))
+        begin
+            // fill in?
+        end
+        else
+        begin
+            $display("wrong response and tag signals from ahb master");
+        end
+        
+        #(PERIOD);
 
         /* --------------------------------------------------------------------------------------------- */
         // End of Testbench
