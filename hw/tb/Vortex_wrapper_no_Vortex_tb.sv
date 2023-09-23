@@ -400,6 +400,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         // VX_ahb_manager ahbif inputs
         ahb_manager_ahbif.HRESP = 1'b0;
         ahb_manager_ahbif.HRDATA = 32'h0;
+        ahb_manager_ahbif.HREADYOUT = 1;
     end
     endtask
 
