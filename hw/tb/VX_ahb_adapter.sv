@@ -57,6 +57,7 @@ module VX_ahb_adapter #(
     
     logic [15:0] [31:0] data_read;
     logic [15:0] [31:0] nxt_data_read;
+    logic rollover_flag;
 
 
     logic [31:0] full_addr;
@@ -100,7 +101,7 @@ module VX_ahb_adapter #(
             START: nxt_state = DATA;
 
             DATA: begin
-                if ((ahb.HREADY == 1) && (count == 4'd15)) begin
+                if ((ahb.HREADY == 1) && (rollover_flag)) begin
                     nxt_state = COMPLETE;
                 end
                 else if (ahb.HRESP == 1)
@@ -346,10 +347,11 @@ module VX_ahb_adapter #(
     counter
     SIXTEEN(
         .clk(clk),
-        .nRST(~nRST),
+        .nRST(nRST),
         .clear(clear),
         .count_enable(count_en),
         .rollover_val(4'd15),
+        .rollover_flag(rollover_flag),
         .count_out(count)
     );
 
