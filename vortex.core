@@ -128,7 +128,6 @@ filesets:
             - hw/rtl/fp_cores/VX_fp_ncomp.sv
             - hw/rtl/fp_cores/VX_fp_rounding.sv
             - hw/rtl/fp_cores/VX_fp_sqrt.sv
-            - hw/rtl/fp_cores/VX_fpu_dpi.sv
             - hw/rtl/fp_cores/VX_fpu_fpga.sv
             - hw/rtl/fp_cores/VX_fpu_fpnew.sv
             # FPNEW
