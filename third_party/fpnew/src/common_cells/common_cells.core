@@ -49,7 +49,7 @@ filesets:
       - src/cb_filter.sv
       - src/cdc_fifo_2phase.sv
       - src/cdc_fifo_gray.sv
-      - src/counter.sv
+      - src/VX_common_cells_counter.sv
       - src/ecc_decode.sv
       - src/ecc_encode.sv
       - src/edge_detect.sv
@@ -84,7 +84,7 @@ filesets:
       - src/deprecated/pulp_sync_wedge.sv
       - src/deprecated/rrarbiter.sv
       # Level 1
-      - src/deprecated/clock_divider.sv
+      - src/deprecated/VX_common_cells_clock_divider.sv
       - src/deprecated/fifo_v2.sv
       # Level 2
       - src/deprecated/fifo_v1.sv

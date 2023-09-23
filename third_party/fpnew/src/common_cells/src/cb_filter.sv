@@ -152,7 +152,7 @@ module cb_filter #(
   // -----------------------------------------
   for (genvar i = 0; i < NoCounters; i++) begin : gen_buckets
     logic [BucketWidth-1:0] bucket_content;
-    counter #(
+    VX_common_cells_counter #(
       .WIDTH( BucketWidth )
     ) i_bucket (
       .clk_i      ( clk_i             ),
@@ -175,7 +175,7 @@ module cb_filter #(
   // -----------------------------------------
   assign cnt_en   = incr_valid_i ^ decr_valid_i;
   assign cnt_down = decr_valid_i;
-  counter #(
+  VX_common_cells_counter #(
     .WIDTH ( HashWidth )
   ) i_tot_count (
     .clk_i     ( clk_i          ),

@@ -106,7 +106,7 @@ module stream_delay #(
             assign counter_load = FixedDelay;
         end
 
-        counter #(
+        VX_common_cells_counter #(
             .WIDTH      ( CounterBits )
         ) i_counter (
             .clk_i      ( clk_i        ),
