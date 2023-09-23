@@ -1730,6 +1730,25 @@ module Vortex_wrapper_no_Vortex_tb ();
         test_case = "Testing AHB adapter";
         $display("test_case: ", test_case);
 
+        // reset
+        sub_test_case = "reset";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        set_default_inputs();
+        set_default_outputs();
+        #(PERIOD/2);
+        nRST = 1'b0;
+        #(PERIOD);
+        nRST = 1'b1;
+        #(PERIOD/2);
+
+        // check reset values
+        sub_test_case = "check reset values";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        check_outputs();
+        @(posedge clk);
+
         // make AHB side write req to start reg:
         sub_test_case = "AHB adapter normal read case";
         $display("\tsub_test_case: ", sub_test_case);
