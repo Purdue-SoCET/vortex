@@ -2,7 +2,7 @@
 `define VX_PLATFORM
 
 `ifndef VX_SYNTHESIS
-`include "util_dpi.vh"
+// `include "util_dpi.vh" // this fixes unable to compile Vortex_wrapper_no_Vortex
 `endif
 
 `include "VX_scope.vh"
