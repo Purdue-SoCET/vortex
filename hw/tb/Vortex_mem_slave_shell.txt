@@ -9,6 +9,8 @@
         AHB only references word addresses
 */
 
+< program .hex file name here >
+
 // temporary include to have defined vals
 `include "Vortex_mem_slave.vh"
 

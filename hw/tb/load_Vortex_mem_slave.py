@@ -26,7 +26,7 @@ import sys
 # consts:
 
 # 16 KB = 16384 B --> log2(16384) = 14 bit addr space
-LOCAL_MEM_NUM_BITS = 14
+LOCAL_MEM_NUM_BITS = 15
 LOCAL_MEM_SIZE = 2**LOCAL_MEM_NUM_BITS
 
 VX_MEM_BYTEEN_WIDTH = 64
@@ -71,7 +71,7 @@ def bits_needed(n):
 
 
 # parse source shell file lines and intel hex file lines to construct .sv source file
-def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
+def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines, intelhex_name):
     """
     function to parse out intel hex file lines to construct reg file instantiation of .sv and complete 
     Vortex_mem_slave.sv with Vortex_mem_slave_shell.txt
@@ -80,14 +80,25 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
         Vortex_mem_slave_shell_lines: lines in Vortex_mem_slave_shell.txt file wrapping around reg file reset
             values    
         intelhex_lines: lines in intel hex file which will reg file reset values
+        intelhex_name: name of intel hex file
     
     outputs:
         Vortex_mem_slave_sv_lines: lines which make up source file Vortex_mem_slave.sv
     """
 
     ###########################
-    # make reg file instance: #
+    # display .hex file name: #
     ###########################
+
+    hex_file_name_lines = [
+        f"/////////////" + "/" * (len(intelhex_name)+2) + f"///\n"
+        f"// LOADED IN \"{intelhex_name}\" //\n"
+        f"/////////////" + "/" * (len(intelhex_name)+2) + f"///\n"
+    ]
+
+    ##########################
+    # modify local mem size: #
+    ##########################
 
     # set LOCAL_MEM_SIZE parameter line
     local_mem_size_lines = [
@@ -225,17 +236,20 @@ def construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines):
 
     # get indices in shell file
     try:
+        hex_file_name_index = Vortex_mem_slave_shell_lines.index("< program .hex file name here >\n")
         local_mem_size_index = Vortex_mem_slave_shell_lines.index("< LOCAL_MEM_SIZE val here >\n")
         reg_file_instance_index = Vortex_mem_slave_shell_lines.index("< reset vals here >\n")
         Vortex_read_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex read logic here >\n")
         Vortex_write_logic_index = Vortex_mem_slave_shell_lines.index("< Vortex write logic here >\n")
 
     except:
-        print("ERROR: couldn't find placeholder lines in shell text file")
+        print("ERROR: couldn't find placeholder line(s) in shell text file")
         quit()
 
     # add up shell pieces and instance piece
-    reg_file_sv_lines = Vortex_mem_slave_shell_lines[:local_mem_size_index]
+    reg_file_sv_lines = Vortex_mem_slave_shell_lines[:hex_file_name_index]
+    reg_file_sv_lines += hex_file_name_lines
+    reg_file_sv_lines += Vortex_mem_slave_shell_lines[hex_file_name_index + 1:local_mem_size_index]
     reg_file_sv_lines += local_mem_size_lines
     reg_file_sv_lines += Vortex_mem_slave_shell_lines[local_mem_size_index + 1:reg_file_instance_index]
     reg_file_sv_lines += reg_file_instance_lines
@@ -290,10 +304,10 @@ def intelhex_to_Vortex_mem_slave_sv(hex_file_name, Vortex_mem_slave_sv_name):
 
     # check for LOAD_ZEROS
     if (LOAD_ZEROS):
-        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, False)
+        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, False, hex_file_name)
     # otherwise, use hex file
     else:
-        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines)
+        Vortex_mem_slave_sv_lines = construct_Vortex_mem_slave_sv(Vortex_mem_slave_shell_lines, intelhex_lines, hex_file_name)
 
     # try to write source .sv file
     try:

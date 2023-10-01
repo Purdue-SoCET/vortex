@@ -110,21 +110,24 @@ module VX_local_mem_tb;
     //               .tb_addr_out_of_bounds(tb_addr_out_of_bounds)
     // ); 
 
-    Vortex_mem_slave MEM(.clk(clk), 
-                  .nRST(nRST), 
-                  .mem_req_valid(mem_req_valid), 
-                  .mem_req_rw(mem_req_rw), 
-                  .mem_req_byteen(mem_req_byteen),
-                  .mem_req_addr(mem_req_addr), 
-                  .mem_req_data(mem_req_data), 
-                  .mem_req_tag(mem_req_tag), 
-                  .mem_req_ready(mem_req_ready), 
-                  .mem_rsp_valid(mem_rsp_valid), 
-                  .mem_rsp_data(mem_rsp_data), 
-                  .mem_rsp_tag(mem_rsp_tag), 
-                  .mem_rsp_ready(mem_rsp_ready), 
-                  .busy(busy), 
-                  .bpif(bpif)
+    Vortex_mem_slave #(
+        .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(32'h8000_0000) // binaries are stuck with start addr 0x8000_0000
+    ) MEM (
+        .clk(clk), 
+        .nRST(nRST), 
+        .mem_req_valid(mem_req_valid), 
+        .mem_req_rw(mem_req_rw), 
+        .mem_req_byteen(mem_req_byteen),
+        .mem_req_addr(mem_req_addr), 
+        .mem_req_data(mem_req_data), 
+        .mem_req_tag(mem_req_tag), 
+        .mem_req_ready(mem_req_ready), 
+        .mem_rsp_valid(mem_rsp_valid), 
+        .mem_rsp_data(mem_rsp_data), 
+        .mem_rsp_tag(mem_rsp_tag), 
+        .mem_rsp_ready(mem_rsp_ready), 
+        .busy(busy), 
+        .bpif(bpif)
     ); 
 
     // assign tb_mem_rsp_ready = mem_rsp_ready; 
@@ -246,7 +249,7 @@ module VX_local_mem_tb;
 
             // check if never finishes
             begin
-                delay = 30000;
+                delay = 100000;
                 #(delay); 
                 $display("ERROR: never finished %d delay", delay);
             end
@@ -254,14 +257,43 @@ module VX_local_mem_tb;
 
         disable fork;
 
-        // delay before mem dump
-        delay = 1000;
-        $display("delay %d before mem dump", delay);
-        #(delay);
+        // // delay before repeated program run
+        // delay = 1000;
+        // $display("delay %d before repeated program run", delay);
+        // #(delay);
+        
+        // // Reset
+        // reset = 1'b1; 
+        // nRST = 1'b0;
+        // #(PERIOD * 13); 
+        // reset = 1'b0; 
+        // nRST = 1'b1;
 
-        // mem dump
-        $display("begin mem dump");
-        dump_memory();
+        // fork 
+        //     // check for busy low
+        //     begin
+        //         @(negedge busy);
+        //         $display("SUCCESS: got busy low");
+        //     end
+
+        //     // check if never finishes
+        //     begin
+        //         delay = 30000;
+        //         #(delay); 
+        //         $display("ERROR: never finished %d delay", delay);
+        //     end
+        // join_any
+
+        // disable fork;
+
+        // // delay before mem dump
+        // delay = 1000;
+        // $display("delay %d before mem dump", delay);
+        // #(delay);
+
+        // // mem dump
+        // $display("begin mem dump");
+        // dump_memory();
 
         // delay before end of sim
         delay = 1000;

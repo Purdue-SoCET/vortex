@@ -22,14 +22,17 @@
 
 TB_DIR := tb
 VX_TB := VX_local_mem_tb
+VX_WRAPPER_TB := Vortex_wrapper_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
+WRAPPER_TARGET_TB := $(TB_DIR)/$(VX_WRAPPER_TB).sv
 
 WAVE_DIR := $(TB_DIR)/scripts
 WAVE:= $(WAVE_DIR)/VX_i_d_caches.do
+WRAPPER_WAVE:= $(WAVE_DIR)/VX_wrapper_waves.do
 
 # Additional files 
 ADD_INCL += $(INCL)
-ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh
+ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave.vh tb/VX_ahb_adapter.sv tb/counter.sv tb/Vortex_wrapper_no_Vortex.sv
 
 #Macros
 MACROS := +define+VX_SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE +define+SV_TRACE_CORE_DCACHE +define+SV_TRACE_CACHE_DATA +define+EXT_TEX_ENABLE
@@ -108,6 +111,10 @@ all_gui: $(WORKDIR) compile run_gui
 
 all_debug: $(WORKDIR) compile run_debug
 
+all_wrapper: $(WORKDIR) compile run_wrapper
+
+all_wrapper_gui: $(WORDKIR) compile run_wrapper_gui
+
 compile: $(WORKDIR)
 		#@vlog $(VLOGOPTS) $(wildcard $(INCL)/*_pkg.sv)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(INTF_FILES) 
@@ -119,9 +126,10 @@ compile: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) +incdir+$(FPNEW_DIR) +incdir+$(FPU_DIV_DIR) +incdir+$(DPI_DIR) $(RTL_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(ADD_INCL) $(ADD_RTL)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(TARGET_TB)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(WRAPPER_TARGET_TB)
 
 run:
-		vsim $(VSIMOPTS) -c\
+		vsim $(VSIMOPTS) -c \
 		$(VX_TB) \
 		-voptargs=+acc \
 		-coverage \
@@ -130,13 +138,29 @@ run:
 		-do "exit" \
 
 run_gui: 
-		vsim $(VSIMOPTS) -gui\
+		vsim $(VSIMOPTS) -gui \
 		$(VX_TB) \
 		-voptargs=+acc \
 		-coverage \
 		-do "$(WAVE)" \
 		-do "run -all" \
 
+run_wrapper:
+	vsim $(VSIMOPTS) -c \
+	$(VX_WRAPPER_TB) \
+	-voptargs=+acc \
+	-coverage \
+	-do "$(WRAPPER_WAVE)" \
+	-do "run -all" \
+	-do "exit" \
+
+run_wrapper_gui:
+	vsim $(VSIMOPTS) -gui \
+	$(VX_WRAPPER_TB) \
+	-voptargs=+acc \
+	-coverage \
+	-do "$(WRAPPER_WAVE)" \
+	-do "run -all" \
 
 $(WORKDIR):
 	@vlib $(WORKDIR)
