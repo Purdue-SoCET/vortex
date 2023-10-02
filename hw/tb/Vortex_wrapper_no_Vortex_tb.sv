@@ -19,6 +19,7 @@ parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
 parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
+parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
 parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
 parameter BUFFER_WIDTH = 1;
 
@@ -133,6 +134,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         .BUSY_REG_AHB_BASE_ADDR(BUSY_REG_AHB_BASE_ADDR),
         .START_REG_AHB_BASE_ADDR(START_REG_AHB_BASE_ADDR),
         .PC_RESET_VAL_REG_AHB_BASE_ADDR(PC_RESET_VAL_REG_AHB_BASE_ADDR),
+        .PC_RESET_VAL_RESET_VAL(PC_RESET_VAL_RESET_VAL),
         .MEM_SLAVE_ADDR_SPACE_BITS(MEM_SLAVE_ADDR_SPACE_BITS),
         .BUFFER_WIDTH(BUFFER_WIDTH)
     ) DUT (.*);
@@ -709,7 +711,8 @@ module Vortex_wrapper_no_Vortex_tb ();
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
-        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        // expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0, reliant on state now (based on busy going low or setting reg high)
         expected_ctrl_status_bpif_error = 1'b0;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
@@ -1592,7 +1595,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         Vortex_mem_rsp_ready = 1'b1;
 
         #(PERIOD/4);
-        assert(DUT.between_mem_req_addr == 1'b1); // check for arbiter chooses between
+        assert(DUT.between_Vortex_mem_slave_VX_ahb_adapter_space == 1'b1); // check for arbiter chooses between
 
         @(posedge clk);
         set_default_inputs();
@@ -1632,7 +1635,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         Vortex_mem_rsp_ready = 1'b1;
 
         #(PERIOD/4);
-        assert(DUT.between_mem_req_addr == 1'b1); // check for arbiter chooses between
+        assert(DUT.between_Vortex_mem_slave_VX_ahb_adapter_space == 1'b1); // check for arbiter chooses between
 
         @(posedge clk);
         set_default_inputs();
@@ -1718,7 +1721,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         Vortex_mem_rsp_ready = 1'b1;
 
         #(PERIOD/4);
-        assert(DUT.between_mem_req_addr == 1'b1) // check for arbiter chooses between
+        assert(DUT.between_Vortex_mem_slave_VX_ahb_adapter_space == 1'b1) // check for arbiter chooses between
         else $display("\tTB ERROR: didn't detect between addr");
 
         @(posedge clk);

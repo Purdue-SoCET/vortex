@@ -11,11 +11,13 @@
 // wrapper parameters
 parameter ADDR_WIDTH = 32;
 parameter DATA_WIDTH = 32;
-parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
+// parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
+parameter MEM_SLAVE_AHB_BASE_ADDR = 32'h8000_0000; // testing address, where old binaries expect
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
 parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
+parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
+parameter MEM_SLAVE_ADDR_SPACE_BITS = 15;
 parameter BUFFER_WIDTH = 1;
 
 module Vortex_wrapper_tb; 
@@ -129,6 +131,7 @@ module Vortex_wrapper_tb;
         .BUSY_REG_AHB_BASE_ADDR(BUSY_REG_AHB_BASE_ADDR),
         .START_REG_AHB_BASE_ADDR(START_REG_AHB_BASE_ADDR),
         .PC_RESET_VAL_REG_AHB_BASE_ADDR(PC_RESET_VAL_REG_AHB_BASE_ADDR),
+        .PC_RESET_VAL_RESET_VAL(PC_RESET_VAL_RESET_VAL),
         .MEM_SLAVE_ADDR_SPACE_BITS(MEM_SLAVE_ADDR_SPACE_BITS),
         .BUFFER_WIDTH(BUFFER_WIDTH)
     ) Vortex_wrapper_no_Vortex_Instance (.*);
@@ -166,6 +169,7 @@ module Vortex_wrapper_tb;
 
     int delay;
     int cycle_count;
+    int poll_period;
 
     /////////////////////////////////
     // Testbench Expected Signals: //
@@ -402,7 +406,7 @@ module Vortex_wrapper_tb;
         // check_signal("ahb_manager_ahbif.HSEL", ahb_manager_ahbif.HSEL, expected_ahb_manager_ahbif_HSEL);
         check_ahb_manager_ahbif_outputs();
     end
-    endtask;
+    endtask
 
     task set_default_outputs();
     begin
@@ -426,7 +430,7 @@ module Vortex_wrapper_tb;
 
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b1;
-        expected_Vortex_PC_reset_val = 32'hF000_0000;
+        expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL;
 
         // VX_ahb_manager ahbif outputs
         expected_ahb_manager_ahbif_HWRITE = 1'b0;
@@ -438,6 +442,14 @@ module Vortex_wrapper_tb;
         expected_ahb_manager_ahbif_HWDATA = 32'h0;
         expected_ahb_manager_ahbif_HWSTRB = 4'b0;
         expected_ahb_manager_ahbif_HSEL = 1'b0;
+    end
+    endtask
+
+    task poll_busy_reg (
+        logic expected_busy_val
+    );
+    begin
+        // 
     end
     endtask
 
@@ -499,33 +511,20 @@ module Vortex_wrapper_tb;
         test_case = "Vortex Reset";
         $display("test_case: ", test_case);
 
+        #(PERIOD * 10);
+        @(posedge clk);
+
         /* --------------------------------------------------------------------------------------------- */
-        // Vortex Start
+        // Vortex Prelim Checks
         $display();
-        test_case = "Vortex Start";
+        test_case = "Vortex Prelim Checks";
         $display("test_case: ", test_case);
+
+        #(PERIOD/2);
 
         /////////////////////
         // read busy high: //
         ///////////////////// 
-
-        #(PERIOD/2);
-
-        // set busy high
-        sub_test_case = "set busy high";
-        $display("\tsub_test_case: ", sub_test_case);
-
-        // CTRL/Status reg bpif inputs
-        ctrl_status_bpif.wen = 1'b0;
-        ctrl_status_bpif.ren = 1'b0;
-        ctrl_status_bpif.addr = 32'h0;
-        ctrl_status_bpif.wdata = 32'h0;
-        ctrl_status_bpif.strobe = 4'b0;
-        // CTRL/Status inputs
-        // Vortex_busy = 1'b1;
-
-        // wait for busy to propagate
-        #(PERIOD);
 
         // read busy reg
         sub_test_case = "AHB read to busy reg";
@@ -542,18 +541,68 @@ module Vortex_wrapper_tb;
 
         #(PERIOD/2);
 
-        // check rsp (read busy reg = 1):
-        sub_test_case = "check AHB rsp busy reg = 1";
+        // check rsp (read busy reg = 0):
+        sub_test_case = "check AHB rsp busy reg = 0";
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
-        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
         expected_ctrl_status_bpif_error = 1'b0;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b1;
-        expected_Vortex_PC_reset_val = 32'hF000_0000;
+        expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL;
         check_outputs();
+
+        /////////////////////////////////////
+        // delay before start reg val set: //
+        /////////////////////////////////////
+
+        sub_test_case = "delay before start reg val set";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        #(20 * PERIOD);
+        @(posedge clk);
+
+        /////////////////////
+        // read busy high: //
+        ///////////////////// 
+
+        // read busy reg
+        sub_test_case = "AHB read to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1;
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        // Vortex_busy = 1'b1;
+
+        #(PERIOD/2);
+
+        // check rsp (read busy reg = 0):
+        sub_test_case = "check AHB rsp busy reg = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL;
+        check_outputs();
+        
+        @(posedge clk);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex Start
+        $display();
+        test_case = "Vortex Start";
+        $display("test_case: ", test_case);
 
         ////////////////////////
         // set start reg val: //
@@ -596,21 +645,27 @@ module Vortex_wrapper_tb;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b0; // reset should go low since wrote to start reg, busy high
-        expected_Vortex_PC_reset_val = 32'hF000_0000;
+        expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL;
 
         check_outputs();
 
         #(PERIOD/2);
 
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex Running
         $display();
+        test_case = "Vortex Running";
+        $display("test_case: ", test_case);
 
         cycle_count = 0;
         delay = 10000;
+        poll_period = delay / 10;
 
         fork 
             // check for busy low
             begin
                 @(negedge Vortex_busy);
+                $display();
                 $display("SUCCESS: program finished after %d cycles, got busy low", cycle_count);
             end
 
@@ -618,7 +673,9 @@ module Vortex_wrapper_tb;
             begin
                 #(PERIOD * delay);
 
+                $display();
                 $display("ERROR: program never finished, stopped at %d cycles", cycle_count);
+                num_errors++;
             end
 
             // iterate cycle count
@@ -629,9 +686,25 @@ module Vortex_wrapper_tb;
                     #(PERIOD/2);
                 end
             end
+
+            // periodically poll
+            begin
+                while (1) begin
+                    @(posedge clk);
+
+                    poll_busy_reg(0);
+                end
+            end
         join_any
 
         disable fork;
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Delay After Run
+        $display();
+        test_case = "Delay After Run";
+        $display("test_case: ", test_case);
+        #(20 * PERIOD);
 
         /* --------------------------------------------------------------------------------------------- */
         // End of Testbench

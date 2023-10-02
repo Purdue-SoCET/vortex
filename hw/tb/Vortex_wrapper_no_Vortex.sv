@@ -196,9 +196,6 @@ module Vortex_wrapper_no_Vortex
     logic [`VX_MEM_TAG_WIDTH-1:0]       ahb_manager_mem_rsp_tag;    // 56 (55 for SM disabled)
     logic                               ahb_manager_mem_rsp_ready;
 
-    // req arbiter
-    logic between_mem_req_addr;
-
     // rsp buffer
     logic                               mem_rsp_valid_buffer, next_mem_rsp_valid_buffer;        
     logic [`VX_MEM_DATA_WIDTH-1:0]      mem_rsp_data_buffer, next_mem_rsp_data_buffer;      // 512
@@ -210,6 +207,14 @@ module Vortex_wrapper_no_Vortex
     logic ctrl_status_start_triggered;              // detector for start write, will allow FSM transition
     logic [32-1:0] ctrl_status_PC_reset_val, next_ctrl_status_PC_reset_val;  // PC reset val reg
     logic ctrl_status_reset_state, next_ctrl_status_reset_state;    // FSM state
+
+    ///////////////////
+    // info signals: //
+    ///////////////////
+
+    logic inside_Vortex_mem_slave_space;
+    logic inside_VX_ahb_adapter_space;
+    logic between_Vortex_mem_slave_VX_ahb_adapter_space;
 
     /////////////////////
     // instantiations: //
@@ -353,22 +358,36 @@ module Vortex_wrapper_no_Vortex
             // only need to mux valid signal based on address
             mem_slave_mem_req_valid = 1'b0;
             ahb_manager_mem_req_valid = 1'b0;
-            between_mem_req_addr = 1'b0;
+
+            // info signals
+            inside_Vortex_mem_slave_space = 1'b0;
+            inside_VX_ahb_adapter_space = 1'b0;
+            between_Vortex_mem_slave_VX_ahb_adapter_space = 1'b0;
+
             if (Vortex_mem_req_valid)
             begin
+                // check for inside Vortex_mem_slave addr space
                 if (Vortex_mem_req_addr[32-6-1:MEM_SLAVE_ADDR_SPACE_BITS-6] == 
                     MEM_SLAVE_AHB_BASE_ADDR[32-1:MEM_SLAVE_ADDR_SPACE_BITS])
                 begin
                     mem_slave_mem_req_valid = 1'b1;
+
+                    // info signals
+                    inside_Vortex_mem_slave_space = 1'b1;
                 end
-                // check for top 17 bits != top 17 bits of 32'hF000_0000
+                // check for top 17 bits != top 17 bits of 32'hF000_0000 -> inside VX_ahb_adapter addr space
                 else if (Vortex_mem_req_addr[32-6-1:32-6-17] != MEM_SLAVE_AHB_BASE_ADDR[32-1:32-17])
                 begin
                     ahb_manager_mem_req_valid = 1'b1;
+
+                    // info signals
+                    inside_VX_ahb_adapter_space = 1'b1;
                 end
+                // otherwise, in between spaces
                 else
                 begin
-                    between_mem_req_addr = 1'b1;
+                    // info signals
+                    between_Vortex_mem_slave_VX_ahb_adapter_space = 1'b1;
                 end
             end
 
@@ -564,7 +583,9 @@ module Vortex_wrapper_no_Vortex
         // busy reg read
         if (ctrl_status_bpif.addr[14:2] == BUSY_REG_AHB_BASE_ADDR[14:2])
         begin
-            ctrl_status_bpif.rdata = {31'h0, ctrl_status_busy};
+            // ctrl_status_bpif.rdata = {31'h0, ctrl_status_busy};
+            ctrl_status_bpif.rdata = {31'h0, ~ctrl_status_reset_state}; 
+                // actually want this since busy high when Vortex resetting
         end
 
         // start reg read --> default/0
