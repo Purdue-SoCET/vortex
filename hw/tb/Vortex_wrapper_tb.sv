@@ -9,7 +9,7 @@
 `timescale 1 ns / 1 ns
 
 parameter SET_PC_RESET_VAL = 1;
-parameter RUN_TWICE = 1;
+parameter RUN_TWICE = 0;
 
 // wrapper parameters
 parameter ADDR_WIDTH = 32;
