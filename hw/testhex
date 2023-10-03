@@ -9,7 +9,7 @@ declare -a hex_file_array=(
     "array.hex" 
     "float.hex")
 
-output_file_name="testhex_output.txt"
+output_file_name="testhex_output.log"
 
 echo "testhex output for $(date +"%Y_%m_%d_%I_%M_%p")" > $output_file_name 
 
