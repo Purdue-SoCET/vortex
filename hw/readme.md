@@ -1,4 +1,3 @@
-
 # Simulating VX on Questa
 
 First, make sure that all submodules are available. If not, run from main directory: 
@@ -24,7 +23,6 @@ make all or make all_gui
 Vortex with Vortex_wrapper_no_Vortex: 
 ```
 make all_wrapper or make all_wrapper_gui
-
 ```
 
 # Run Regression on Vortex Unit Test Hex Files
