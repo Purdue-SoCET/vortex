@@ -525,7 +525,7 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
         print_lines = [
             f"",
             f"TRACE MATCH: rtlsim and questa traces match",
-            f"",
+            # f"",
         ]
     else:
         # traces officially not same, notify of differences
@@ -533,7 +533,7 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
             f"",
             f"NO TRACE MATCH: rtlsim and questa traces do not match",
             f"\t{diff_count} differences"
-            f"",
+            # f"",
         ]
 
     # create MEM_Tracker object for both scrapes
@@ -545,14 +545,14 @@ def compare_scrapes(rtlsim_scrape, questa_scrape):
     if (rtlsim_mem.mem_state == questa_mem.mem_state):
         # mem states officially same
         print_lines += [
-            f"",
+            # f"",
             f"MEM MATCH: rtlsim and questa memory states match",
             f"",
         ]
     else:
         # mem state officially not same
         print_lines += [
-            f"",
+            # f"",
             f"NO MEM MATCH: rtlsim and questa memory states do not match",
             f"",
         ]
