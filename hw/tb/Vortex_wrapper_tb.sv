@@ -805,45 +805,45 @@ module Vortex_wrapper_tb;
 
         if (program_terminated) begin
 
-        // /* --------------------------------------------------------------------------------------------- */
-        // // Check Busy Reg = 0
-        // $display();
-        // test_case = "Check Busy Reg = 0";
-        // $display("test_case: ", test_case);
+        /* --------------------------------------------------------------------------------------------- */
+        // Check Busy Reg = 0
+        $display();
+        test_case = "Check Busy Reg = 0";
+        $display("test_case: ", test_case);
         
-        // ////////////////////
-        // // read busy low: //
-        // //////////////////// 
+        ////////////////////
+        // read busy low: //
+        //////////////////// 
 
-        // // read busy reg
-        // sub_test_case = "AHB read to busy reg";
-        // $display("\tsub_test_case: ", sub_test_case);
+        // read busy reg
+        sub_test_case = "AHB read to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
 
-        // // CTRL/Status reg bpif inputs
-        // ctrl_status_bpif.wen = 1'b0;
-        // ctrl_status_bpif.ren = 1'b1;
-        // ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
-        // ctrl_status_bpif.wdata = 32'h0;
-        // ctrl_status_bpif.strobe = 4'b0;
-        // // CTRL/Status inputs
-        // // Vortex_busy = 1'b1;
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1;
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        // Vortex_busy = 1'b1;
 
-        // #(PERIOD/2);
+        #(PERIOD/2);
 
-        // // check rsp (read busy reg = 0):
-        // sub_test_case = "check AHB rsp busy reg = 0";
-        // $display("\tsub_test_case: ", sub_test_case);
+        // check rsp (read busy reg = 0):
+        sub_test_case = "check AHB rsp busy reg = 0";
+        $display("\tsub_test_case: ", sub_test_case);
 
-        // // CTRL/Status reg bpif outputs
-        // expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
-        // expected_ctrl_status_bpif_error = 1'b0;
-        // expected_ctrl_status_bpif_request_stall = 1'b0;
-        // // CTRL/Status outputs
-        // expected_Vortex_reset = 1'b1;
-        // // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is desired val
-        // check_outputs();
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is desired val
+        check_outputs();
 
-        // @(posedge clk);
+        @(posedge clk);
 
         end
 
