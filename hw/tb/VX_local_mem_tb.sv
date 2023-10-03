@@ -10,6 +10,8 @@
 
 `timescale 1 ns / 1 ns
 
+parameter PC_reset_val = 32'h8000_0000; // binaries are stuck with start addr 0x8000_0000
+
 module VX_local_mem_tb; 
 
     parameter PERIOD = 2;
@@ -78,6 +80,7 @@ module VX_local_mem_tb;
 
     Vortex DUT(.clk(clk),
                .reset(reset), 
+               .PC_reset_val(PC_reset_val),
                .mem_req_valid(mem_req_valid), 
                .mem_req_rw(mem_req_rw), 
                .mem_req_byteen(mem_req_byteen),
@@ -111,7 +114,7 @@ module VX_local_mem_tb;
     // ); 
 
     Vortex_mem_slave #(
-        .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(32'h8000_0000) // binaries are stuck with start addr 0x8000_0000
+        .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(PC_reset_val)
     ) MEM (
         .clk(clk), 
         .nRST(nRST), 

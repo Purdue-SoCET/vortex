@@ -46,7 +46,8 @@
 `endif
 
 `ifndef STARTUP_ADDR
-`define STARTUP_ADDR 32'h80000000
+`define STARTUP_ADDR 32'h8000_0000 // OG val from GTech, where old binaries expect
+// `define STARTUP_ADDR 32'hF000_0000 // change for wrapper, AFTx07+Vortex
 `endif
 
 `ifndef IO_BASE_ADDR

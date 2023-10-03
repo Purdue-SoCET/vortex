@@ -8,6 +8,9 @@
 
 `timescale 1 ns / 1 ns
 
+parameter SET_PC_RESET_VAL = 1;
+parameter RUN_TWICE = 1;
+
 // wrapper parameters
 parameter ADDR_WIDTH = 32;
 parameter DATA_WIDTH = 32;
@@ -16,7 +19,8 @@ parameter MEM_SLAVE_AHB_BASE_ADDR = 32'h8000_0000; // testing address, where old
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
 parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
+// parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
+parameter PC_RESET_VAL_RESET_VAL = 32'hF000_0000; // testing PC reset val switch 0xF -> 0x8
 parameter MEM_SLAVE_ADDR_SPACE_BITS = 15;
 parameter BUFFER_WIDTH = 1;
 
@@ -143,6 +147,7 @@ module Vortex_wrapper_tb;
     Vortex Vortex_Instance(
         .clk(clk),
         .reset(Vortex_reset), 
+        .PC_reset_val(Vortex_PC_reset_val),
         .mem_req_valid(Vortex_mem_req_valid), 
         .mem_req_rw(Vortex_mem_req_rw), 
         .mem_req_byteen(Vortex_mem_req_byteen),
@@ -170,6 +175,7 @@ module Vortex_wrapper_tb;
     int delay;
     int cycle_count;
     int poll_period;
+    logic program_terminated;
 
     /////////////////////////////////
     // Testbench Expected Signals: //
@@ -449,7 +455,39 @@ module Vortex_wrapper_tb;
         logic expected_busy_val
     );
     begin
-        // 
+        // read busy reg
+        sub_test_case = "AHB read to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1;
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        // Vortex_busy = 1'b1;
+
+        #(PERIOD/2);
+
+        // check rsp (read busy reg = 1):
+        sub_test_case = "check AHB rsp busy reg = 1";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b0;
+        // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is correct
+        // check_outputs();
+
+        // only check AHB side and ctrl/status
+        check_Vortex_mem_slave_bpif_outputs();
+        check_ctrl_status_reg_bpif_outputs();
+        check_Vortex_wrapper_ctrl_status_outputs();
+        check_ahb_manager_ahbif_outputs();
     end
     endtask
 
@@ -522,9 +560,9 @@ module Vortex_wrapper_tb;
 
         #(PERIOD/2);
 
-        /////////////////////
-        // read busy high: //
-        ///////////////////// 
+        ////////////////////
+        // read busy low: //
+        //////////////////// 
 
         // read busy reg
         sub_test_case = "AHB read to busy reg";
@@ -564,9 +602,9 @@ module Vortex_wrapper_tb;
         #(20 * PERIOD);
         @(posedge clk);
 
-        /////////////////////
-        // read busy high: //
-        ///////////////////// 
+        ////////////////////
+        // read busy low: //
+        //////////////////// 
 
         // read busy reg
         sub_test_case = "AHB read to busy reg";
@@ -597,6 +635,65 @@ module Vortex_wrapper_tb;
         check_outputs();
         
         @(posedge clk);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Set Vortex PC Reset Val
+        $display();
+        test_case = "Set Vortex PC Reset Val";
+        $display("test_case: ", test_case);
+
+        if (SET_PC_RESET_VAL) begin
+
+        //////////////////////////
+        // set PC register val: //
+        //////////////////////////
+
+        #(PERIOD/2);
+
+        // make AHB side write req to PC reg:
+        sub_test_case = "AHB write to PC reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b1; // write req
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h8; // 0xF000_8008 truncated -> 0x8
+        ctrl_status_bpif.wdata = MEM_SLAVE_AHB_BASE_ADDR; // write val
+        ctrl_status_bpif.strobe = 4'b1111;
+
+        // wait for write to occur
+        #(PERIOD);
+        #(PERIOD/2);
+
+        // make AHB side read req to PC reg:
+        sub_test_case = "AHB read to PC reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1; // read req
+        ctrl_status_bpif.addr = 32'h8; // 0xF000_8008 truncated -> 0x8
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+
+        #(PERIOD/2);
+
+        // check rsp (read PC reg = MEM_SLAVE_AHB_BASE_ADDR):
+        sub_test_case = "check AHB rsp PC reg = MEM_SLAVE_AHB_BASE_ADDR";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = MEM_SLAVE_AHB_BASE_ADDR; // PC reg = MEM_SLAVE_AHB_BASE_ADDR
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        expected_Vortex_PC_reset_val = MEM_SLAVE_AHB_BASE_ADDR;
+        check_outputs();
+
+        @(posedge clk);
+
+        end
 
         /* --------------------------------------------------------------------------------------------- */
         // Vortex Start
@@ -645,7 +742,7 @@ module Vortex_wrapper_tb;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b0; // reset should go low since wrote to start reg, busy high
-        expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL;
+        // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val set to is desired val
 
         check_outputs();
 
@@ -659,7 +756,8 @@ module Vortex_wrapper_tb;
 
         cycle_count = 0;
         delay = 10000;
-        poll_period = delay / 10;
+        poll_period = delay / 10; // poll at most 10 times
+        program_terminated = 0;
 
         fork 
             // check for busy low
@@ -667,6 +765,8 @@ module Vortex_wrapper_tb;
                 @(negedge Vortex_busy);
                 $display();
                 $display("SUCCESS: program finished after %d cycles, got busy low", cycle_count);
+
+                program_terminated = 1;
             end
 
             // check if never finishes
@@ -692,19 +792,235 @@ module Vortex_wrapper_tb;
                 while (1) begin
                     @(posedge clk);
 
-                    poll_busy_reg(0);
+                    #(PERIOD * poll_period);
+
+                    poll_busy_reg(1'b0);
                 end
             end
         join_any
 
         disable fork;
 
+        @(posedge clk);
+
+        if (program_terminated) begin
+
+        // /* --------------------------------------------------------------------------------------------- */
+        // // Check Busy Reg = 0
+        // $display();
+        // test_case = "Check Busy Reg = 0";
+        // $display("test_case: ", test_case);
+        
+        // ////////////////////
+        // // read busy low: //
+        // //////////////////// 
+
+        // // read busy reg
+        // sub_test_case = "AHB read to busy reg";
+        // $display("\tsub_test_case: ", sub_test_case);
+
+        // // CTRL/Status reg bpif inputs
+        // ctrl_status_bpif.wen = 1'b0;
+        // ctrl_status_bpif.ren = 1'b1;
+        // ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        // ctrl_status_bpif.wdata = 32'h0;
+        // ctrl_status_bpif.strobe = 4'b0;
+        // // CTRL/Status inputs
+        // // Vortex_busy = 1'b1;
+
+        // #(PERIOD/2);
+
+        // // check rsp (read busy reg = 0):
+        // sub_test_case = "check AHB rsp busy reg = 0";
+        // $display("\tsub_test_case: ", sub_test_case);
+
+        // // CTRL/Status reg bpif outputs
+        // expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
+        // expected_ctrl_status_bpif_error = 1'b0;
+        // expected_ctrl_status_bpif_request_stall = 1'b0;
+        // // CTRL/Status outputs
+        // expected_Vortex_reset = 1'b1;
+        // // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is desired val
+        // check_outputs();
+
+        // @(posedge clk);
+
+        end
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+        if (RUN_TWICE) begin
+
         /* --------------------------------------------------------------------------------------------- */
-        // Delay After Run
+        // Delay Between Runs
         $display();
-        test_case = "Delay After Run";
+        test_case = "Delay Between Runs";
         $display("test_case: ", test_case);
-        #(20 * PERIOD);
+        #(PERIOD);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex Start
+        $display();
+        test_case = "Vortex Start (run 2)";
+        $display("test_case: ", test_case);
+
+        ////////////////////////
+        // set start reg val: //
+        ////////////////////////
+
+        #(PERIOD/2);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "AHB write to start reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b1; // write req
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h4; // 0xF000_8004 truncated -> 0x4
+        ctrl_status_bpif.wdata = 32'h1; // write val
+        ctrl_status_bpif.strobe = 4'b0001; // write mask (expect 00000001)
+
+        // wait for write to occur
+        #(PERIOD);
+
+        // deassert write
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b0;
+        ctrl_status_bpif.addr = 32'h0; 
+        ctrl_status_bpif.wdata = 32'h0; 
+        ctrl_status_bpif.strobe = 4'b0; 
+
+        #(PERIOD/2);
+
+        // check Vortex reset = 0
+        sub_test_case = "check Vortex reset = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h1; // defaulting to read busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b0; // reset should go low since wrote to start reg, busy high
+        // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val set to is desired val
+
+        check_outputs();
+
+        #(PERIOD/2);
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Vortex Running
+        $display();
+        test_case = "Vortex Running (run 2)";
+        $display("test_case: ", test_case);
+
+        cycle_count = 0;
+        delay = 10000;
+        poll_period = delay / 10; // poll at most 10 times
+        program_terminated = 0;
+
+        fork 
+            // check for busy low
+            begin
+                @(negedge Vortex_busy);
+                $display();
+                $display("SUCCESS: program finished after %d cycles, got busy low", cycle_count);
+
+                program_terminated = 1;
+            end
+
+            // check if never finishes
+            begin
+                #(PERIOD * delay);
+
+                $display();
+                $display("ERROR: program never finished, stopped at %d cycles", cycle_count);
+                num_errors++;
+            end
+
+            // iterate cycle count
+            begin
+                while (1) begin
+                    #(PERIOD/2);
+                    cycle_count++;
+                    #(PERIOD/2);
+                end
+            end
+
+            // periodically poll
+            begin
+                @(posedge clk);
+
+                while (1) begin
+                    #(PERIOD * poll_period);
+
+                    poll_busy_reg(1'b0);
+                end
+            end
+        join_any
+
+        disable fork;
+
+        @(posedge clk);
+
+        if (program_terminated) begin
+
+        /* --------------------------------------------------------------------------------------------- */
+        // Check Busy Reg = 0
+        $display();
+        test_case = "Check Busy Reg = 0 (run 2)";
+        $display("test_case: ", test_case);
+        
+        ////////////////////
+        // read busy low: //
+        //////////////////// 
+
+        // read busy reg
+        sub_test_case = "AHB read to busy reg";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif inputs
+        ctrl_status_bpif.wen = 1'b0;
+        ctrl_status_bpif.ren = 1'b1;
+        ctrl_status_bpif.addr = 32'h0; // 0xF000_8000 truncated -> 0x0
+        ctrl_status_bpif.wdata = 32'h0;
+        ctrl_status_bpif.strobe = 4'b0;
+        // CTRL/Status inputs
+        // Vortex_busy = 1'b1;
+
+        #(PERIOD/2);
+
+        // check rsp (read busy reg = 0):
+        sub_test_case = "check AHB rsp busy reg = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1;
+        // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is desired val
+        check_outputs();
+
+        @(posedge clk);
+
+        end
+
+        end
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////
 
         /* --------------------------------------------------------------------------------------------- */
         // End of Testbench

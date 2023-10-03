@@ -9,6 +9,8 @@ module Vortex (
     input  wire                             clk,
     input  wire                             reset,
 
+    input wire [31:0]                       PC_reset_val, // EDITED
+
     // Memory request
     output wire                             mem_req_valid,
     output wire                             mem_req_rw,    
@@ -55,6 +57,8 @@ module Vortex (
 
             .clk            (clk),
             .reset          (cluster_reset),
+
+            .PC_reset_val   (PC_reset_val), // EDITED
 
             .mem_req_valid  (per_cluster_mem_req_valid [i]),
             .mem_req_rw     (per_cluster_mem_req_rw    [i]),

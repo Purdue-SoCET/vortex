@@ -6,6 +6,11 @@ add wave -noupdate /Vortex_wrapper_tb/num_errors
 add wave -noupdate -radix decimal /Vortex_wrapper_tb/cycle_count
 add wave -noupdate /Vortex_wrapper_tb/clk
 add wave -noupdate /Vortex_wrapper_tb/nRST
+add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_reset
+add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expected_Vortex_reset
+add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_busy
+add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_PC_reset_val
+add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expected_Vortex_PC_reset_val
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_mem_req_valid
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_mem_req_rw
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_mem_req_byteen
@@ -21,11 +26,7 @@ add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expec
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_mem_rsp_tag
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expected_Vortex_mem_rsp_tag
 add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_mem_rsp_ready
-add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_busy
-add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_reset
-add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expected_Vortex_reset
-add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/Vortex_PC_reset_val
-add wave -noupdate -expand -group {Vortex Side Signals} /Vortex_wrapper_tb/expected_Vortex_PC_reset_val
+add wave -noupdate -expand -group {Vortex Internal Signals} {/Vortex_wrapper_tb/Vortex_Instance/genblk1[0]/cluster/genblk1[0]/core/pipeline/fetch/warp_sched/warp_pcs}
 add wave -noupdate -expand -group {Vortex_mem_slave AHB Side Signals} /Vortex_wrapper_tb/mem_slave_bpif/wen
 add wave -noupdate -expand -group {Vortex_mem_slave AHB Side Signals} /Vortex_wrapper_tb/mem_slave_bpif/ren
 add wave -noupdate -expand -group {Vortex_mem_slave AHB Side Signals} /Vortex_wrapper_tb/mem_slave_bpif/request_stall
@@ -123,10 +124,10 @@ add wave -noupdate -expand -group {Wrapper Internal Signals} /Vortex_wrapper_tb/
 add wave -noupdate -expand -group {Wrapper Internal Signals} /Vortex_wrapper_tb/Vortex_wrapper_no_Vortex_Instance/inside_VX_ahb_adapter_space
 add wave -noupdate -expand -group {Wrapper Internal Signals} /Vortex_wrapper_tb/Vortex_wrapper_no_Vortex_Instance/between_Vortex_mem_slave_VX_ahb_adapter_space
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {11343726 ps} 0}
+WaveRestoreCursors {{Cursor 1} {30954920 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 323
-configure wave -valuecolwidth 100
+configure wave -valuecolwidth 160
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -139,4 +140,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {28694159 ps} {58898537 ps}
+WaveRestoreZoom {0 ps} {129946175 ps}
