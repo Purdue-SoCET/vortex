@@ -30,7 +30,7 @@ make all_wrapper or make all_wrapper_gui
 ```
 bash testhex
 ```
-Verbose output from hex file runs is output into testhex_output.log
+Verbose output from hex file runs can be found in testhex_output.log
   
 # Using Trace File Scraper
 
