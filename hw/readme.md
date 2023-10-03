@@ -17,9 +17,13 @@ Optional macros:
 * VX_TOP_TRACE: Top-level VX memory transaction trace to a logfile
 
 
-Run
+Vortex with Vortex_mem_slave: 
 ```
 make all or make all_gui
+```
+Vortex with Vortex_wrapper_no_Vortex: 
+```
+make all_wrapper or make all_wrapper_gui
 
 ```
   
