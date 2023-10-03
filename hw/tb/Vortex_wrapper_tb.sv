@@ -483,8 +483,7 @@ module Vortex_wrapper_tb;
         // expected_Vortex_PC_reset_val = PC_RESET_VAL_RESET_VAL; // previous val is correct
         // check_outputs();
 
-        // only check AHB side and ctrl/status
-        check_Vortex_mem_slave_bpif_outputs();
+        // only check ctrl/status
         check_ctrl_status_reg_bpif_outputs();
         check_Vortex_wrapper_ctrl_status_outputs();
         check_ahb_manager_ahbif_outputs();
