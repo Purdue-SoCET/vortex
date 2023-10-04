@@ -7,7 +7,8 @@ declare -a hex_file_array=(
     "simple.hex" 
     "simple2.hex" 
     "array.hex" 
-    "float.hex")
+    "float.hex"
+)
 
 output_file_name="testhex_output.log"
 
