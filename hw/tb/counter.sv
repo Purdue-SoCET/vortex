@@ -1,4 +1,4 @@
-module counter
+module wrapper_counter
 #(
     parameter NUM_CNT_BITS = 4
 )

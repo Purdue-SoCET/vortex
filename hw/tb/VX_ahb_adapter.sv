@@ -344,7 +344,7 @@ module VX_ahb_adapter #(
 
     assign mem_rsp_data = data_read;
 
-    counter
+    wrapper_counter
     SIXTEEN(
         .clk(clk),
         .nRST(nRST),
