@@ -10,8 +10,6 @@ filesets:
             - "pulp-platform.org::common_cells:1.20.0"
         files:
             # include files - ahb_pkg.vh already in dependency list
-            - hw/include/VX_ahb_adapter.vh : { is_include_file : true }
-            - hw/include/VX_cache_define.vh : { is_include_file : true }
             - hw/include/VX_config.vh : { is_include_file : true }
             - hw/include/VX_define.vh : { is_include_file : true }
             - hw/include/VX_fpu_define.vh : { is_include_file : true }
@@ -28,6 +26,8 @@ filesets:
             - hw/include/ccip_if_pkg.sv : { is_include_file : true }
             - hw/include/defs_div_sqrt_mvp.sv : { is_include_file : true }
             - hw/include/VX_tex_define.vh : { is_include_file : true }
+            - hw/include/VX_ahb_adapter.vh : { is_include_file : true }
+            - hw/include/VX_cache_define.vh : { is_include_file : true }
             ### RTL files 
             # Caches
             - hw/rtl/cache/VX_bank.sv
@@ -109,7 +109,7 @@ filesets:
             - hw/rtl/libs/VX_sp_ram.sv
             - hw/rtl/libs/VX_stream_arbiter.sv
             - hw/rtl/libs/VX_stream_demux.sv
-            #- hw/rtl/libs/counter.sv
+            - hw/tb/counter.sv
             # TEX unit
             - hw/rtl/tex_unit/VX_tex_addr.sv
             - hw/rtl/tex_unit/VX_tex_format.sv
@@ -181,7 +181,12 @@ filesets:
             - hw/rtl/VX_warp_sched.sv
             - hw/rtl/VX_writeback.sv
             - hw/rtl/Vortex.sv    
-            - hw/rtl/vortex_gpu_ahb_dummy.sv        
+            - hw/rtl/vortex_gpu_ahb_dummy.sv     
+            - hw/rtl/Vortex_wrapper.sv
+            - hw/tb/Vortex_mem_slave.sv
+            - hw/tb/VX_ahb_adapter.sv 
+            - hw/tb/Vortex_wrapper_no_Vortex.sv
+            - hw/tb/Vortex_mem_slave.vh : { is_include_file : true }
         file_type: systemVerilogSource
 
     tb:

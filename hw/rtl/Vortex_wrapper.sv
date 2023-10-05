@@ -3,7 +3,7 @@
 // wrapper combining Vortex_wrapper_no_Vortex and Vortex 
 
 // `include "local_mem.vh"
-`include "include/VX_define.vh"
+`include "VX_define.vh"
 // `include "Vortex_mem_slave.vh"
 
 module Vortex_wrapper 
