@@ -1,4 +1,6 @@
-`ifndef VX_TRACE_INSTRvh
+`ifdef SV_TRACE_EN
+
+`ifndef VX_TRACE_INSTR
 `define VX_TRACE_INSTR
 
 `include "VX_define.vh"
@@ -148,4 +150,5 @@ task sv_trace_ex_op (
     endcase 
 endtask
 
+`endif
 `endif
