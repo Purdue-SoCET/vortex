@@ -124,7 +124,7 @@ module Vortex_wrapper
     // Vortex_wrapper_no_Vortex module: //
     //////////////////////////////////////
 
-    Vortex_wrapper_no_Vortex #(
+    Vortex_wrapper_no_Vortex_condensed #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
