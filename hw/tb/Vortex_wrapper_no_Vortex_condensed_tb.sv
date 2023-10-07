@@ -23,7 +23,7 @@ parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
 parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
 parameter BUFFER_WIDTH = 1;
 
-module Vortex_wrapper_no_Vortex_tb ();
+module Vortex_wrapper_no_Vortex_condensed_tb ();
 
     logic clk = 0, nRST;
 
@@ -123,11 +123,11 @@ module Vortex_wrapper_no_Vortex_tb ();
     logic Vortex_reset;
     logic [32-1:0] Vortex_PC_reset_val;
 
-    //////////////////////////////////////
-    // Vortex_wrapper_no_Vortex module: //
-    //////////////////////////////////////
+    ////////////////////////////////////////////////
+    // Vortex_wrapper_no_Vortex_condensed module: //
+    ////////////////////////////////////////////////
 
-    Vortex_wrapper_no_Vortex #(
+    Vortex_wrapper_no_Vortex_condensed #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
@@ -1210,8 +1210,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 
-            calculate_max_32_addr_Vortex_mem_slave()? 32'h76543210 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_rdata = 32'h0;
         expected_mem_slave_bpif_error = 1'b0;
         expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -1237,8 +1236,59 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 
-            calculate_max_32_addr_Vortex_mem_slave()? 32'hfedcba98 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_rdata = 32'h0;
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        ///////////////////////////////////
+        // check read from min addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "check read from min addr = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b0;
+        mem_slave_bpif.ren = 1'b1; // read
+        mem_slave_bpif.addr = calculate_min_32_addr_Vortex_mem_slave(); // min addr
+        mem_slave_bpif.wdata = 32'h0;
+        mem_slave_bpif.strobe = 4'b0;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 32'h76543210; // expect val written
+        expected_mem_slave_bpif_error = 1'b0;
+        expected_mem_slave_bpif_request_stall = 1'b0;
+
+        check_outputs();
+
+        @(posedge clk);
+
+        ///////////////////////////////////
+        // check read from max addr = 0: //
+        ///////////////////////////////////
+
+        sub_test_case = "check read from max addr = 0";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex_mem_slave bpif inputs
+        mem_slave_bpif.wen = 1'b0;
+        mem_slave_bpif.ren = 1'b1; // read
+        mem_slave_bpif.addr = calculate_max_32_addr_Vortex_mem_slave(); // max addr
+        mem_slave_bpif.wdata = 32'h0;
+        mem_slave_bpif.strobe = 4'b0;
+
+        @(posedge clk);
+        #(PERIOD/2);
+
+        // Vortex_mem_slave bpif outputs
+        expected_mem_slave_bpif_rdata = 32'hfedcba98; // expect written val
         expected_mem_slave_bpif_error = 1'b0;
         expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -1305,8 +1355,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 
-            calculate_max_32_addr_Vortex_mem_slave()? 32'haaaa5555 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_rdata = 32'h0;
         expected_mem_slave_bpif_error = 1'b0;
         expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -1332,8 +1381,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 
-            calculate_max_32_addr_Vortex_mem_slave()? 32'hcccc3333 : 32'h0; // expect written value unless no mem_slave
+        expected_mem_slave_bpif_rdata = 32'h0;
         expected_mem_slave_bpif_error = 1'b0;
         expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -1454,7 +1502,7 @@ module Vortex_wrapper_no_Vortex_tb ();
             }};
         expected_Vortex_mem_rsp_tag = 56'h01111111111110;
 
-        expected_mem_slave_bpif_rdata = 32'haa6755ef;
+        expected_mem_slave_bpif_rdata = 32'h0;
 
         check_outputs();
 
@@ -2367,7 +2415,7 @@ module Vortex_wrapper_no_Vortex_tb ();
             #(PERIOD/2);
 
             // Vortex_mem_slave bpif outputs
-            expected_mem_slave_bpif_rdata = {{8{i[3]}}, {8{i[2]}}, {8{i[1]}}, {8{i[0]}}} & {4{8'(i)}}; // expect written value
+            expected_mem_slave_bpif_rdata = 32'h0;
             expected_mem_slave_bpif_error = 1'b0;
             expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -2422,10 +2470,6 @@ module Vortex_wrapper_no_Vortex_tb ();
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b1;
         expected_Vortex_PC_reset_val = 32'hF000_0040;
-        // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 32'h0;
-        expected_mem_slave_bpif_error = 1'b0;
-        expected_mem_slave_bpif_request_stall = 1'b0;
         check_outputs();
 
         @(posedge clk);
