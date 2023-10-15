@@ -182,7 +182,7 @@ filesets:
             - hw/rtl/VX_writeback.sv
             - hw/rtl/Vortex.sv    
             - hw/rtl/vortex_gpu_ahb_dummy.sv     
-            - hw/rtl/Vortex_wrapper.sv
+            - hw/rtl/Vortex_wrapper_condensed.sv
             - hw/tb/Vortex_mem_slave.sv
             - hw/tb/VX_ahb_adapter.sv 
             - hw/tb/Vortex_wrapper_no_Vortex.sv
