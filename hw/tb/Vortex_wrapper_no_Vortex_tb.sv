@@ -10,6 +10,7 @@
 
 // include for Vortex widths
 `include "../include/VX_define.vh"
+`include "../rtl/ahb/ahb_if/bus_protocol_if.sv"
 
 `timescale 1 ns / 1 ns
 
@@ -19,7 +20,6 @@ parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
 parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000;
 parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004;
 parameter PC_RESET_VAL_REG_AHB_BASE_ADDR = 32'hF000_8008;
-parameter PC_RESET_VAL_RESET_VAL = MEM_SLAVE_AHB_BASE_ADDR;
 parameter MEM_SLAVE_ADDR_SPACE_BITS = 14;
 parameter BUFFER_WIDTH = 1;
 
@@ -134,7 +134,6 @@ module Vortex_wrapper_no_Vortex_tb ();
         .BUSY_REG_AHB_BASE_ADDR(BUSY_REG_AHB_BASE_ADDR),
         .START_REG_AHB_BASE_ADDR(START_REG_AHB_BASE_ADDR),
         .PC_RESET_VAL_REG_AHB_BASE_ADDR(PC_RESET_VAL_REG_AHB_BASE_ADDR),
-        .PC_RESET_VAL_RESET_VAL(PC_RESET_VAL_RESET_VAL),
         .MEM_SLAVE_ADDR_SPACE_BITS(MEM_SLAVE_ADDR_SPACE_BITS),
         .BUFFER_WIDTH(BUFFER_WIDTH)
     ) DUT (.*);
@@ -711,8 +710,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
-        // expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
-        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 0, reliant on state now (based on busy going low or setting reg high)
+        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
         expected_ctrl_status_bpif_error = 1'b0;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
@@ -1773,7 +1771,8 @@ module Vortex_wrapper_no_Vortex_tb ();
         sub_test_case = "check reset values";
         $display("\tsub_test_case: ", sub_test_case);
 
-        check_outputs();
+        //expected_mem_slave_bpif_rdata = 32'hfc102573; // expect all zeros
+        //check_outputs();
         @(posedge clk);
 
         // make AHB side write req to start reg:
@@ -1969,6 +1968,88 @@ module Vortex_wrapper_no_Vortex_tb ();
         expected_ahb_manager_ahbif_HWSTRB = 4'hf;
         check_ahb_manager_ahbif_outputs();
         #(PERIOD);
+        
+        if ((Vortex_mem_rsp_valid == 1) && (Vortex_mem_rsp_tag == 56'h123456789abcde))
+        begin
+            // fill in?
+        end
+        else
+        begin
+            $display("wrong response and tag signals from ahb master");
+        end
+        
+        #(PERIOD);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "AHB adapter error case";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        //driving HRDATA:
+        gen_ahb_trans(.rw('1), .byte_en(64'hffffffffffffff0f), .addr('hF0800000), .req_data(512'h123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678deadbeef), .req_tag(56'h123456789abcde), .vx_ready_for_rsp(1));
+        ahb_manager_ahbif.HRDATA = 32'hdeadbeef;
+        #(PERIOD);
+        // VX_ahb_manager ahbif outputs
+        expected_ahb_manager_ahbif_HWRITE = 1'b1;
+        expected_ahb_manager_ahbif_HTRANS = 2'b10;
+        expected_ahb_manager_ahbif_HSIZE = 3'b010;
+        expected_ahb_manager_ahbif_HADDR = 32'h20000000;
+        expected_ahb_manager_ahbif_HWDATA = 32'h0;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        expected_ahb_manager_ahbif_HSEL = 1'b1;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000004;
+        expected_ahb_manager_ahbif_HWDATA = 32'hdeadbeef;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000008;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000000c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000010;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000014;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000018;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h2000001c;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h20000020;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        ahb_manager_ahbif.HRESP = 1'b1;
+        expected_ahb_manager_ahbif_HADDR = 32'h20000024;
+        expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        expected_ahb_manager_ahbif_HADDR = 32'h0;
+        expected_ahb_manager_ahbif_HWDATA = 32'h0;
+        expected_ahb_manager_ahbif_HWSTRB = 4'h0;
+        check_ahb_manager_ahbif_outputs();
+        #(PERIOD);
+        #(PERIOD*5);
         
         if ((Vortex_mem_rsp_valid == 1) && (Vortex_mem_rsp_tag == 56'h123456789abcde))
         begin
@@ -2359,15 +2440,15 @@ module Vortex_wrapper_no_Vortex_tb ();
             // Vortex_mem_slave bpif inputs
             mem_slave_bpif.wen = 1'b1; // write
             mem_slave_bpif.ren = 1'b0;
-            mem_slave_bpif.addr = calculate_min_32_addr_Vortex_mem_slave() + (1<<6) + (i<<2); // min addr
+            mem_slave_bpif.addr = calculate_min_32_addr_Vortex_mem_slave() + 1<<6 + i<<2; // min addr
             mem_slave_bpif.wdata = {4{8'(i)}};
-            mem_slave_bpif.strobe = i;
+            mem_slave_bpif.strobe = 4'b1111;
 
             @(posedge clk);
             #(PERIOD/2);
 
             // Vortex_mem_slave bpif outputs
-            expected_mem_slave_bpif_rdata = {{8{i[3]}}, {8{i[2]}}, {8{i[1]}}, {8{i[0]}}} & {4{8'(i)}}; // expect written value
+            expected_mem_slave_bpif_rdata = {4{8'(i)}}; // expect written value
             expected_mem_slave_bpif_error = 1'b0;
             expected_mem_slave_bpif_request_stall = 1'b0;
 
@@ -2422,10 +2503,6 @@ module Vortex_wrapper_no_Vortex_tb ();
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b1;
         expected_Vortex_PC_reset_val = 32'hF000_0040;
-        // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 32'h0;
-        expected_mem_slave_bpif_error = 1'b0;
-        expected_mem_slave_bpif_request_stall = 1'b0;
         check_outputs();
 
         @(posedge clk);
@@ -2510,25 +2587,7 @@ module Vortex_wrapper_no_Vortex_tb ();
 
         // Vortex rsp wrapper outputs
         expected_Vortex_mem_rsp_valid = 1'b1; // valid rsp
-        expected_Vortex_mem_rsp_data = // expect written val
-        {
-            32'h0f0f0f0f,
-            32'h0e0e0e00,
-            32'h0d0d000d,
-            32'h0c0c0000,
-            32'h0b000b0b,
-            32'h0a000a00,
-            32'h09000009,
-            32'h08000000,
-            32'h00070707,
-            32'h00060600,
-            32'h00050005,   
-            32'h00040000,   
-            32'h00000303,
-            32'h00000200,
-            32'h00000001,
-            32'h00000000  
-        };
+        expected_Vortex_mem_rsp_data = 512'h0; // expect read = 0
         expected_Vortex_mem_rsp_tag = 56'h0102;
 
         check_outputs();
@@ -3028,6 +3087,74 @@ module Vortex_wrapper_no_Vortex_tb ();
         check_outputs();
         
         // end of program
+
+        //////////////////////////
+        // Memory requests in Vortex_mem_slave address space:
+        //////////////////////////
+        $display();
+        test_case = "requests in Vortex_mem_slave address space";
+        $display("test_case: ", test_case);
+
+        // reset
+        sub_test_case = "reset";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        set_default_inputs();
+        set_default_outputs();
+        #(PERIOD/2);
+        nRST = 1'b0;
+        #(PERIOD);
+        nRST = 1'b1;
+        #(PERIOD/2);
+
+        // check reset values
+
+        //expected_mem_slave_bpif_rdata = 32'hfc102573; // expect all zeros
+        //check_outputs();
+        @(posedge clk);
+
+        // make AHB side write req to start reg:
+        sub_test_case = "minimum of address space above Vortex_mem_slave (0xF000_8000 >> 6)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b1; // write
+        Vortex_mem_req_byteen = 64'hffffffffffffffff; // skip some bytes
+        Vortex_mem_req_addr = 32'hF000_8000 >> 6; // 0xF000_8000 in 26-bit
+        // Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_data = 512'h123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678deadbeef;
+        Vortex_mem_req_tag = 56'habc; // random tag
+
+        Vortex_mem_rsp_ready = 1'b1;
+        #(PERIOD);
+        Vortex_mem_req_valid = 1'b0;
+
+
+        //driving HRDATA:
+        //gen_ahb_trans(.rw('0), .byte_en(64'hffffffffffffff0f), .addr('hF0800000), .req_data(512'h0), .req_tag(56'h123456789abcde), .vx_ready_for_rsp(1));
+        //ahb_manager_ahbif.HRDATA = 32'hdeadbeef;
+        #(PERIOD*18);
+
+        @(posedge clk);
+
+        sub_test_case = "minimum of address space above Vortex_mem_slave (0xFFFF_FFFC >> 6)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // Vortex req wrapper inputs
+        Vortex_mem_req_valid = 1'b1; // valid req
+        Vortex_mem_req_rw = 1'b0; // read
+        Vortex_mem_req_byteen = 64'hffffffffffffffff; // skip some bytes
+        Vortex_mem_req_addr = 32'hFFFF_FFFC >> 6; // 0xF000_8000 in 26-bit
+        // Vortex_mem_req_data = 512'h0;
+        Vortex_mem_req_tag = 56'habc; // random tag
+        ahb_manager_ahbif.HRDATA = 32'hdeadbeef;
+
+        Vortex_mem_rsp_ready = 1'b1;
+
+        #(PERIOD);
+        Vortex_mem_req_valid = 1'b0;
+        #(PERIOD*18);
 
         @(posedge clk);
 

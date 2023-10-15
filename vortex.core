@@ -187,6 +187,8 @@ filesets:
             - hw/tb/VX_ahb_adapter.sv 
             - hw/tb/Vortex_wrapper_no_Vortex.sv
             - hw/tb/Vortex_mem_slave.vh : { is_include_file : true }
+            - hw/tb/Vortex_mem_slave_condensed.sv
+            - hw/tb/Vortex_wrapper_no_Vortex_condensed.sv
         file_type: systemVerilogSource
 
     tb:
