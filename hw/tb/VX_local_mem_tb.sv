@@ -10,7 +10,8 @@
 
 `timescale 1 ns / 1 ns
 
-parameter PC_reset_val = 32'h8000_0000; // binaries are stuck with start addr 0x8000_0000
+// parameter PC_reset_val = 32'h8000_0000; // binaries are stuck with start addr 0x8000_0000
+parameter PC_reset_val = 32'hF000_0000; // updated binaries
 
 module VX_local_mem_tb; 
 

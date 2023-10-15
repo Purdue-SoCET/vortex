@@ -23,16 +23,19 @@
 TB_DIR := tb
 VX_TB := VX_local_mem_tb
 VX_WRAPPER_TB := Vortex_wrapper_tb
+VX_WRAPPER_CONDENSED_TB := Vortex_wrapper_condensed_tb
 TARGET_TB := $(TB_DIR)/$(VX_TB).sv
 WRAPPER_TARGET_TB := $(TB_DIR)/$(VX_WRAPPER_TB).sv
+WRAPPER_CONDENSED_TARGET_TB := $(TB_DIR)/$(VX_WRAPPER_CONDENSED_TB).sv
 
 WAVE_DIR := $(TB_DIR)/scripts
 WAVE:= $(WAVE_DIR)/VX_i_d_caches.do
 WRAPPER_WAVE:= $(WAVE_DIR)/VX_wrapper_waves.do
+WRAPPER_CONDENSED_WAVE:= $(WAVE_DIR)/VX_wrapper_condensed_waves.do
 
 # Additional files 
 ADD_INCL += $(INCL)
-ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave_condensed.sv tb/Vortex_wrapper_no_Vortex_condensed.sv tb/Vortex_mem_slave.vh tb/VX_ahb_adapter.sv tb/counter.sv tb/Vortex_wrapper_no_Vortex.sv rtl/Vortex_wrapper.sv
+ADD_RTL += tb/local_mem.sv tb/Vortex_mem_slave.sv tb/Vortex_mem_slave_condensed.sv tb/Vortex_wrapper_no_Vortex_condensed.sv rtl/Vortex_wrapper_condensed.sv tb/Vortex_mem_slave.vh tb/VX_ahb_adapter.sv tb/counter.sv tb/Vortex_wrapper_no_Vortex.sv rtl/Vortex_wrapper.sv
 
 #Macros
 MACROS := +define+VX_SYNTHESIS +define+FPU_FPNEW +define+VX_TOP_TRACE +define+SV_TRACE_EN +define+SV_TRACE_CORE_PIPELINE +define+SV_TRACE_CORE_DCACHE +define+SV_TRACE_CACHE_DATA +define+EXT_TEX_ENABLE
@@ -113,7 +116,11 @@ all_debug: $(WORKDIR) compile run_debug
 
 all_wrapper: $(WORKDIR) compile run_wrapper
 
-all_wrapper_gui: $(WORDKIR) compile run_wrapper_gui
+all_wrapper_gui: $(WORKDIR) compile run_wrapper_gui
+
+all_wrapper_condensed: $(WORKDIR) compile run_wrapper_condensed
+
+all_wrapper_condensed_gui: $(WORKDIR) compile run_wrapper_condensed_gui
 
 compile: $(WORKDIR)
 		#@vlog $(VLOGOPTS) $(wildcard $(INCL)/*_pkg.sv)
@@ -127,6 +134,7 @@ compile: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(ADD_INCL) $(ADD_RTL)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(TARGET_TB)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(WRAPPER_TARGET_TB)
+		@vlog $(VLOGOPTS) +incdir+$(INCL) $(WRAPPER_CONDENSED_TARGET_TB)
 
 run:
 		vsim $(VSIMOPTS) -c \
@@ -160,6 +168,23 @@ run_wrapper_gui:
 	-voptargs=+acc \
 	-coverage \
 	-do "$(WRAPPER_WAVE)" \
+	-do "run -all" \
+
+run_wrapper_condensed:
+	vsim $(VSIMOPTS) -c \
+	$(VX_WRAPPER_CONDENSED_TB) \
+	-voptargs=+acc \
+	-coverage \
+	-do "$(WRAPPER_CONDENSED_WAVE)" \
+	-do "run -all" \
+	-do "exit" \
+
+run_wrapper_condensed_gui:
+	vsim $(VSIMOPTS) -gui \
+	$(VX_WRAPPER_CONDENSED_TB) \
+	-voptargs=+acc \
+	-coverage \
+	-do "$(WRAPPER_CONDENSED_WAVE)" \
 	-do "run -all" \
 
 $(WORKDIR):

@@ -26,7 +26,7 @@ parameter PC_RESET_VAL_RESET_VAL = 32'hF000_0000; // testing PC reset val switch
 parameter MEM_SLAVE_ADDR_SPACE_BITS = 15;
 parameter BUFFER_WIDTH = 1;
 
-module Vortex_wrapper_tb; 
+module Vortex_wrapper_condensed_tb; 
 
     logic clk = 0, nRST;
 
@@ -54,7 +54,7 @@ module Vortex_wrapper_tb;
     bus_protocol_if        mem_slave_bpif();
         // // Vital signals
         // logic wen; // request is a data write
-        // logic ren; // request is a data read1
+        // logic ren; // request is a data read
         // logic request_stall; // High when protocol should insert wait states in transaction
         // logic [ADDR_WIDTH-1 : 0] addr; // *offset* address of request TODO: Is this good for general use?
         // logic error; // Indicate error condition to bus
@@ -133,7 +133,7 @@ module Vortex_wrapper_tb;
     // Vortex_wrapper_no_Vortex module: //
     //////////////////////////////////////
 
-    Vortex_wrapper_no_Vortex #(
+    Vortex_wrapper_no_Vortex_condensed #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
@@ -172,7 +172,7 @@ module Vortex_wrapper_tb;
     // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
     else begin
 
-    Vortex_wrapper #(
+    Vortex_wrapper_condensed #(
         .ADDR_WIDTH(ADDR_WIDTH),
         .DATA_WIDTH(DATA_WIDTH),
         .MEM_SLAVE_AHB_BASE_ADDR(MEM_SLAVE_AHB_BASE_ADDR),
