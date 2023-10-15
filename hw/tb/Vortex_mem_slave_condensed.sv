@@ -168,7 +168,7 @@ module Vortex_mem_slave_condensed #(
         if (~nRST)
         begin
             // LOAD_ZEROS
-            reg_file <= '0;
+            reg_file <= '{default:0};
         end
         else
         begin
