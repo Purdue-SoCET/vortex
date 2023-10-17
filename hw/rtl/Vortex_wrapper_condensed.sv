@@ -11,7 +11,7 @@ module Vortex_wrapper_condensed
     // wrapper parameters
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32,
-    parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000;
+    parameter MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
     // parameter MEM_SLAVE_AHB_BASE_ADDR = 32'h8000_0000, // testing address, where old binaries expect
     parameter BUSY_REG_AHB_BASE_ADDR = 32'hF000_8000,
     parameter START_REG_AHB_BASE_ADDR = 32'hF000_8004,
