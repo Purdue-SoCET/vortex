@@ -2,12 +2,16 @@
 
 declare -a hex_file_array=(
     "nothing.hex" 
-    "three.hex" 
-    "loadstore.hex" 
-    "simple.hex" 
+    "nothing_long.hex"
+    # "three.hex" // old binary at 0x8
+    # "loadstore.hex" // old binary at 0x8
+    # "simple.hex" // old binary at 0x8
     "simple2.hex" 
     "array.hex" 
     "float.hex"
+    # "double.hex"
+    "vector.hex"
+    "vector2.hex"
 )
 
 output_file_name="testhex_output.log"
