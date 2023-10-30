@@ -218,6 +218,7 @@ module Vortex_wrapper_no_Vortex_condensed
     logic ctrl_status_start_triggered;              // detector for start write, will allow FSM transition
     logic [32-1:0] ctrl_status_PC_reset_val, next_ctrl_status_PC_reset_val;  // PC reset val reg
     logic ctrl_status_reset_state, next_ctrl_status_reset_state;    // FSM state
+    logic next_Vortex_reset; // reset value before register to go to Vortex (output of OR gate for timing)
 
     ///////////////////
     // info signals: //
@@ -533,12 +534,14 @@ module Vortex_wrapper_no_Vortex_condensed
             ctrl_status_reset_state <= 1'b1;
             ctrl_status_busy <= 1'b0;
             ctrl_status_PC_reset_val <= PC_RESET_VAL_RESET_VAL;
+            Vortex_reset <= 1'b1;
         end
         else
         begin
             ctrl_status_reset_state <= next_ctrl_status_reset_state;
             ctrl_status_busy <= next_ctrl_status_busy;
             ctrl_status_PC_reset_val <= next_ctrl_status_PC_reset_val;
+            Vortex_reset <= next_Vortex_reset;
         end
     end
 
@@ -574,7 +577,7 @@ module Vortex_wrapper_no_Vortex_condensed
         endcase
 
         // output logic
-        Vortex_reset = ~nRST | ctrl_status_reset_state; // reset follows register reset val OR logic reset
+        next_Vortex_reset = ~nRST | ctrl_status_reset_state; // reset follows register reset val OR logic reset
     end
 
     always_comb begin : ctrl_status_ahb_subordinate_comb_logic
