@@ -3,7 +3,7 @@
 ### load_Vortex_mem_slave.py
 script to create Vortex_mem_slave.sv source file for given .hex file which interfaces directly with Vortex memory interfacing signals and AHB slave interfacing signals
 
-- commandline (from inside /tb directory):  
+- commandline (from inside <VORTEX ROOT>/hw directory):  
 ``python3 load_Vortex_mem_slave.py <.hex file name> <optional flags>``  
   - <.hex file name> is relative path from /tb (if in hex_files folder, need to do ``hex_files/<.hex file name>``)
 
