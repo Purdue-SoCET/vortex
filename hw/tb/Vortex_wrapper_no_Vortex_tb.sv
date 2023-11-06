@@ -710,7 +710,9 @@ module Vortex_wrapper_no_Vortex_tb ();
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
-        expected_ctrl_status_bpif_rdata = 32'h1; // busy reg = 1
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 1
+            // ACCOUNT FOR REGISTERED Vortex_reset
+            // actually this may be from change where busy now comes from (essentially) ~Vortex_reset
         expected_ctrl_status_bpif_error = 1'b0;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
@@ -750,7 +752,23 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // check Vortex reset = 0
-        sub_test_case = "check Vortex reset = 0";
+        sub_test_case = "check Vortex reset = 1 (before registered propagation)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h1; // defaulting to read busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1; // reset should go low since wrote to start reg, busy high
+        expected_Vortex_PC_reset_val = 32'hABCD_0010;
+        check_outputs();
+
+        // ACCOUNT FOR REGISTERED Vortex_reset
+        #(PERIOD);
+
+        // check Vortex reset = 0
+        sub_test_case = "check Vortex reset = 1 (after registered propagation)";
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
@@ -2386,7 +2404,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // check rsp (read busy reg = 1):
-        sub_test_case = "check AHB rsp busy reg = 0";
+        sub_test_case = "check AHB rsp busy reg = 0 (before propagated Vortex_reset)";
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
@@ -2394,7 +2412,21 @@ module Vortex_wrapper_no_Vortex_tb ();
         expected_ctrl_status_bpif_error = 1'b0;
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
-        expected_Vortex_reset = 1'b1;
+        expected_Vortex_reset = 1'b0; 
+            
+        // ACCOUNT FOR REGISTERED Vortex_reset
+        #(PERIOD);
+
+        // check rsp (read busy reg = 1):
+        sub_test_case = "check AHB rsp busy reg = 0 (after propagated Vortex_reset)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b1; 
 
         check_outputs();
         
@@ -2756,7 +2788,24 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // check rsp (read busy reg = 1):
-        sub_test_case = "check AHB rsp busy reg = 0";
+        sub_test_case = "check AHB rsp busy reg = 0 (before propagated Vortex_reset)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b0;
+
+        check_outputs();
+
+        // ACCOUNT FOR REGISTERED Vortex_reset
+
+        #(PERIOD);
+
+        // check rsp (read busy reg = 1):
+        sub_test_case = "check AHB rsp busy reg = 0 (after propagated Vortex_reset)";
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
@@ -3074,7 +3123,24 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD/2);
 
         // check rsp (read busy reg = 1):
-        sub_test_case = "check AHB rsp busy reg = 0";
+        sub_test_case = "check AHB rsp busy reg = 0 (before propagated Vortex_reset)";
+        $display("\tsub_test_case: ", sub_test_case);
+
+        // CTRL/Status reg bpif outputs
+        expected_ctrl_status_bpif_rdata = 32'h0; // busy reg = 1
+        expected_ctrl_status_bpif_error = 1'b0;
+        expected_ctrl_status_bpif_request_stall = 1'b0;
+        // CTRL/Status outputs
+        expected_Vortex_reset = 1'b0;
+
+        check_outputs();
+
+        // ACCOUNT FOR REGISTERED Vortex_reset
+
+        #(PERIOD);
+
+        // check rsp (read busy reg = 1):
+        sub_test_case = "check AHB rsp busy reg = 0 (after propagated Vortex_reset)";
         $display("\tsub_test_case: ", sub_test_case);
 
         // CTRL/Status reg bpif outputs
@@ -3083,8 +3149,6 @@ module Vortex_wrapper_no_Vortex_tb ();
         expected_ctrl_status_bpif_request_stall = 1'b0;
         // CTRL/Status outputs
         expected_Vortex_reset = 1'b1;
-
-        check_outputs();
         
         // end of program
 
