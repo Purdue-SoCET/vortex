@@ -15,17 +15,17 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
 - shortcuts with Makefile
   - must be inside <VORTEX ROOT>/hw/tb directory
 
-``make zero.load``
-  - load Vortex_mem_slave with 0's, 15 bits of byte address space -> 2^15 = 32 KB
+    ``make zero.load``
+    - load Vortex_mem_slave with 0's, 15 bits of byte address space -> 2^15 = 32 KB
 
-``make <.hex file name>.load``
-  - load Vortex_mem_slave with associated program, 15 bits of byte address space -> 2^15 = 32 KB
-  - <.hex file name> must be located in hex_files folder. don't include ``hex_files/``
+    ``make <.hex file name>.load``
+    - load Vortex_mem_slave with associated program, 15 bits of byte address space -> 2^15 = 32 KB
+    - <.hex file name> must be located in hex_files folder. don't include ``hex_files/``
 
-``make <.hex file name>.vec.load``
-  - essentially, needed this version to fit the large pre-compiled vector .hex programs from original Vortex repo
-  - load Vortex_mem_slave with associated program, 18 bits of byte address space -> 2^18 = 256 KB
-  - <.hex file name> must be loacted in hex_files_vec folder. don't include ``hex_files_vec/``
+    ``make <.hex file name>.vec.load``
+    - essentially, needed this version to fit the large pre-compiled vector .hex programs from original Vortex repo
+    - load Vortex_mem_slave with associated program, 18 bits of byte address space -> 2^18 = 256 KB
+    - <.hex file name> must be loacted in hex_files_vec folder. don't include ``hex_files_vec/``
 
 # Simulating Vortex_mem_slave_tb.sv
 - testbench expects loaded hex file to be rv32ud-p-fadd.hex  
