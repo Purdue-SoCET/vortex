@@ -3,7 +3,7 @@
 ### load_Vortex_mem_slave.py
 script to create Vortex_mem_slave.sv source file for given .hex file which interfaces directly with Vortex memory interfacing signals and AHB slave interfacing signals
 
-- commandline (from inside <VORTEX ROOT>/hw directory):  
+- commandline (from inside <VORTEX ROOT>/hw/tb/ directory):  
 ``python3 load_Vortex_mem_slave.py <.hex file name> <optional flags>``  
   - <.hex file name> is relative path from /tb (if in hex_files folder, need to do ``hex_files/<.hex file name>``)
 
@@ -13,7 +13,7 @@ script to create Vortex_mem_slave.sv source file for given .hex file which inter
   - ``-size <n bits to represent size, 2^n>``: change the size of the local mem
   
 - shortcuts with Makefile
-  - must be inside <VORTEX ROOT>/hw/tb directory
+  - must be inside <VORTEX ROOT>/hw/ directory
 
     ``make zero.load``
     - load Vortex_mem_slave with 0's, 15 bits of byte address space -> 2^15 = 32 KB
