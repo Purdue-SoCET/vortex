@@ -77,6 +77,8 @@ zero.load: load_Vortex_mem_slave.py
 %.load: load_Vortex_mem_slave.py
 		python3 load_Vortex_mem_slave.py hex_files/$*
 
+%.vec.load: load_Vortex_mem_slave.py
+		python3 load_Vortex_mem_slave.py hex_files_vec/$* -size 18
 
 compile_local_mem: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(LOCAL_MEM_DEF)

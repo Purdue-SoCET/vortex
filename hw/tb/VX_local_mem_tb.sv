@@ -10,23 +10,27 @@
 
 `timescale 1 ns / 1 ns
 
-// parameter PC_reset_val = 32'h8000_0000; // binaries are stuck with start addr 0x8000_0000
-parameter PC_reset_val = 32'hF000_0000; // updated binaries
+parameter PC_reset_val = 32'h8000_0000; // binaries are stuck with start addr 0x8000_0000
+// parameter PC_reset_val = 32'hF000_0000; // updated binaries
+
+// hang detection parameters
+parameter DISPLAY_DELAY = 1000; // arbitrary, customizable
+parameter MEM_REQ_DELAY = 1000; // arbitrary, customizable
+parameter DELAY = 1000000; // arbitrary, customizable
 
 module VX_local_mem_tb; 
 
     parameter PERIOD = 2;
-    parameter RSP_DELAY = 2 * PERIOD; 
-    logic clk = 0;
+    logic clk = 1'b0;
     logic reset;
     logic nRST; 
+    int half_cycle_counter = 0;
 
-    // parameters
-    // parameter WORD_W = 32;
-    // parameter DRAM_SIZE = 64;
-
-    // clock gen
-    always #(PERIOD/2) clk = ~clk;
+    // clock gen and cycle count
+    always #(PERIOD/2) begin
+        half_cycle_counter++;
+        clk = ~clk;
+    end
 
     // memory interfacing signals:
 
@@ -79,40 +83,23 @@ module VX_local_mem_tb;
     // Generic Bus Protocol Interface
     bus_protocol_if                      bpif(); 
 
-    Vortex DUT(.clk(clk),
-               .reset(reset), 
-               .PC_reset_val(PC_reset_val),
-               .mem_req_valid(mem_req_valid), 
-               .mem_req_rw(mem_req_rw), 
-               .mem_req_byteen(mem_req_byteen),
-               .mem_req_addr(mem_req_addr), 
-               .mem_req_data(mem_req_data), 
-               .mem_req_tag(mem_req_tag), 
-               .mem_req_ready(mem_req_ready), 
-               .mem_rsp_valid(mem_rsp_valid), 
-               .mem_rsp_data(mem_rsp_data), 
-               .mem_rsp_tag(mem_rsp_tag), 
-               .mem_rsp_ready(mem_rsp_ready), 
-               .busy(busy)
-               );
-    //local_mem MEM(.*); 
-
-    // local_mem MEM(.clk(clk), 
-    //               .reset(reset), 
-    //               .mem_req_valid(tb_mem_req_valid), 
-    //               .mem_req_rw(tb_mem_req_rw), 
-    //               .mem_req_byteen(tb_mem_req_byteen),
-    //               .mem_req_addr(tb_mem_req_addr), 
-    //               .mem_req_data(tb_mem_req_data), 
-    //               .mem_req_tag(tb_mem_req_tag), 
-    //               .mem_req_ready(tb_mem_req_ready), 
-    //               .mem_rsp_valid(tb_mem_rsp_valid), 
-    //               .mem_rsp_data(tb_mem_rsp_data), 
-    //               .mem_rsp_tag(tb_mem_rsp_tag), 
-    //               .mem_rsp_ready(tb_mem_rsp_ready), 
-    //               .busy(tb_busy), 
-    //               .tb_addr_out_of_bounds(tb_addr_out_of_bounds)
-    // ); 
+    Vortex DUT(
+        .clk(clk),
+        .reset(reset), 
+        .PC_reset_val(PC_reset_val),
+        .mem_req_valid(mem_req_valid), 
+        .mem_req_rw(mem_req_rw), 
+        .mem_req_byteen(mem_req_byteen),
+        .mem_req_addr(mem_req_addr), 
+        .mem_req_data(mem_req_data), 
+        .mem_req_tag(mem_req_tag), 
+        .mem_req_ready(mem_req_ready), 
+        .mem_rsp_valid(mem_rsp_valid), 
+        .mem_rsp_data(mem_rsp_data), 
+        .mem_rsp_tag(mem_rsp_tag), 
+        .mem_rsp_ready(mem_rsp_ready), 
+        .busy(busy)
+    );
 
     Vortex_mem_slave #(
         .VORTEX_MEM_SLAVE_AHB_BASE_ADDR(PC_reset_val)
@@ -134,54 +121,15 @@ module VX_local_mem_tb;
         .bpif(bpif)
     ); 
 
-    // assign tb_mem_rsp_ready = mem_rsp_ready; 
-
-    // initial begin 
-    //     mem_req_ready = 1'b0; 
-    //     mem_rsp_valid = 1'b0; 
-    //     mem_rsp_data = '0; 
-    //     mem_rsp_tag = '0; 
-
-    //     tb_mem_req_valid = 1'b0; 
-    //     tb_mem_req_rw = '0; 
-    //     tb_mem_req_byteen = '0; 
-    //     tb_mem_req_addr = '0; 
-    //     tb_mem_req_data = '0; 
-    //     tb_mem_req_tag = '0; 
-        
-    //     reset = 1'b1; 
-    //     // Reset
-    //     #(PERIOD * 13); 
-    //     reset = 1'b0; 
-
-    //     // Handshake to GPU
-    //     mem_req_ready = 1'b1; 
-
-    //     forever begin 
-    //         // Buffer the correct values for the rsp 
-    //         @(posedge mem_req_valid); 
-    //         tb_mem_rsp_tag = mem_req_tag;
-    //         tb_mem_req_addr = mem_req_addr; 
-    //         tb_mem_req_byteen = mem_req_byteen; 
-    //         tb_mem_req_rw = mem_req_rw; 
-    //         tb_mem_req_data = mem_req_data; 
-    //         #(RSP_DELAY);
-
-    //         // Response to Vortex's request
-    //         tb_mem_req_valid = 1'b1; // Trigger the local_mem
-    //         mem_rsp_valid = 1'b1; 
-    //         mem_rsp_data = tb_mem_rsp_data; 
-    //         mem_rsp_tag = tb_mem_req_tag; 
-    //         #(PERIOD); 
-    //         mem_rsp_valid = 1'b0; 
-    //     end 
-
-    //     //$stop; 
-
-    // end
-
     // delay count
     int delay;
+    int display_delay;
+
+    // hang detection signals
+    int mem_req_delay;
+    int last_mem_req_cycle;
+    logic bad_address = 1'b0;
+    logic hang_detected = 1'b0;
 
     // tasks
     task automatic dump_memory();
@@ -244,19 +192,80 @@ module VX_local_mem_tb;
         reset = 1'b0; 
         nRST = 1'b1;
 
+        $display("\nRESET: end of reset\n");
+
+        // reset half cycle counter (started counting during reset)
+        half_cycle_counter = 2;
+
         fork 
             // check for busy low
             begin
                 @(negedge busy);
-                $display("SUCCESS: got busy low");
+                $display("\nSUCCESS: got busy low after %d cycles", half_cycle_counter >> 1);
             end
 
-            // check if never finishes
+            // cyclewise checks
             begin
-                delay = 100000;
-                #(delay); 
-                $display("ERROR: never finished %d delay", delay);
+                display_delay = DISPLAY_DELAY; // arbitrary, customizable
+                mem_req_delay = MEM_REQ_DELAY; // arbitrary, customizable
+                delay = DELAY; // arbitrary, customizable
+
+                while (1)
+                begin
+                    // check for display cycle
+                    if ((half_cycle_counter >> 1) % display_delay == 0)
+                    begin
+                        $display("DISPLAY: cycle %d", half_cycle_counter >> 1);
+                    end
+
+                    // check if should check recent mem req 
+                    if ((half_cycle_counter >> 1) % mem_req_delay == 0)
+                    begin
+                        // check if recent mem req
+                        if ((half_cycle_counter >> 1) - last_mem_req_cycle > mem_req_delay)
+                        begin
+                            $display("\nHANG: last mem req was %d cycles ago", (half_cycle_counter>>1) - last_mem_req_cycle);
+                            break;
+                        end
+                    end
+
+                    // check for program timeout
+                    if ((half_cycle_counter >> 1) % delay == 0)
+                    begin
+                        $display("\nDELAY: busy not low after %d cycles", delay);
+                        break;
+                    end
+
+                    // increment cycle
+                    #(PERIOD);
+                end
             end
+
+            // check for mem request outside of expected range and save last mem req
+            begin
+                // save time since last mem req
+                last_mem_req_cycle = half_cycle_counter >> 1;
+
+                // loop until get bad mem req
+                while (1)
+                begin
+                    // wait til next mem req
+                    @(posedge mem_req_valid);
+
+                    // save time since last mem req
+                    last_mem_req_cycle = half_cycle_counter >> 1;
+
+                    // check for bad mem req
+                    if (mem_req_addr[25:22] != PC_reset_val[31:28])
+                    begin
+                        $display("ERROR: mem req outside of expected address space");
+                        $display("ERROR:     expected upper bits: %h", PC_reset_val[31:28]);
+                        $display("ERROR:     upper bits received: %h", mem_req_addr[25:22]);
+                        break;
+                    end
+                end
+            end
+
         join_any
 
         disable fork;
@@ -300,12 +309,13 @@ module VX_local_mem_tb;
         // dump_memory();
 
         // delay before end of sim
-        delay = 1000;
-        $display("delay %d before end of sim", delay);
-        #(delay);
+        delay = 2;
+            // works if get bad address, end of sim captures the bad address req only in VX_top_traces.txt
+        $display("\nEND OF SIM: delay %d cycles before end of sim", delay);
+        #(delay * PERIOD);
 
         // end of sim
-        $display("end of sim");
+        $display("END OF SIM: done\n");
         $stop();
     end 
 

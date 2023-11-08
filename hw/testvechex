@@ -1,0 +1,57 @@
+#! /bin/bash
+
+declare -a hex_file_array=(
+    "dhrystone.riscv.hex"
+    "median.riscv.hex"
+    "multiply.riscv.hex"
+    "pmp.riscv.hex"
+    "qsort.riscv.hex"
+    "rsort.riscv.hex"
+    "spmv.riscv.hex"
+    "towers.riscv.hex"
+    "vvadd.riscv.hex"
+    "kernel.hex"
+)
+
+# use minimum size for given hex file
+declare -a hex_size_array=(
+    "15" # 800273c0 -> 18
+    "15"
+    "15"
+    "15"
+    "15"
+    "15"
+    "16"
+    "14"
+    "15"
+    "13"
+)
+
+output_file_name="testvechex_output.log"
+
+echo "testvechex output on $(date +"%Y_%m_%d_%I_%M_%p")" > $output_file_name 
+
+for hex_file_name in "${hex_file_array[@]}"
+do
+    # start file
+    echo "Testing $hex_file_name"
+    echo "Testing $hex_file_name" >> $output_file_name
+
+    # load in hex file to Vortex_mem_slave.sv
+    cd tb
+    make ${hex_file_name}.vec.load >> ../$output_file_name
+    cd ..
+
+    # run questa sim
+    make all >> $output_file_name # this one at 0x8000_0000
+    # make all_wrapper >> $output_file_name # this one at 0xF000_0000
+
+    # compare traces (stdout and file)
+    python3 scrape_traces.py trace_files_vec/${hex_file_name}_rtlsim.log VX_top_trace.txt 
+    python3 scrape_traces.py trace_files_vec/${hex_file_name}_rtlsim.log VX_top_trace.txt >> $output_file_name
+
+    tkdiff trace_files_vec/${hex_file_name}_rtlsim.log.scrape.log VX_top_trace.txt.scrape.log
+
+    echo "End of Testing $hex_file_name" >> $output_file_name
+
+done

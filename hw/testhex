@@ -9,7 +9,7 @@ declare -a hex_file_array=(
     "simple2.hex" 
     "array.hex" 
     "float.hex"
-    # "double.hex"
+    # "double.hex" // not supported by Vortex
     "vector.hex"
     "vector2.hex"
 )
@@ -30,8 +30,8 @@ do
     cd ..
 
     # run questa sim
-    # make all >> $output_file_name
-    make all_wrapper >> $output_file_name
+    # make all >> $output_file_name # this one at 0x8000_0000
+    make all_wrapper >> $output_file_name # this one at 0xF000_0000
 
     # compare traces (stdout and file)
     python3 scrape_traces.py trace_files/${hex_file_name}_rtlsim.log VX_top_trace.txt 
