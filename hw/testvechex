@@ -50,7 +50,7 @@ do
     python3 scrape_traces.py trace_files_vec/${hex_file_name}_rtlsim.log VX_top_trace.txt 
     python3 scrape_traces.py trace_files_vec/${hex_file_name}_rtlsim.log VX_top_trace.txt >> $output_file_name
 
-    tkdiff trace_files_vec/${hex_file_name}_rtlsim.log.scrape.log VX_top_trace.txt.scrape.log
+    # tkdiff trace_files_vec/${hex_file_name}_rtlsim.log.scrape.log VX_top_trace.txt.scrape.log
 
     echo "End of Testing $hex_file_name" >> $output_file_name
 
