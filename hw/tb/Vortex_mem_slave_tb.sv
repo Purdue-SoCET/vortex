@@ -269,6 +269,8 @@ program test
 	
 	initial
 	begin
+        $display("\n ------ TB expects rv32ud-p-fadd.hex loaded ------ \n");
+
 		// init valules
 		error = 1'b0;
 		num_errors = 0;
