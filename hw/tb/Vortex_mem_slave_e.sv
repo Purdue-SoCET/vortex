@@ -19,7 +19,7 @@
 // include for Vortex widths
 `include "../include/VX_define.vh"
 
-module Vortex_mem_slave #(
+module Vortex_mem_slave_e #(
     /////////////////
     // parameters: //
     /////////////////
