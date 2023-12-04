@@ -184,6 +184,7 @@ filesets:
             - hw/rtl/vortex_gpu_ahb_dummy.sv     
             - hw/rtl/Vortex_wrapper_condensed.sv
             - hw/tb/Vortex_mem_slave.sv
+            - hw/tb/Vortex_mem_slave_e.sv
             - hw/tb/VX_ahb_adapter.sv 
             - hw/tb/Vortex_wrapper_no_Vortex.sv
             - hw/tb/Vortex_mem_slave.vh : { is_include_file : true }
