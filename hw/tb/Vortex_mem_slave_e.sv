@@ -25,7 +25,8 @@ module Vortex_mem_slave_e #(
     /////////////////
 
     // parameter VORTEX_START_PC_ADDR = 32'h80000000,
-    parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
+    // parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hF000_0000,
+    parameter VORTEX_MEM_SLAVE_AHB_BASE_ADDR = 32'hE000_0000,
     // parameter LOCAL_MEM_SIZE = 12
 	parameter LOCAL_MEM_SIZE = 15
 )(
