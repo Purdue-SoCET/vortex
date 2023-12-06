@@ -74,6 +74,9 @@ VLOGOPTS := -sv -work $(WORKDIR) -incr -vopt +define+SYNTHESIS #+define+SYNTHESI
 zero.load: load_Vortex_mem_slave.py
 		python3 load_Vortex_mem_slave.py -zero -size 15
 
+rv.load: load_Vortex_mem_slave.py
+		python3 load_Vortex_mem_slave.py hex_files_old/rv32ud-p-fadd.hex
+
 %.load: load_Vortex_mem_slave.py
 		python3 load_Vortex_mem_slave.py hex_files/$*
 
@@ -102,13 +105,13 @@ compile_Vortex_mem_slave: $(WORKDIR)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_RTL_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_MEM_SLAVE_TB)
 
-Vortex_mem_slave.wav: compile_Vortex_mem_slave
+Vortex_mem_slave.wav: rv.load compile_Vortex_mem_slave
 		vsim $(VSIMOPTS) -gui \
 		Vortex_mem_slave_tb \
 		-coverage -voptargs=+acc \
 		-do $(VORTEX_MEM_SLAVE_SIMDO)
 
-Vortex_mem_slave.sim: compile_Vortex_mem_slave
+Vortex_mem_slave.sim: rv.load compile_Vortex_mem_slave
 		vsim $(VSIMOPTS) -c \
 		Vortex_mem_slave_tb \
 		-coverage \
@@ -136,13 +139,13 @@ compile_Vortex_wrapper_no_Vortex: $(WORKDIR) compile_Vortex_mem_slave compile_VX
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_WRAPPER_NO_VORTEX_RTL_FILES)
 		@vlog $(VLOGOPTS) +incdir+$(INCL) $(VORTEX_WRAPPER_NO_VORTEX_TB)
 
-Vortex_wrapper_no_Vortex.wav: compile_Vortex_wrapper_no_Vortex
+Vortex_wrapper_no_Vortex.wav: zero.load compile_Vortex_wrapper_no_Vortex
 		vsim $(VSIMOPTS) -gui \
 		Vortex_wrapper_no_Vortex_tb \
 		-coverage -voptargs=+acc \
 		-do $(VORTEX_WRAPPER_NO_VORTEX_SIMDO)
 
-Vortex_wrapper_no_Vortex.sim: compile_Vortex_wrapper_no_Vortex
+Vortex_wrapper_no_Vortex.sim: zero.load compile_Vortex_wrapper_no_Vortex
 		vsim $(VSIMOPTS) -c \
 		Vortex_wrapper_no_Vortex_tb \
 		-coverage \
