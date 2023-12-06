@@ -2066,7 +2066,7 @@ module Vortex_wrapper_no_Vortex_tb ();
         #(PERIOD);
         expected_ahb_manager_ahbif_HADDR = 32'h20000028;
         expected_ahb_manager_ahbif_HWDATA = 32'h12345678;
-        expected_ahb_manager_ahbif_HWSTRB = 4'hf`;
+        expected_ahb_manager_ahbif_HWSTRB = 4'hf;
         check_ahb_manager_ahbif_outputs();
         #(PERIOD);
         #(PERIOD*5);
