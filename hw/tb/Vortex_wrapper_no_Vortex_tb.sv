@@ -516,7 +516,7 @@ module Vortex_wrapper_no_Vortex_tb ();
 
     initial begin
 
-        $display("\n ------ TB expects nothing.hex loaded ------ \n");
+        $display("\n ------ TB expects -zero loaded ------ \n");
 
         $display();
         $display("Testing with MEM_SLAVE_ADDR_SPACE_BITS = ", MEM_SLAVE_ADDR_SPACE_BITS);
