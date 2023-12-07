@@ -802,23 +802,23 @@ module Vortex_wrapper_tb;
 
         fork 
             // check for busy low
-            // begin
-            //     // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
-            //     if (!USE_WRAPPER) begin
-            //     @(negedge Vortex_busy);
-            //     end
-            //     // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
-            //     else
-            //     begin
-            //     @(negedge Vortex_wrapper_Instance.Vortex_busy);
-            //     end
-            //     // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
+            begin
+                // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
+                if (!USE_WRAPPER) begin
+                @(negedge Vortex_busy);
+                end
+                // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
+                else
+                begin
+                @(negedge ctrl_status_bpif.rdata[0]);
+                end
+                // o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o o //
 
-            //     $display();
-            //     $display("SUCCESS: program finished after %d cycles, got busy low", cycle_count);
+                $display();
+                $display("SUCCESS: program finished after %d cycles, got busy low", cycle_count);
 
-            //     program_terminated = 1;
-            // end
+                program_terminated = 1;
+            end
 
             // check if never finishes
             begin
