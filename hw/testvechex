@@ -1,6 +1,7 @@
 #! /bin/bash
 
 declare -a hex_file_array=(
+    "kernel.hex"
     "dhrystone.riscv.hex"
     "median.riscv.hex"
     "multiply.riscv.hex"
@@ -10,11 +11,11 @@ declare -a hex_file_array=(
     "spmv.riscv.hex"
     "towers.riscv.hex"
     "vvadd.riscv.hex"
-    "kernel.hex"
 )
 
 # use minimum size for given hex file
 declare -a hex_size_array=(
+    "13"
     "15" # 800273c0 -> 18
     "15"
     "15"
@@ -24,7 +25,6 @@ declare -a hex_size_array=(
     "16"
     "14"
     "15"
-    "13"
 )
 
 output_file_name="testvechex_output.log"
