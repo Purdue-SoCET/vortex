@@ -461,7 +461,8 @@ module Vortex_wrapper_condensed_tb;
         expected_Vortex_mem_rsp_tag = 56'h0;
 
         // Vortex_mem_slave bpif outputs
-        expected_mem_slave_bpif_rdata = 32'hFC10_2573; // default for simple.hex
+        // expected_mem_slave_bpif_rdata = 32'hFC10_2573; // default for simple.hex
+        expected_mem_slave_bpif_rdata = 32'h0; // for all zero's reset
         expected_mem_slave_bpif_error = 1'b0;
         expected_mem_slave_bpif_request_stall = 1'b0;
 
